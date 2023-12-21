@@ -2,10 +2,10 @@ self: { config, lib, ... }:
 let
   inherit (lib) mkIf mkMerge mkOption types;
   inherit (types) bool path str;
-  cfg = config.aquaris.base;
+  cfg = config.aquaris.sys-settings;
 in
 {
-  options.aquaris.base = {
+  options.aquaris.sys-settings = {
     machineID = mkOption {
       type = str;
     };

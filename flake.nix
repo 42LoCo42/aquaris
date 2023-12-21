@@ -18,13 +18,14 @@
       inherit specialArgs;
 
       modules = with nixosModules; [
-        (agenix self)
+        # (agenix self) # TODO
         (lanza system)
         (nix-settings self)
         (sys-settings self)
 
         {
-          fileSystems."/".device = "/dev/sda1";
+          aquaris.sys-settings.machineID = "92f3ebbc37482e645a111e286584a616";
+          fileSystems."/".device = "placeholder";
         }
       ];
     };

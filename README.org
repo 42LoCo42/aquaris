@@ -1,0 +1,31 @@
+* Aquaris - [WIP] My NixOS module library
+** TODO [[file:agenix.nix][agenix]]
+- Helper for [[https://github.com/ryantm/agenix][agenix]], a Nix secrets management tool
+- Automatically imports all secrets
+- TODO: Easier management of secrets, no need to create a secrets.nix
+*** Options
+- =keyPath=: where the agenix master key is located (default =/etc/age.key=)
+
+** [[file:lanza.nix][lanza]]
+- Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a secure boot-capable boot loader
+- Automatically creates secure boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
+- Lanzaboote is fetched from [[https://42loco42.cachix.org][my binary cache]], so no lengthy Rust compilation process!
+
+** [[file:nix-settings.nix][nix-settings]]
+- Enables Flakes and sets some more sane defaults for Nix
+- Includes [[https://42loco42.cachix.org][my binary cache]] into the system substituters list
+- Allows to link flake inputs to NIX_PATH and the system flake registry
+*** Options
+- =linkChannel=: whether to link =NIX_PATH= to the =nixpkgs= input
+- =linkInputs=: the list of flake inputs to link to the system flake registry
+
+** [[file:sys-settings.nix][sys-settings]]
+- Enables SSH with secure defaults
+- Configures various parts of the base system to be nice
+- Sets the machine and host ID based on a common value
+- Links the current config to =/etc/nixos=
+*** Options
+- =machineID=: the machine ID, generate with =dbus-uuidgen=
+- =sshHostKeyPath=: path of the ed25519 host key
+  (can be different for systems with ephemeral root storage)
+- =linkCurrentConfig=: link the system config to =/etc/nixos= (default enabled)
