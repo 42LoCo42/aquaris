@@ -1,5 +1,5 @@
 * Aquaris - [WIP] My NixOS module library
-** TODO [[file:agenix.nix][agenix]]
+** [TODO] [[file:agenix.nix][agenix]]
 - Helper for [[https://github.com/ryantm/agenix][agenix]], a Nix secrets management tool
 - Automatically imports all secrets
 - TODO: Easier management of secrets, no need to create a secrets.nix
@@ -7,14 +7,14 @@
 - =keyPath=: where the agenix master key is located (default =/etc/age.key=)
 
 ** [[file:lanza.nix][lanza]]
-- Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a secure boot-capable boot loader
-- Automatically creates secure boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
+- Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
+- Automatically creates Secure Boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
 - Lanzaboote is fetched from [[https://42loco42.cachix.org][my binary cache]], so no lengthy Rust compilation process!
 
 ** [[file:nix-settings.nix][nix-settings]]
 - Enables Flakes and sets some more sane defaults for Nix
 - Includes [[https://42loco42.cachix.org][my binary cache]] into the system substituters list
-- Allows to link flake inputs to NIX_PATH and the system flake registry
+- Allows to link flake inputs to =NIX_PATH= and the system flake registry
 *** Options
 - =linkChannel=: whether to link =NIX_PATH= to the =nixpkgs= input
 - =linkInputs=: the list of flake inputs to link to the system flake registry
@@ -29,3 +29,14 @@
 - =sshHostKeyPath=: path of the ed25519 host key
   (can be different for systems with ephemeral root storage)
 - =linkCurrentConfig=: link the system config to =/etc/nixos= (default enabled)
+
+** [TODO] Not yet pulled from Incubator
+A lot of useful stuff is still stuck deep within [[https://github.com/42LoCo42/.dotfiles][my dotfiles]], particularly [[https://github.com/42LoCo42/.dotfiles/tree/nixos/machines/test][the test VM]].
+All of that code needs to be cleaned up and prepared for independent usage.
+I especially want to make all my research into split security domain ZFS systems
+available as easy-to-use NixOS modules, since there are quite some challenges involved.
+This includes:
+- automatic [[https://github.com/nix-community/disko][disko]] config creation
+- automatic system dataset key management ([[https://github.com/42LoCo42/.dotfiles/blob/nixos/machines/test/zfs-autokey.nix][zfs-autokey]])
+- reliable unlocking of user datasets at login ([[https://github.com/42LoCo42/.dotfiles/blob/nixos/zfs-pam][zfs-pam]])
+- a more controlled way than [[https://github.com/nix-community/impermanence][impermanence]] of managing persistent files ([[https://github.com/42LoCo42/.dotfiles/blob/nixos/machines/test/feengold.nix][feengold]])
