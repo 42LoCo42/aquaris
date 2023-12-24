@@ -1,4 +1,4 @@
-self: { config, lib, ... }:
+src: { config, lib, ... }:
 let
   inherit (lib) mkForce mkIf mkMerge mkOption pipe types;
   inherit (types) bool listOf str;
@@ -13,7 +13,7 @@ in
 
     linkInputs = mkOption {
       type = listOf str;
-      default = builtins.attrNames self.inputs;
+      default = builtins.attrNames src.inputs;
     };
   };
 
@@ -32,13 +32,13 @@ in
         };
 
         extraOptions = ''
-          keep-outputs = true;
+          keep-outputs = true
           keep-derivations = true
         '';
 
         registry =
           let
-            lock = pipe "${self}/flake.lock" [
+            lock = pipe "${src}/flake.lock" [
               builtins.readFile
               builtins.fromJSON
             ];
@@ -56,7 +56,7 @@ in
     }
 
     (mkIf cfg.linkChannel {
-      environment.etc."nix/channel".source = self.inputs.nixpkgs.outPath;
+      environment.etc."nix/channel".source = src.inputs.nixpkgs.outPath;
       nix.nixPath = mkForce [ "nixpkgs=/etc/nix/channel" ];
     })
   ];
