@@ -1,10 +1,11 @@
 * Aquaris - [WIP] My NixOS module library
-** [TODO] [[file:agenix.nix][agenix]]
+** [[file:agenix.nix][agenix]]
 - Helper for [[https://github.com/ryantm/agenix][agenix]], a Nix secrets management tool
-- Automatically imports all secrets
-- TODO: Easier management of secrets, no need to create a secrets.nix
+- Automatically imports all secrets readable by the current machine
 *** Options
 - =keyPath=: where the agenix master key is located (default =/etc/age.key=)
+- =secretsDir=: location of the secrets directory;
+  it should contain =keys.nix= and =secrets.nix= (default =${src}/secrets=)
 
 ** [[file:customize.nix][customize]]
 - Configures the user account
