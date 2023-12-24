@@ -31,13 +31,8 @@ in
           myPubKey = keys.machines.${config.networking.hostName};
           rules = import "${cfg.secretsDir}/secrets.nix";
         in
-        pipe cfg.secretsDir [
-          builtins.readDir
-          (filterAttrs (name: type:
-            type == "regular" &&
-            builtins.match ".*\.age" name != null &&
-            lib.any (k: k == myPubKey) rules.${name}.publicKeys
-          ))
+        pipe rules [
+          (filterAttrs (_: val: lib.any (k: k == myPubKey) val.publicKeys))
           (mapAttrs' (name: _: {
             name = builtins.replaceStrings [ ".age" ] [ "" ] name;
             value.file = "${cfg.secretsDir}/${name}";
