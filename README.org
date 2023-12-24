@@ -6,6 +6,16 @@
 *** Options
 - =keyPath=: where the agenix master key is located (default =/etc/age.key=)
 
+** [[file:customize.nix][customize]]
+- Configures the user account
+- Sets the system locale, TTY key map and timezone
+*** Options
+- =userName=: name of the primary (=default=) user account
+- =publicKey=: the SSH public key of that user, set as an authorized key
+- =keyMap=: TTY key map (default =de-latin1=)
+- =locale=: the system locale (default =en_US.UTF-8=)
+- =timeZone=: the system time zone (default =Europe/Berlin=)
+
 ** [[file:lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
 - Automatically creates Secure Boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
