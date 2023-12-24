@@ -1,4 +1,4 @@
-self: { config, lib, ... }:
+src: { config, lib, ... }:
 let
   inherit (lib) mkIf mkMerge mkOption types;
   inherit (types) bool path str;
@@ -6,6 +6,10 @@ let
 in
 {
   options.aquaris.sys-settings = {
+    hostName = mkOption {
+      type = str;
+    };
+
     machineID = mkOption {
       type = str;
     };
@@ -46,6 +50,7 @@ in
 
       environment.etc."machine-id".text = cfg.machineID;
       networking.hostId = builtins.substring 0 8 cfg.machineID;
+      networking.hostName = cfg.hostName;
 
       services = {
         openssh = {
@@ -55,7 +60,7 @@ in
             PermitRootLogin = "no";
           };
           hostKeys = [{
-            path = cfg.sshHostkeyPath;
+            path = cfg.sshHostKeyPath;
             type = "ed25519";
           }];
         };
@@ -69,7 +74,7 @@ in
     (mkIf cfg.linkCurrentConfig {
       system.activationScripts.link-current-config.text = ''
         rm -rf /etc/nixos
-        ln -s "${self}" /etc/nixos
+        ln -s "${src}" /etc/nixos
       '';
     })
   ];

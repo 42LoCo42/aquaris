@@ -25,6 +25,7 @@
 - Sets the machine and host ID based on a common value
 - Links the current config to =/etc/nixos=
 *** Options
+- =hostName=: the host name (TODO set from name of NixOS config)
 - =machineID=: the machine ID, generate with =dbus-uuidgen=
 - =sshHostKeyPath=: path of the ed25519 host key
   (can be different for systems with ephemeral root storage)
