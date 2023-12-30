@@ -9,12 +9,15 @@
           let d = "${src}/machines/${name}"; in
           if !builtins.pathExists d then [ ] else [ import d ]
         ) ++ [{
-          aquaris.machine = {
-            inherit name;
-            inherit (cfg) id publicKey;
+          aquaris = {
             # merge admins and users
             users = builtins.mapAttrs (_: u: u // { isAdmin = true; })
               (cfg.admins or { }) // (cfg.users or { });
+
+            machine = {
+              inherit name;
+              inherit (cfg) id publicKey;
+            };
           };
         }];
       })

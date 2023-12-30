@@ -3,33 +3,36 @@ let
   inherit (lib) mkForce mkOption pipe types;
   inherit (types) attrsOf bool nullOr path str submodule;
   cfg = config.aquaris;
-
-  user = submodule {
-    options = {
-      name = mkOption {
-        type = nullOr str;
-        description = "Real username, overrides attrset name.";
-        default = null;
-      };
-
-      isAdmin = mkOption {
-        type = bool;
-        description = "Should this user be added to the wheel group?";
-        default = false;
-      };
-
-      publicKey = mkOption {
-        type = str;
-        default = ''
-          SSH public key of the user.
-          Will be authorized for logins.
-        '';
-      };
-    };
-  };
 in
 {
   options.aquaris = {
+    users = mkOption {
+      type = attrsOf (submodule {
+        options = {
+          name = mkOption {
+            type = nullOr str;
+            description = "Real username, overrides attrset name.";
+            default = null;
+          };
+
+          isAdmin = mkOption {
+            type = bool;
+            description = "Should this user be added to the wheel group?";
+            default = false;
+          };
+
+          publicKey = mkOption {
+            type = str;
+            default = ''
+              SSH public key of the user.
+              Will be authorized for logins.
+            '';
+          };
+        };
+      });
+      default = { };
+    };
+
     machine = {
       # these options will be inherited from ${src}/default.nix
 
@@ -56,12 +59,6 @@ in
           SSH ed25519 public key of the machine.
           Will be used as host key & to select secrets.
         '';
-      };
-
-      users = mkOption {
-        type = attrsOf user;
-        description = "User accounts of the machine.";
-        default = { };
       };
 
       # inheritance end
@@ -132,7 +129,7 @@ in
         hashedPasswordFile = config.age.secrets."users/${name}/passwordHash".path;
         openssh.authorizedKeys.keys = [ val.publicKey ];
       })
-      cfg.machine.users;
+      cfg.users;
 
     environment.etc."machine-id".text = cfg.machine.id;
     networking.hostId = builtins.substring 0 8 cfg.machine.id; # for ZFS
