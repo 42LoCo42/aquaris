@@ -1,12 +1,9 @@
-system: { pkgs, lib, nixpkgs, ... }:
+{ pkgs, lib, ... }:
 let
-  # we have to import nixpkgs here to break a recursion cycle
-  fresh-pkgs = import nixpkgs { inherit system; };
-  lanza = import (fresh-pkgs.fetchFromGitHub {
-    owner = "nix-community";
-    repo = "lanzaboote";
-    rev = "v0.3.0";
-    hash = "sha256-Fb5TeRTdvUlo/5Yi2d+FC8a6KoRLk2h1VE0/peMhWPs=";
+  # we can't use pkgs here, this would create infinite recursion!
+  lanza = import (builtins.fetchGit {
+    url = "https://github.com/nix-community/lanzaboote";
+    rev = "64b903ca87d18cef2752c19c098af275c6e51d63"; # v0.3.0
   });
 in
 {
