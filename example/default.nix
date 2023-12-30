@@ -5,6 +5,7 @@ let
     };
 
     guy = {
+      name = "justaguy"; # override actual user name
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP9fBvv8AWOYsItzYlomBJ41lGHwhV0cNtlyADn0zdP4";
     };
   };
