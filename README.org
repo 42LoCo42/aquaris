@@ -1,46 +1,39 @@
 * Aquaris - [WIP] My NixOS module library
+Use Aquaris to easily manage related machines, their users and secrets!
+
+Check out the [[file:example/][example]] configuration to see how this looks in practice.
+
+[TODO] Or create a blank configuration from the template by running:
+#+begin_src shell
+  nix flake new -t github:42loco42/aquaris <name>
+#+end_src
+
+** Secrets management
+Aquaris includes a powerful secrets management facility based on [[https://github.com/ryantm/agenix][agenix]],
+with secrets belonging to one of three categories:
+- toplevel: included by all NixOS configurations
+- user: personal secrets like SSH keys or password hashes,
+  readable only by their owner and machines they're on
+- machine: secrets for machines like API keys or TLS certificates,
+  readable only by the respective machine and its admin accounts
+
+* Module reference
 ** [[file:agenix.nix][agenix]]
-- Helper for [[https://github.com/ryantm/agenix][agenix]], a Nix secrets management tool
+- Enable [[https://github.com/ryantm/agenix][agenix]], a Nix secrets management tool
 - Automatically imports all secrets readable by the current machine
 *** Options
 - =keyPath=: where the agenix master key is located (default =/etc/age.key=)
 - =secretsDir=: location of the secrets directory;
   it should contain =keys.nix= and =secrets.nix= (default =${src}/secrets=)
 
-** [[file:customize.nix][customize]]
-- Configures the user account
-- Sets the system locale, TTY key map and timezone
-*** Options
-- =userName=: name of the primary (=default=) user account
-- =publicKey=: the SSH public key of that user, set as an authorized key
-- =keyMap=: TTY key map (default =de-latin1=)
-- =locale=: the system locale (default =en_US.UTF-8=)
-- =timeZone=: the system time zone (default =Europe/Berlin=)
+** [[file:basic.nix][basic]]
+- Configures a lot of basic system options, including sane defaults for Nix
+- Creates the user accounts
 
 ** [[file:lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
 - Automatically creates Secure Boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
 - Lanzaboote is fetched from [[https://42loco42.cachix.org][my binary cache]], so no lengthy Rust compilation process!
-
-** [[file:nix-settings.nix][nix-settings]]
-- Enables Flakes and sets some more sane defaults for Nix
-- Includes [[https://42loco42.cachix.org][my binary cache]] into the system substituters list
-- Allows to link flake inputs to =NIX_PATH= and the system flake registry
-*** Options
-- =linkChannel=: whether to link =NIX_PATH= to the =nixpkgs= input
-- =linkInputs=: the list of flake inputs to link to the system flake registry
-
-** [[file:sys-settings.nix][sys-settings]]
-- Enables SSH with secure defaults
-- Configures various parts of the base system to be nice
-- Sets the machine and host ID based on a common value
-- Links the current config to =/etc/nixos=
-*** Options
-- =hostName=: the host name (TODO set from name of NixOS config)
-- =machineID=: the machine ID, generate with =dbus-uuidgen=
-- =sshHostKeyPath=: path of the ed25519 host key
-  (can be different for systems with ephemeral root storage)
-- =linkCurrentConfig=: link the system config to =/etc/nixos= (default enabled)
 
 ** [TODO] Not yet pulled from Incubator
 A lot of useful stuff is still stuck deep within [[https://github.com/42LoCo42/.dotfiles][my dotfiles]], particularly [[https://github.com/42LoCo42/.dotfiles/tree/nixos/machines/test][the test VM]].
