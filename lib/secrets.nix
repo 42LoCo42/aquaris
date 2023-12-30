@@ -44,8 +44,8 @@ let
     type = "users";
     set = users;
     keyFn = user: pipe machines [
-      (filterAttrs (_: m: m.admin == user
-        || builtins.any (u: u == user) (builtins.attrValues (m.users or { }))))
+      (filterAttrs (_: m: builtins.any (u: u == user)
+        (builtins.attrValues (m.admins or { } // m.users or { }))))
       getKeys
     ] ++ [ user.publicKey ];
   };
@@ -54,7 +54,10 @@ let
   machineSecrets = dirSecrets {
     type = "machines";
     set = machines;
-    keyFn = machine: [ machine.publicKey machine.admin.publicKey ];
+    keyFn = machine: pipe machine.admins [
+      builtins.attrValues
+      (map (a: a.publicKey))
+    ] ++ [ machine.publicKey ];
   };
 in
 toplevel // userSecrets // machineSecrets
