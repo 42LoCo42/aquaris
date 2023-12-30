@@ -31,7 +31,7 @@ with secrets belonging to one of three categories:
 - Automatically creates Secure Boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
 - Lanzaboote is fetched from [[https://42loco42.cachix.org][my binary cache]], so no lengthy Rust compilation process!
 
-** [TODO] Not yet pulled from Incubator
+* [TODO] Not yet pulled from Incubator
 A lot of useful stuff is still stuck deep within [[https://github.com/42LoCo42/.dotfiles][my dotfiles]], particularly [[https://github.com/42LoCo42/.dotfiles/tree/nixos/machines/test][the test VM]].
 All of that code needs to be cleaned up and prepared for independent usage.
 I especially want to make all my research into split security domain ZFS systems

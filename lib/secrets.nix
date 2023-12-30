@@ -2,9 +2,9 @@ src:
 let
   # impure import is ok here, since aquaris later binds nixpkgs to its flake input
   # also lib should be stable through most nixpkgs versions
-  pkgs = import <nixpkgs> { };
-  inherit (pkgs.lib) filterAttrs mapAttrs' mapAttrsToList pipe;
-  inherit (pkgs.lib.attrsets) mergeAttrsList;
+  nixpkgs = builtins.getFlake "github:nixos/nixpkgs/e2fa12d4f6c6fe19ccb59cac54b5b3f25e160870";
+  inherit (nixpkgs.lib) filterAttrs mapAttrs' mapAttrsToList pipe;
+  inherit (nixpkgs.lib.attrsets) mergeAttrsList;
 
   inherit (import src) users machines;
 

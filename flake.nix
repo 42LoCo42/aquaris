@@ -16,7 +16,11 @@
   outputs = { self, nixpkgs, ... }@inputs:
     let
       nixosModules = import ./lib/nixosModules.nix { inherit self nixpkgs; };
-      lib.aquarisSystems = import ./lib/aquarisSystems.nix { inherit inputs nixosModules; };
+      lib = {
+        secretsHelper = import ./lib/secrets.nix;
+        aquarisSystems = import ./lib/aquarisSystems.nix
+          { inherit inputs nixosModules; };
+      };
     in
     { inherit nixosModules lib; }
     // lib.aquarisSystems ./example
