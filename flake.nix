@@ -1,59 +1,37 @@
 {
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
     agenix.url = "github:ryantm/agenix";
-    agenix.inputs.nixpkgs.follows = "nixpkgs";
     agenix.inputs.darwin.follows = "";
+    agenix.inputs.home-manager.follows = "home-manager";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
+
+    und.url = "github:42loco42/und";
   };
 
-  outputs = { self, nixpkgs, ... }@specialArgs: rec {
-    nixosModules = {
-      agenix = import ./agenix.nix;
-      customize = import ./customize.nix;
-      lanza = import ./lanza.nix;
-      nix-settings = import ./nix-settings.nix;
-      sys-settings = import ./sys-settings.nix;
-    };
-
-    nixosConfigurations.test = nixpkgs.lib.nixosSystem rec {
-      system = "x86_64-linux";
-      inherit specialArgs;
-
-      modules = with nixosModules; [
-        (agenix self)
-        customize
-        (lanza system)
-        (nix-settings self)
-        (sys-settings self)
-
-        {
-          aquaris = {
-            customize = {
-              userName = "leonsch";
-              publicKey = (import "${self}/secrets/keys.nix").users.leonsch;
-            };
-
-            sys-settings = {
-              hostName = "akyuro";
-              machineID = "92f3ebbc37482e645a111e286584a616";
-            };
-          };
-
-          fileSystems."/".device = "placeholder";
-        }
-      ];
-    };
-  } // (
+  outputs = { self, nixpkgs, ... }@inputs:
     let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
+      nixosModules = import ./lib/nixosModules.nix { inherit self nixpkgs; };
+      lib.aquarisSystems = import ./lib/aquarisSystems.nix { inherit inputs nixosModules; };
     in
-    {
-      devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [
-          shfmt
-          nix-output-monitor
-        ];
-      };
-    }
-  );
+    { inherit nixosModules lib; }
+    // lib.aquarisSystems ./example
+    // (
+      let
+        system = "x86_64-linux";
+        pkgs = import nixpkgs { inherit system; };
+      in
+      {
+        devShells.${system}.default = pkgs.mkShell {
+          packages = with pkgs; [
+            nix-output-monitor
+            shfmt
+          ];
+        };
+      }
+    );
 }

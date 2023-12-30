@@ -1,41 +1,46 @@
-{ inputs, config, lib, src, ... }:
+{ config, lib, src, self, ... }:
 let
-  inherit (lib) mkForce mkOption types;
-  inherit (types) path str;
+  inherit (lib) mkForce mkOption pipe types;
+  inherit (types) attrsOf bool nullOr path str submodule;
   cfg = config.aquaris;
-in
-{
-  imports = [ inputs.agenix.nixosModules.default ];
 
-  options.aquaris = {
-    user = {
+  user = submodule {
+    options = {
       name = mkOption {
-        type = str;
-        description = ''
-          Name of the primary user account.
-          This will be the entry `users.users.default`.
-        '';
+        type = nullOr str;
+        description = "Real username, overrides attrset name.";
+        default = null;
+      };
+
+      isAdmin = mkOption {
+        type = bool;
+        description = "Should this user be added to the wheel group?";
+        default = false;
       };
 
       publicKey = mkOption {
         type = str;
-        description = ''
+        default = ''
           SSH public key of the user.
-          Will be authorized for logins & used to select secrets.
+          Will be authorized for logins.
         '';
-      };
-
-      secretKey = mkOption {
-        type = path;
-        description = ''
-          Path to the SSH secret key of the user.
-          Will be used for agenix to work with secret files.
-        '';
-        default = config.age.secrets."user/${cfg.user.name}/secretKey".path;
       };
     };
+  };
+in
+{
+  options.aquaris = {
+    machine = {
+      # these options will be inherited from ${src}/default.nix
 
-    system = {
+      name = mkOption {
+        type = str;
+        description = ''
+          Host name of the machine.
+          Should match the name of the NixOS configuration.
+        '';
+      };
+
       id = mkOption {
         type = str;
         description = ''
@@ -45,29 +50,29 @@ in
         '';
       };
 
-      name = mkOption {
-        type = str;
-        description = ''
-          Host name of the system.
-          Should match the name of the NixOS configuration.
-        '';
-      };
-
       publicKey = mkOption {
         type = str;
         description = ''
-          SSH ed25519 public key of the system.
+          SSH ed25519 public key of the machine.
           Will be used as host key & to select secrets.
         '';
       };
 
+      users = mkOption {
+        type = attrsOf user;
+        description = "User accounts of the machine.";
+        default = { };
+      };
+
+      # inheritance end
+
       secretKey = mkOption {
         type = path;
         description = ''
-          Path to the SSH ed25519 secret key of the system.
+          Path to the SSH ed25519 secret key of the machine.
           Will be used as host key & to decrypt secrets.
         '';
-        default = config.age.secrets."system/${cfg.system.name}/secretKey".path;
+        default = "/etc/ssh/ssh_host_ed25519_key";
       };
 
       keyMap = mkOption {
@@ -90,7 +95,7 @@ in
 
       timeZone = mkOption {
         type = str;
-        description = "Time zone of the system";
+        description = "Time zone of the machine";
         default = "Europe/Berlin";
       };
     };
@@ -119,17 +124,19 @@ in
     };
 
     users.mutableUsers = false; # mutability is cringe
-    users.users.default = {
-      name = cfg.user.name;
-      isNormalUser = true;
-      extraGroups = [ "wheel" ];
-      hashedPasswordFile = config.age.secrets."user/${cfg.user.name}/passwordHash".path;
-      openssh.authorizedKeys.keys = [ cfg.user.publicKey ];
-    };
+    users.users = builtins.mapAttrs
+      (name: val: {
+        name = if val.name != null then val.name else name;
+        isNormalUser = true;
+        extraGroups = if val.isAdmin then [ "wheel" ] else [ ];
+        hashedPasswordFile = config.age.secrets."users/${name}/passwordHash".path;
+        openssh.authorizedKeys.keys = [ val.publicKey ];
+      })
+      cfg.machine.users;
 
-    environment.etc."machine-id".text = cfg.system.id;
-    networking.hostId = builtins.substring 0 8 cfg.system.id; # for ZFS
-    networking.hostName = cfg.system.name;
+    environment.etc."machine-id".text = cfg.machine.id;
+    networking.hostId = builtins.substring 0 8 cfg.machine.id; # for ZFS
+    networking.hostName = cfg.machine.name;
 
     services.openssh = {
       enable = true;
@@ -138,40 +145,44 @@ in
         PermitRootLogin = "no";
       };
       hostKeys = [{
-        path = cfg.system.secretKey;
+        path = cfg.machine.secretKey;
         type = "ed25519";
       }];
     };
 
-    console.keyMap = cfg.system.keyMap;
+    console.keyMap = cfg.machine.keyMap;
     i18n = {
-      defaultLocale = cfg.system.locale;
-      extraLocaleSettings.LC_TIME = cfg.system.timeLocale;
+      defaultLocale = cfg.machine.locale;
+      extraLocaleSettings.LC_TIME = cfg.machine.timeLocale;
     };
-    time.timeZone = cfg.system.timeZone;
+    time.timeZone = cfg.machine.timeZone;
 
     environment.etc."nixos".source = src; # link config source to /etc/nixos
     services.journald.extraConfig = "SystemMaxUse=500M"; # limit journal size
     systemd.extraConfig = "DefaultTimeoutStopSec=10s"; # fix systemd being annoying
 
-    nix = {
-      settings = {
-        auto-optimise-store = true; # hardlink duplicate store files, massively decreases disk usage
-        experimental-features = [ "nix-command" "flakes" ]; # enable flakes
-        substituters = [
-          "https://nix-community.cachix.org"
-          "https://42loco42.cachix.org"
-        ];
-        trusted-public-keys = [
-          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-          "42loco42.cachix.org-1:6HvWFER3RdTSqEZDznqahkqaoI6QCOiX2gRpMMsThiQ="
-        ];
-      };
-
-      nixPath = mkForce [ "nixpkgs=/etc/nix/channel" ];
-      # TODO link nixpkgs to system registry
+    nix.settings = {
+      auto-optimise-store = true; # hardlink duplicate store files, massively decreases disk usage
+      experimental-features = [ "nix-command" "flakes" ]; # enable flakes
+      substituters = [
+        "https://nix-community.cachix.org"
+        "https://42loco42.cachix.org"
+      ];
+      trusted-public-keys = [
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        "42loco42.cachix.org-1:6HvWFER3RdTSqEZDznqahkqaoI6QCOiX2gRpMMsThiQ="
+      ];
     };
 
-    environment.etc."nix/channel".source = inputs.nixpkgs.outPath;
+    # pin nixpkgs to NIX_PATH
+    environment.etc."nix/channel".source = self.inputs.nixpkgs.outPath;
+    nix.nixPath = mkForce [ "nixpkgs=/etc/nix/channel" ];
+
+    # pin nixpkgs to system flake registry
+    nix.registry.nixpkgs.to = pipe "${self}/flake.lock" [
+      builtins.readFile
+      builtins.fromJSON
+      (f: f.nodes.${f.nodes.${f.root}.inputs.nixpkgs}.locked)
+    ];
   };
 }
