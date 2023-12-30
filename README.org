@@ -3,7 +3,7 @@ Use Aquaris to easily manage related machines, their users and secrets!
 
 Check out the [[file:example/][example]] configuration to see how this looks in practice.
 
-[TODO] Or create a blank configuration from the template by running:
+Or create a blank configuration from the template by running:
 #+begin_src shell
   nix flake new -t github:42loco42/aquaris <name>
 #+end_src

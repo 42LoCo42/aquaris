@@ -1,8 +1,4 @@
-let
-  # aquaris = builtins.fetchGit {
-  #   url = "https://github.com/42LoCo42/aquaris";
-  #   rev = "8b2651859d4ebc551f1de50a23876ba9e3fa513c";
-  # };
-  # aquaris = ./../..;
-in
-import "${aquaris}/lib/secrets.nix" ./..
+# NOTE: you should use github:42loco42/aquaris/<commit>
+# this is just for easier debugging!
+let aquaris = builtins.getFlake "path:/home/leonsch/dev/nix/aquaris"; in
+aquaris.lib.secretsHelper ./..

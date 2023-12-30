@@ -22,7 +22,13 @@
           { inherit inputs nixosModules; };
       };
     in
-    { inherit nixosModules lib; }
+    {
+      inherit nixosModules lib;
+      templates.default = {
+        path = ./template;
+        description = "Blank Aquaris config flake";
+      };
+    }
     // lib.aquarisSystems ./example
     // (
       let
