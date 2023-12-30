@@ -19,7 +19,7 @@ let
   allKeys = getKeys users ++ getKeys machines;
 
   # all *.age files -> encrypted for all keys (users & machines)
-  toplevel = pipe "${src}/secrets" [
+  toplevel = pipe (src + "/secrets") [
     builtins.readDir
     (filterAttrs (name: type:
       type == "regular" && builtins.match ".*\.age" name != null))
@@ -28,7 +28,7 @@ let
 
   dirSecrets = { type, set, keyFn }: pipe set [
     (mapAttrsToList (name: item:
-      let d = "${src}/secrets/${type}/${name}"; in
+      let d = src + "/secrets/${type}/${name}"; in
       if !builtins.pathExists d then { } else
       pipe d [
         builtins.readDir
