@@ -1,7 +1,7 @@
 let
   aquaris = builtins.fetchGit {
     url = "https://github.com/42LoCo42/aquaris";
-    rev = "9cd2424f773394d508b49e2792072dbb71331321";
+    rev = "8b2651859d4ebc551f1de50a23876ba9e3fa513c";
   };
 in
-import "${aquaris}/lib/secrets.nix" ./..
+import "${aquaris}/lib/secrets.nix" "${./..}"
