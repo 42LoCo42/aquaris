@@ -17,7 +17,7 @@
     let
       nixosModules = import ./lib/nixosModules.nix { inherit self nixpkgs; };
       lib = {
-        secretsHelper = import ./lib/secrets.nix;
+        secretsHelper = import ./lib/secretsHelper.nix;
         aquarisSystems = import ./lib/aquarisSystems.nix
           { inherit inputs nixosModules; };
       };

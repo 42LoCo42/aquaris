@@ -1,8 +1,11 @@
 src:
 let
-  # impure import is ok here, since aquaris later binds nixpkgs to its flake input
-  # also lib should be stable through most nixpkgs versions
-  nixpkgs = builtins.getFlake "github:nixos/nixpkgs/e2fa12d4f6c6fe19ccb59cac54b5b3f25e160870";
+  nixpkgs =
+    let
+      f = builtins.fromJSON (builtins.readFile ./../flake.lock);
+      n = f.nodes.${f.nodes.${f.root}.inputs.nixpkgs}.locked;
+    in
+    builtins.getFlake "${n.type}:${n.owner}/${n.repo}/${n.rev}";
   inherit (nixpkgs.lib) filterAttrs mapAttrs' mapAttrsToList pipe;
   inherit (nixpkgs.lib.attrsets) mergeAttrsList;
 
