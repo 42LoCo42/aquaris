@@ -7,7 +7,7 @@
         specialArgs = inputs // { inherit src system; };
         modules = builtins.attrValues nixosModules ++ (
           let d = "${src}/machines/${name}"; in
-          if !builtins.pathExists d then [ ] else [ import d ]
+          if !builtins.pathExists d then [ ] else [ (import d) ]
         ) ++ [{
           aquaris = {
             # merge admins and users
