@@ -1,0 +1,3 @@
+{
+  fileSystems."/".device = "root";
+}

@@ -1,4 +1,4 @@
-{ config, lib, src, self, ... }:
+{ config, lib, src, self, my-utils, ... }:
 let
   inherit (lib) mkForce mkOption pipe types;
   inherit (types) attrsOf bool nullOr path str submodule;
@@ -23,7 +23,7 @@ in
 
           publicKey = mkOption {
             type = str;
-            default = ''
+            description = ''
               SSH public key of the user.
               Will be authorized for logins.
             '';
@@ -98,6 +98,8 @@ in
     };
   };
 
+  imports = [ self.inputs.home-manager.nixosModules.default ];
+
   config = {
     system.stateVersion = "24.05";
     zramSwap.enable = true;
@@ -130,6 +132,21 @@ in
         openssh.authorizedKeys.keys = [ val.publicKey ];
       })
       cfg.users;
+
+    home-manager = {
+      useGlobalPkgs = true;
+      useUserPackages = true;
+      users = builtins.mapAttrs
+        (name: val: { ... }: {
+          home.stateVersion = "24.05";
+
+          home.activation.linkSSHKey = my-utils.mkHomeLinks [{
+            src = config.age.secrets."users/${name}/secretKey".path;
+            dst = "$HOME/.ssh/id_ed25519";
+          }];
+        })
+        cfg.users;
+    };
 
     environment.etc."machine-id".text = cfg.machine.id;
     networking.hostId = builtins.substring 0 8 cfg.machine.id; # for ZFS
