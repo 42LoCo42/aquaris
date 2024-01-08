@@ -25,14 +25,14 @@ with secrets belonging to one of three categories:
 ** [[file:basic.nix][basic]]
 - Configures a lot of basic system options, including sane defaults for Nix
 - Creates the user accounts
-*** Options
-- =aquaris.machine.secretKey=: Location of the SSH secret key;
+*** Options (=aquaris.machine=)
+- =secretKey=: Location of the SSH secret key;
   should be changed when using an ephemeral root storage
   (default: =/etc/ssh/ssh_host_ed25519_key=)
-- =aquaris.machine.keyMap=: Key map of the system consoles (default =de-latin1=)
-- =aquaris.machine.locale=: System locale (default =en_US.UTF-8=)
-- =aquaris.machine.timeLocale=: Locale to display the time in (LC_TIME) (default =de_DE.UTF-8=)
-- =aquaris.machine.timeZone=: Time zone of the system (default =Europe/Berlin=)
+- =keyMap=: Key map of the system consoles (default =de-latin1=)
+- =locale=: System locale (default =en_US.UTF-8=)
+- =timeLocale=: Locale to display the time in (LC_TIME) (default =de_DE.UTF-8=)
+- =timeZone=: Time zone of the system (default =Europe/Berlin=)
 
 ** [[file:lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
@@ -44,10 +44,10 @@ with secrets belonging to one of three categories:
 - Inspired by [[https://github.com/nix-community/impermanence][impermanence]], but much simpler
 - Designed to be used only with directories
 - All system dirs are bind-mounted, all user dirs are symlinked
-*** Options
-- =aquaris.persistence.system=: List of persistent system paths.
+*** Options (=aquaris.persistence=)
+- =system=: List of persistent system paths.
   Default entries: =/etc/secureboot=, =/var/db/sudo=, =/var/log=
-- =aquaris.persistence.users.<name>=:
+- =users.<name>=:
   For each user in the set: list of its persistent paths.
 
 * [TODO] Not yet pulled from Incubator
