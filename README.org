@@ -64,6 +64,5 @@ All of that code needs to be cleaned up and prepared for independent usage.
 I especially want to make all my research into split security domain ZFS systems
 available as easy-to-use NixOS modules, since there are quite some challenges involved.
 This includes:
-- automatic [[https://github.com/nix-community/disko][disko]] config creation
 - automatic system dataset key management ([[https://github.com/42LoCo42/.dotfiles/blob/nixos/machines/test/zfs-autokey.nix][zfs-autokey]])
 - reliable unlocking of user datasets at login ([[https://github.com/42LoCo42/.dotfiles/blob/nixos/zfs-pam][zfs-pam]])
