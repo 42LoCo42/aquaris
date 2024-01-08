@@ -19,7 +19,7 @@ let
         specialArgs =
           inputs //
           (import ./utils.nix {
-            pkgs = nixpkgs { inherit system; };
+            pkgs = import nixpkgs { inherit system; };
             inherit (inputs) home-manager;
           }) //
           { inherit src system; };
@@ -84,6 +84,4 @@ let
       });
   });
 in
-{
-  inherit (out) nixosConfigurations packages;
-}
+{ inherit (out) nixosConfigurations packages; }

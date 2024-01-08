@@ -1,13 +1,10 @@
-# import all *.nix files except flake.nix
 { self, nixpkgs }:
-with builtins; with nixpkgs.lib; pipe self [
+with builtins; with nixpkgs.lib; pipe "${self}/modules" [
   readDir
-  (filterAttrs (name: type:
-    type == "regular" && name != "flake.nix" && match ".*\.nix" name != null))
   attrNames
   (map (name: {
     name = replaceStrings [ ".nix" ] [ "" ] name;
-    value = import "${self}/${name}";
+    value = import "${self}/modules/${name}";
   }))
   listToAttrs
 ]

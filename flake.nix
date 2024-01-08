@@ -30,7 +30,7 @@
         description = "Blank Aquaris config flake";
       };
     }
-    // lib.aquarisSystems ./example
+    // lib.aquarisSystems self
     // (
       let
         system = "x86_64-linux";
