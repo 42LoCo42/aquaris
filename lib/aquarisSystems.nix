@@ -2,14 +2,16 @@
 let
   inherit (inputs) nixpkgs;
   inherit (nixpkgs.lib)
+    getExe
     mapAttrsToList
     nixosSystem
-    pipe
     recursiveUpdate;
+
   recMerge = builtins.foldl' recursiveUpdate { };
-in
-pipe ((import src).machines) [
-  (mapAttrsToList (name: cfg: {
+  globalF = f: recMerge (mapAttrsToList f ((import src).machines));
+  packagesF = f: recMerge (map f [ "x86_64-linux" ]);
+
+  out = globalF (name: cfg: {
     nixosConfigurations.${name} =
       let system = cfg.system or "x86_64-linux"; in nixosSystem {
         inherit system;
@@ -41,38 +43,47 @@ pipe ((import src).machines) [
           }];
       };
 
-    packages = pipe [ "x86_64-linux" ] [
-      (map (system:
-        let
-          pkgs = import nixpkgs { inherit system; };
+    packages = packagesF (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
 
-          installer = pkgs.writeShellScript "${name}-installer" ''
+        installer = pkgs.writeShellApplication {
+          name = "${name}-installer";
+          runtimeInputs = with pkgs; [
+            jq
+            nix-output-monitor
+          ];
+          text = ''
             ${inputs.disko.packages.${system}.disko}/bin/disko \
-              -m disko -f '${src}#${name}'
-          '';
+              --no-deps -m disko -f "${src}#${name}"
 
-          deployer = pkgs.writeShellScriptBin "${name}-deployer" ''
-            host="root@192.168.122.195"
-            nix copy ${installer} --to "ssh://$host"
-            ssh "$host" <<-EOF
-              ${installer}
-            EOF
+            sys="$(nom build                                     \
+              --extra-experimental-features "nix-command flakes" \
+              --no-link --print-out-paths                        \
+              "${src}#nixosConfigurations.${name}.config.system.build.toplevel")"
+
+            nixos-install --no-channel-copy --no-root-password --system "$sys"
           '';
-        in
-        {
-          ${system} = {
-            "${name}" = deployer;
-          };
-          # program = getExe (pkgs.writeShellApplication {
-          #   inherit name;
-          #   runtimeInputs = with pkgs; [ ];
-          #   text = ''
-          #     ls ${inputs.disko.packages.${system}.disko}
-          #   '';
-          # });
-        }))
-      recMerge
-    ];
-  }))
-  recMerge
-]
+        };
+
+        deployer = pkgs.writeShellApplication {
+          name = "${name}-deployer";
+          runtimeInputs = with pkgs; [ openssh ];
+          text = ''
+            host="root@192.168.122.195" # TODO
+            nix copy ${installer} --to "ssh://$host"
+            ssh -t "$host" ${getExe installer}
+          '';
+        };
+      in
+      {
+        ${system} = {
+          "${name}-installer" = installer;
+          "${name}-deployer" = deployer;
+        };
+      });
+  });
+in
+{
+  inherit (out) nixosConfigurations packages;
+}
