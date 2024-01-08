@@ -18,11 +18,11 @@ with secrets belonging to one of three categories:
   readable only by the respective machine and its admin accounts
 
 * Module reference
-** [[file:agenix.nix][agenix]]
+** [[file:modules/agenix.nix][agenix]]
 - Enables [[https://github.com/ryantm/agenix][agenix]], a Nix secrets management tool
 - Automatically imports all secrets readable by the current machine
 
-** [[file:basic.nix][basic]]
+** [[file:modules/basic.nix][basic]]
 - Configures a lot of basic system options, including sane defaults for Nix
 - Creates the user accounts
 *** Options (=aquaris.machine=)
@@ -34,7 +34,7 @@ with secrets belonging to one of three categories:
 - =timeLocale=: Locale to display the time in (LC_TIME) (default =de_DE.UTF-8=)
 - =timeZone=: Time zone of the system (default =Europe/Berlin=)
 
-** [[file:disko.nix][disko]]
+** [[file:modules/disko.nix][disko]]
 - Defines filesystems declaratively via [[https://github.com/nix-community/disko][disko]]
 - By default, this modules generates ephemeral root storage (=tmpfs=)
   and a ZFS pool with the following datasets under =nixos=:
@@ -42,12 +42,12 @@ with secrets belonging to one of three categories:
   - =persist=: Persistent storage
   - for each user: =home/<name>=
 
-** [[file:lanza.nix][lanza]]
+** [[file:modules/lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
 - Automatically creates Secure Boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
 - Lanzaboote is fetched from [[https://42loco42.cachix.org][my binary cache]], so no lengthy Rust compilation process!
 
-** [[file:persist.nix][persist]]
+** [[file:modules/persist.nix][persist]]
 - Tools for working with persistent files on a system with ephemeral root storage
 - Inspired by [[https://github.com/nix-community/impermanence][impermanence]], but much simpler
 - Designed to be used only with directories
