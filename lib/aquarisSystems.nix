@@ -44,9 +44,6 @@ let
           }];
       };
 
-      subs = toString nixosConfig.config.nix.settings.substituters;
-      keys = toString nixosConfig.config.nix.settings.trusted-public-keys;
-
       installer = pkgs: pkgs.writeShellApplication {
         name = "${name}-installer";
         runtimeInputs = with pkgs; [
@@ -56,7 +53,13 @@ let
           jq
           nix-output-monitor
         ];
-        text = substituteAll ./installer.sh { inherit src name subs keys; };
+        text = substituteAll ./installer.sh {
+          inherit src name;
+          disk = nixosConfig.config.disko.devices.disk.root.device;
+          keypath = nixosConfig.config.aquaris.machine.secretKey;
+          keys = nixosConfig.config.nix.settings.trusted-public-keys;
+          subs = nixosConfig.config.nix.settings.substituters;
+        };
       };
 
       deployer = pkgs: pkgs.writeShellApplication {

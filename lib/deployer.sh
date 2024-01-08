@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 log() { echo -e "\e[1;32m$*...\e[m"; }
 x() { (
 	set -x
@@ -12,6 +11,9 @@ ssh-copy-id "$host"
 if [ -e "machines/@name@/hardware.nix" ]; then
 	log "Uploading installer"
 	x nix copy @installer@ --to "ssh://$host"
+
+	log "Uploading master key"
+	scp "keys/@name@.key" "$host:"
 
 	log "Starting installer"
 	x ssh -t "$host" @installer@

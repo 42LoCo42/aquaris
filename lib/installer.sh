@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
-set -euo pipefail
 log() { echo -e "\e[1;32m$1...\e[m"; }
 x() { (
 	set -x
 	"$@"
 ); }
 
-log "Formatting disks"
+log "Resetting disk"
+wipefs -af "@disk@"
+
+log "Formatting disk"
 disko --no-deps -m disko -f "@src@#@name@"
+
+log "Copying master key"
+x mkdir -p "$(dirname "/mnt/@keypath@")"
+x cp "@name@.key" "/mnt/@keypath@"
 
 log "Mounting nom-overlay"
 name="nom-overlay-$RANDOM"
