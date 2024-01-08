@@ -2,10 +2,10 @@
 let
   inherit (lib) concatMapStringsSep mkOption pipe types;
   inherit (types) attrsOf listOf path str;
-  cfg = config.aquaris.persistence;
+  cfg = config.aquaris.persist;
 in
 {
-  options.aquaris.persistence = {
+  options.aquaris.persist = {
     root = mkOption {
       type = path;
       description = ''
@@ -34,7 +34,7 @@ in
   };
 
   config = {
-    aquaris.persistence.system = [
+    aquaris.persist.system = [
       "/etc/secureboot"
       "/var/db/sudo"
       "/var/log"
@@ -42,7 +42,7 @@ in
 
     fileSystems.${cfg.root}.neededForBoot = true;
 
-    system.activationScripts.aquaris-persistence.text =
+    system.activationScripts.aquaris-persist.text =
       concatMapStringsSep "\n"
         (path: ''
           mkdir -p ${cfg.root}/${path}
@@ -52,7 +52,7 @@ in
 
     home-manager.users = builtins.mapAttrs
       (_: paths: { ... }@hm: {
-        home.activation.aquaris-persistence = pipe paths [
+        home.activation.aquaris-persist = pipe paths [
           (map (path: {
             src = "${cfg.root}/${hm.config.home.homeDirectory}/${path}";
             dst = "${hm.config.home.homeDirectory}/${path}";

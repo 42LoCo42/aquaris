@@ -47,12 +47,12 @@ with secrets belonging to one of three categories:
 - Automatically creates Secure Boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
 - Lanzaboote is fetched from [[https://42loco42.cachix.org][my binary cache]], so no lengthy Rust compilation process!
 
-** [[file:persistence.nix][persistence]]
+** [[file:persist.nix][persist]]
 - Tools for working with persistent files on a system with ephemeral root storage
 - Inspired by [[https://github.com/nix-community/impermanence][impermanence]], but much simpler
 - Designed to be used only with directories
 - All system dirs are bind-mounted, all user dirs are symlinked
-*** Options (=aquaris.persistence=)
+*** Options (=aquaris.persist=)
 - =system=: List of persistent system paths.
   Default entries: =/etc/secureboot=, =/var/db/sudo=, =/var/log=
 - =users.<name>=:

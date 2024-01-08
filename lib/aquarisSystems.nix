@@ -5,29 +5,30 @@ let
     getExe
     mapAttrsToList
     nixosSystem
-    recursiveUpdate;
+    pipe;
 
-  recMerge = builtins.foldl' recursiveUpdate { };
+  utils = import ./utils.nix inputs;
+  inherit (utils) recMerge substituteAll;
+
   globalF = f: recMerge (mapAttrsToList f ((import src).machines));
   packagesF = f: recMerge (map f [ "x86_64-linux" ]);
 
-  out = globalF (name: cfg: {
-    nixosConfigurations.${name} =
-      let system = cfg.system or "x86_64-linux"; in nixosSystem {
+  out = globalF (name: cfg:
+    let
+      nixosConfig = let system = cfg.system or "x86_64-linux"; in nixosSystem {
         inherit system;
 
-        specialArgs =
-          inputs //
-          (import ./utils.nix {
-            pkgs = import nixpkgs { inherit system; };
-            inherit (inputs) home-manager;
-          }) //
-          { inherit src system; };
+        specialArgs = inputs // utils // { inherit src system; };
 
         modules = builtins.attrValues nixosModules ++
           (
             let d = "${src}/machines/${name}"; in
-            if builtins.pathExists d then [ (import d) ] else [ ]
+            if !builtins.pathExists d then [ ] else
+            pipe d [
+              builtins.readDir
+              builtins.attrNames
+              (map (i: import "${d}/${i}"))
+            ]
           ) ++
           [{
             aquaris = {
@@ -43,45 +44,42 @@ let
           }];
       };
 
-    packages = packagesF (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
+      subs = toString nixosConfig.config.nix.settings.substituters;
+      keys = toString nixosConfig.config.nix.settings.trusted-public-keys;
 
-        installer = pkgs.writeShellApplication {
-          name = "${name}-installer";
-          runtimeInputs = with pkgs; [
-            jq
-            nix-output-monitor
-          ];
-          text = ''
-            ${inputs.disko.packages.${system}.disko}/bin/disko \
-              --no-deps -m disko -f "${src}#${name}"
+      installer = pkgs: pkgs.writeShellApplication {
+        name = "${name}-installer";
+        runtimeInputs = with pkgs; [
+          git
+          gptfdisk
+          inputs.disko.packages.${system}.disko
+          jq
+          nix-output-monitor
+        ];
+        text = substituteAll ./installer.sh { inherit src name subs keys; };
+      };
 
-            sys="$(nom build                                     \
-              --extra-experimental-features "nix-command flakes" \
-              --no-link --print-out-paths                        \
-              "${src}#nixosConfigurations.${name}.config.system.build.toplevel")"
-
-            nixos-install --no-channel-copy --no-root-password --system "$sys"
-          '';
+      deployer = pkgs: pkgs.writeShellApplication {
+        name = "${name}-deployer";
+        runtimeInputs = with pkgs; [
+          git
+          openssh
+        ];
+        text = substituteAll ./deployer.sh {
+          inherit name;
+          installer = getExe (installer pkgs);
         };
-
-        deployer = pkgs.writeShellApplication {
-          name = "${name}-deployer";
-          runtimeInputs = with pkgs; [ openssh ];
-          text = ''
-            host="root@192.168.122.195" # TODO
-            nix copy ${installer} --to "ssh://$host"
-            ssh -t "$host" ${getExe installer}
-          '';
-        };
-      in
-      {
-        ${system} = {
-          "${name}-installer" = installer;
-          "${name}-deployer" = deployer;
-        };
-      });
-  });
+      };
+    in
+    {
+      nixosConfigurations.${name} = nixosConfig;
+      packages = packagesF (system:
+        let pkgs = import nixpkgs { inherit system; }; in {
+          ${system} = {
+            "${name}-installer" = installer pkgs;
+            "${name}-deployer" = deployer pkgs;
+          };
+        });
+    });
 in
 { inherit (out) nixosConfigurations packages; }

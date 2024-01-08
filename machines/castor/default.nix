@@ -2,7 +2,7 @@
   aquaris = {
     filesystem.rootDisk = "virtio-root";
 
-    persistence = {
+    persist = {
       users.leonsch = [
         ".cache/zsh"
       ];

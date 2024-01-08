@@ -3,7 +3,7 @@ let
   inherit (lib) mapAttrs' mkOption types;
   inherit (types) str;
   cfg = config.aquaris.filesystem;
-  persist = config.aquaris.persistence.root;
+  persist = config.aquaris.persist.root;
 in
 {
   options.aquaris.filesystem = {

@@ -3,6 +3,7 @@ let
   inherit (lib) mkForce mkOption pipe types;
   inherit (types) attrsOf bool nullOr path str submodule;
   cfg = config.aquaris;
+  persist = cfg.persist.root;
 in
 {
   options.aquaris = {
@@ -69,7 +70,7 @@ in
           Path to the SSH ed25519 secret key of the machine.
           Will be used as host key & to decrypt secrets.
         '';
-        default = "/etc/ssh/ssh_host_ed25519_key";
+        default = "${persist}/etc/ssh/ssh_host_ed25519_key";
       };
 
       keyMap = mkOption {
