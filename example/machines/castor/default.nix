@@ -1,9 +1,11 @@
 {
-  fileSystems."/".device = "root";
+  aquaris = {
+    filesystem.rootDisk = "virtio-root";
 
-  aquaris.persistence = {
-    users.leonsch = [
-      ".cache/zsh"
-    ];
+    persistence = {
+      users.leonsch = [
+        ".cache/zsh"
+      ];
+    };
   };
 }

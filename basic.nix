@@ -111,6 +111,9 @@ in
         systemd-boot.editor = false;
       };
 
+      supportedFilesystems = [ "zfs" ];
+      kernelPackages = mkForce config.boot.zfs.package.latestCompatibleLinuxPackages;
+
       # gruvbox
       kernelParams = [
         "vt.default_red=0x28,0xcc,0x98,0xd7,0x45,0xb1,0x68,0xa8,0x92,0xfb,0xb8,0xfa,0x83,0xd3,0x8e,0xeb"
