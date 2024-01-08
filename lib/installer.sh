@@ -6,7 +6,7 @@ x() { (
 ); }
 
 log "Resetting disk"
-wipefs -af "@disk@"
+x wipefs -af "@disk@"
 
 log "Formatting disk"
 disko --no-deps -m disko -f "@src@#@name@"

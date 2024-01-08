@@ -25,5 +25,5 @@ else
 	git add -N .
 
 	log "Restarting deployer"
-	exec nix run ".#@name@-installer"
+	exec nix run ".#@name@-deployer"
 fi
