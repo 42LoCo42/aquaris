@@ -1,7 +1,9 @@
 * Aquaris - [WIP] My NixOS module library
 Use Aquaris to easily manage related machines, their users and secrets!
 
-Check out the [[file:default.nix][example]] configuration to see how this looks in practice.
+Check out the example configuration to see how this looks in practice:
+- [[file:default.nix][default.nix]] - Definition of users and machines
+- [[file:machines/castor/default.nix][machines/castor/default.nix]] - A machine-specific configuration
 
 Or create a blank configuration from the template by running:
 #+begin_src shell
