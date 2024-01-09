@@ -43,6 +43,8 @@ with secrets belonging to one of three categories:
   - =nix=: Storage for the =/nix= directory
   - =persist=: Persistent storage
   - for each user: =home/<name>=
+*** Options (=aquaris.filesystem=)
+- =rootDisk=: Path to the root disk
 
 ** [[file:modules/lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
@@ -55,6 +57,7 @@ with secrets belonging to one of three categories:
 - Designed to be used only with directories
 - All system dirs are bind-mounted, all user dirs are symlinked
 *** Options (=aquaris.persist=)
+- =root=: Location of the persistent root directory (default =/persist=)
 - =system=: List of persistent system paths.
   Default entries: =/etc/secureboot=, =/var/db/sudo=, =/var/log=
 - =users.<name>=:

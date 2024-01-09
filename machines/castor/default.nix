@@ -1,6 +1,6 @@
 {
   aquaris = {
-    filesystem.rootDisk = "virtio-root";
+    filesystem.rootDisk = "/dev/disk/by-id/virtio-root";
 
     persist = {
       users.leonsch = [

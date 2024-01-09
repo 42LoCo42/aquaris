@@ -1,15 +1,15 @@
 { config, lib, disko, ... }:
 let
   inherit (lib) mapAttrs' mkOption types;
-  inherit (types) str;
+  inherit (types) path;
   cfg = config.aquaris.filesystem;
   persist = config.aquaris.persist.root;
 in
 {
   options.aquaris.filesystem = {
     rootDisk = mkOption {
-      type = str;
-      description = "ID of the root disk (from /dev/disk/by-id)";
+      type = path;
+      description = "Path to the root disk";
     };
   };
 
@@ -19,7 +19,7 @@ in
     disko.devices = {
       disk.root = {
         type = "disk";
-        device = "/dev/disk/by-id/${cfg.rootDisk}";
+        device = "${cfg.rootDisk}";
         content = {
           type = "gpt";
           partitions = {
