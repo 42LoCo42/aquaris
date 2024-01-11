@@ -18,7 +18,10 @@ let
       nixosConfig = let system = cfg.system or "x86_64-linux"; in nixosSystem {
         inherit system;
 
-        specialArgs = inputs // utils // { inherit src system; };
+        specialArgs = inputs // {
+          inherit src system;
+          inherit (utils) my-utils;
+        };
 
         modules = builtins.attrValues nixosModules ++
           (
