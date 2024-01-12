@@ -1,6 +1,7 @@
-{ pkgs, config, lib, my-utils, ... }:
+{ pkgs, config, lib, utils, my-utils, ... }:
 let
   inherit (lib)
+    any
     elemAt
     mapAttrsToList
     mkOption
@@ -31,11 +32,15 @@ let
       ent = toInt (elemAt res 1);
     };
 
-  getEntries = f: v: builtins.concatStringsSep "\n" (map f v);
-  getEntriesA = f: v: getEntries f (builtins.attrValues v);
+  getEntries = f: v: pipe v [
+    (v: if builtins.isAttrs v then builtins.attrValues v else v)
+    (map f)
+    (builtins.concatStringsSep "\n")
+  ];
 
   joinOpts = chr: options: pipe options [
-    (mapAttrsToList (name: val: "-${chr} ${name}=${val}"))
+    (o: if builtins.isAttrs o then (mapAttrsToList (name: val: "${name}=${val}")) o else o)
+    (map (o: "-${chr} ${o}"))
     (builtins.concatStringsSep " ")
   ];
 
@@ -147,7 +152,7 @@ let
             wipefs -af "${config.device}"
             mkfs --verbose --type="${config.content.type}"              \
               ${builtins.concatStringsSep " " config.content.mkfsOpts}  \
-              "${config.device}"
+              ${config.device}
           '';
       };
     };
@@ -229,7 +234,7 @@ let
           zpool create                       \
             ${joinOpts "o" config.poolOpts}  \
             ${joinOpts "O" config.rootOpts}  \
-            "${config.name}"                 \
+            ${config.name}                   \
             ${zpoolDevices config}
           ${getEntries (d: d._mkDS) (slashSort config.datasets)}
         '';
@@ -242,13 +247,13 @@ let
       name = mkOption {
         type = str;
         description = "Name of the dataset";
-        default = name;
+        default = "${pool.name}/${name}";
       };
       mountpoint = mkOption {
         type = nullOr path;
         description = "Mount point of the dataset";
         default =
-          let res = builtins.match "[^/]+(/.*)" config.name; in
+          let res = builtins.match "[^/]+(/.*)" name; in
           if res != null then builtins.head res else null;
       };
       options = mkOption {
@@ -262,7 +267,7 @@ let
         default = ''
           zfs create                        \
             ${joinOpts "o" config.options}  \
-            "${pool.name}/${config.name}"
+            ${config.name}
         '';
       };
     };
@@ -294,25 +299,89 @@ in
             default = with pkgs; [ dosfstools zfs ];
           };
 
-          _format = mkOption {
+          _formatScript = mkOption {
             type = lines;
             default = ''
               set -x
-              ${getEntriesA (d: d._format) cfg.disks}
-              ${getEntriesA (p: p._mkPool) cfg.zpools}
+              ${getEntries (d: d._format) cfg.disks}
+              ${getEntries (p: p._mkPool) cfg.zpools}
             '';
           };
 
-          _formatter = mkOption {
+          _format = mkOption {
             type = package;
             default = pkgs.writeShellApplication {
-              name = "aquaris-formatter";
+              name = "aquaris-format";
               runtimeInputs = [ pkgs.util-linux ] ++ cfg.tools;
-              text = cfg._format;
+              text = cfg._formatScript;
+            };
+
+            _mountScript = mkOption {
+              type = lines;
+              default = pipe config.fileSystems [
+                builtins.attrValues
+                (map (f: {
+                  prio =
+                    if any (o: o == "bind" || o == "rbind") f.options then 9001
+                    else builtins.length (builtins.split "/" f.mountPoint);
+                  val = f;
+                }))
+                (builtins.sort (i1: i2: i1.prio < i2.prio))
+                (map (f: ''
+                  mount -t ${f.val.fsType}         \
+                    ${joinOpts "o" f.val.options}  \
+                    ${f.val.device} ${f.val.mountPoint}
+                ''))
+                (builtins.concatStringsSep "\n")
+              ];
+            };
+
+            _mount = mkOption {
+              type = package;
+              default = pkgs.writeShellApplication {
+                name = "aquaris-mount";
+                runtimeInputs = [ pkgs.util-linux ] ++ cfg.tools;
+                text = cfg._mountScript;
+              };
             };
           };
         };
       }];
     };
   };
+
+  config.fileSystems =
+    let
+      forDisks = pipe cfg.disks [
+        (mapAttrsToList (_: val: pipe val.partitions [
+          (builtins.filter (p: partitionContent.is.filesystem p.content))
+          (map (p: {
+            name = p.content.mountpoint;
+            value = {
+              inherit (p) device;
+              fsType = p.content.type;
+              options = p.content.mountOpts;
+            };
+          }))
+        ]))
+      ];
+      forZFS = pipe cfg.zpools [
+        (mapAttrsToList (_: val: pipe val.datasets [
+          (builtins.attrValues)
+          (builtins.filter (d: d.mountpoint != null))
+          (map (d: {
+            name = d.mountpoint;
+            value = {
+              device = d.name;
+              fsType = "zfs";
+              options = [ "zfsutil" ];
+            };
+          }))
+        ]))
+      ];
+    in
+    pipe (forDisks ++ forZFS) [
+      builtins.concatLists
+      builtins.listToAttrs
+    ];
 }

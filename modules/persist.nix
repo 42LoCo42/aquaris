@@ -40,15 +40,16 @@ in
       "/var/log"
     ];
 
-    fileSystems.${cfg.root}.neededForBoot = true;
-
-    system.activationScripts.aquaris-persist.text =
-      concatMapStringsSep "\n"
-        (path: ''
-          mkdir -p ${cfg.root}/${path}
-          findmnt ${path} >/dev/null || mount -Bm ${cfg.root}/${path} ${path}
-        '')
-        cfg.system;
+    fileSystems = pipe cfg.system [
+      (map (path: {
+        name = path;
+        value = {
+          device = "${cfg.root}/${path}";
+          options = [ "bind" ];
+        };
+      }))
+      builtins.listToAttrs
+    ] // { ${cfg.root}.neededForBoot = true; };
 
     home-manager.users = builtins.mapAttrs
       (_: paths: { ... }@hm: {

@@ -1,4 +1,9 @@
 {
+  fileSystems."/" = {
+    fsType = "tmpfs";
+    options = [ "mode=755" ];
+  };
+
   aquaris = {
     filesystem = { filesystem, zpool, ... }: {
       zpools.rpool.datasets = {
