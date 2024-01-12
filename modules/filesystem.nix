@@ -229,6 +229,7 @@ let
           zpool create                       \
             ${joinOpts "o" config.poolOpts}  \
             ${joinOpts "O" config.rootOpts}  \
+            "${config.name}"                 \
             ${zpoolDevices config}
           ${getEntries (d: d._mkDS) (slashSort config.datasets)}
         '';
