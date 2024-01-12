@@ -5,6 +5,7 @@
         "nixos" = { };
         "nixos/nix" = { };
         "nixos/persist" = { };
+        "nixos/persist/home".mountpoint = null;
         "nixos/persist/home/guy" = { };
         "nixos/persist/home/leonsch" = { };
       };
