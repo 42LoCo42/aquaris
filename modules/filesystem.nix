@@ -321,18 +321,25 @@ in
             type = lines;
             default = pipe config.fileSystems [
               builtins.attrValues
-              (map (f: {
+              (map (f: rec {
+                bind = any (o: o == "bind" || o == "rbind") f.options;
                 prio =
-                  if any (o: o == "bind" || o == "rbind") f.options then 9001
-                  else builtins.length (builtins.split "/" f.mountPoint);
+                  if bind then 9001 else
+                  builtins.length (builtins.split "/" f.mountPoint);
                 val = f;
               }))
               (builtins.sort (i1: i2: i1.prio < i2.prio))
-              (map (f: ''
-                mount -m -t ${f.val.fsType}      \
-                  ${joinOpts "o" f.val.options}  \
-                  ${f.val.device} "$mnt/${f.val.mountPoint}"
-              ''))
+              (map (f:
+                let
+                  device =
+                    if f.bind then "$mnt/${f.val.device}"
+                    else f.val.device;
+                in
+                ''
+                  mount -m -t ${f.val.fsType}      \
+                    ${joinOpts "o" f.val.options}  \
+                    "${device}" "$mnt/${f.val.mountPoint}"
+                ''))
               (builtins.concatStringsSep "\n")
               (t: ''
                 set -x
