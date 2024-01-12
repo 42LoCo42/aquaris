@@ -349,7 +349,7 @@ in
               (builtins.concatStringsSep "\n")
               (t: ''
                 set -x
-                mnt="''${1-/}"
+                mnt="$(realpath "''${1-/}")"
               '' + t)
             ];
           };
