@@ -140,9 +140,10 @@ let
 
       _sfdiskEntry = mkOption {
         type = str;
-        default = builtins.concatStringsSep ","
-          ([ "type=${config.type}" ] ++
-            (if config.size != null then [ "size=${config.size}" ] else [ ]));
+        default = builtins.concatStringsSep "," (
+          [ "type=${config.type}" ] ++
+          (if config.size != null then [ "size=${config.size}" ] else [ ])
+        );
       };
 
       _mkfs = mkOption {
@@ -317,6 +318,7 @@ in
             };
 
           };
+
           _mountScript = mkOption {
             type = lines;
             default = pipe config.fileSystems [
@@ -382,6 +384,7 @@ in
           }))
         ]))
       ];
+
       forZFS = pipe cfg.zpools [
         (mapAttrsToList (_: val: pipe val.datasets [
           (builtins.attrValues)
