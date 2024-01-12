@@ -1,20 +1,27 @@
-{ config, lib, my-utils, ... }:
+{ pkgs, config, lib, my-utils, ... }:
 let
   inherit (lib)
     elemAt
+    mapAttrsToList
     mkOption
+    pipe
     toInt
     types;
   inherit (types)
     attrsOf
+    lines
     listOf
     nullOr
+    package
+    path
     str
     submodule;
 
   inherit (my-utils) adt;
 
-  path = str;
+  cfg = config.aquaris.filesystem;
+
+  ##### utils #####
 
   listIx = name:
     # name is of the form: [definition X-entry Y]
@@ -24,7 +31,35 @@ let
       ent = toInt (elemAt res 1);
     };
 
-  # submodule definitions
+  getEntries = f: v: builtins.concatStringsSep "\n" (map f v);
+  getEntriesA = f: v: getEntries f (builtins.attrValues v);
+
+  joinOpts = chr: options: pipe options [
+    (mapAttrsToList (name: val: "-${chr} ${name}=${val}"))
+    (builtins.concatStringsSep " ")
+  ];
+
+  zpoolDevices = zpool: pipe cfg.disks [
+    (mapAttrsToList (_: val: pipe val.partitions [
+      (builtins.filter (p:
+        partitionContent.is.zpool p.content &&
+        p.content.name == zpool.name))
+      (map (p: p.device))
+    ]))
+    builtins.concatLists
+    (builtins.concatStringsSep " ")
+  ];
+
+  slashSort = attrs: pipe attrs [
+    (mapAttrsToList (name: val: {
+      prio = builtins.length (builtins.split "/" name);
+      inherit val;
+    }))
+    (builtins.sort (i1: i2: i1.prio < i2.prio))
+    (map (i: i.val))
+  ];
+
+  ##### submodule definitions #####
 
   disk = { name, config, ... }: {
     options = {
@@ -57,10 +92,22 @@ let
           Multiple definitions would lose a guaranteed partition ordering.
         '';
       };
+
+      _format = mkOption {
+        type = lines;
+        default = ''
+          wipefs -af "${config.device}"
+          sfdisk "${config.device}" <<EOF
+          label: ${config.type}
+          ${getEntries (p: p._sfdiskEntry) config.partitions}
+          EOF
+          ${getEntries (p: p._mkfs) config.partitions}
+        '';
+      };
     };
   };
 
-  partition = disk: { name, ... }: {
+  partition = disk: { name, config, ... }: {
     options = {
       device = mkOption {
         type = str;
@@ -72,6 +119,7 @@ let
       type = mkOption {
         type = str;
         description = "Partition type (read by sfdisk)";
+        default = "linux";
       };
       size = mkOption {
         type = nullOr str;
@@ -79,14 +127,35 @@ let
           Size of the partition.
           null means remaining size.
         '';
+        default = null;
       };
       content = mkOption {
-        type = adt.mkOneOf partitionContent;
+        type = partitionContentT;
+      };
+
+      _sfdiskEntry = mkOption {
+        type = str;
+        default = builtins.concatStringsSep ","
+          ([ "type=${config.type}" ] ++
+            (if config.size != null then [ "size=${config.size}" ] else [ ]));
+      };
+
+      _mkfs = mkOption {
+        type = lines;
+        default =
+          if partitionContent.is.zpool config.content then "" else ''
+            wipefs -af "${config.device}"
+            mkfs --verbose --type="${config.content.type}"              \
+              ${builtins.concatStringsSep " " config.content.mkfsOpts}  \
+              "${config.device}"
+          '';
       };
     };
   };
 
-  partitionContent = { inherit filesystem zpool; };
+  partitionContentC = { inherit filesystem zpool; };
+  partitionContentT = adt.mkOneOf partitionContentC;
+  partitionContent = adt.mkTagger partitionContentC;
 
   filesystem.options = {
     type = mkOption {
@@ -115,7 +184,7 @@ let
   # which of course makes no sense with adt.addTag
   # but when creating the submodule, name is "zpool"
   # which is exactly the tag name we need
-  zpool = { name, ... }: adt.addTag name {
+  zpool = { name, config, ... }: adt.addTag name {
     options = {
       name = mkOption {
         type = str;
@@ -149,7 +218,51 @@ let
       };
 
       datasets = mkOption {
-        type = types.anything;
+        type = attrsOf (submodule (dataset config));
+        description = "Datasets in this zpool";
+        default = { };
+      };
+
+      _mkPool = mkOption {
+        type = lines;
+        default = ''
+          zpool create                       \
+            ${joinOpts "o" config.poolOpts}  \
+            ${joinOpts "O" config.rootOpts}  \
+            ${zpoolDevices config}
+          ${getEntries (d: d._mkDS) (slashSort config.datasets)}
+        '';
+      };
+    };
+  };
+
+  dataset = pool: { name, config, ... }: {
+    options = {
+      name = mkOption {
+        type = str;
+        description = "Name of the dataset";
+        default = name;
+      };
+      mountpoint = mkOption {
+        type = nullOr path;
+        description = "Mount point of the dataset";
+        default =
+          let res = builtins.match "[^/]+(/.*)" config.name; in
+          if res != null then builtins.head res else null;
+      };
+      options = mkOption {
+        type = attrsOf str;
+        description = "Options of the dataset";
+        default = { };
+      };
+
+      _mkDS = mkOption {
+        type = lines;
+        default = ''
+          zfs create                        \
+            ${joinOpts "o" config.options}  \
+            "${pool.name}/${config.name}"
+        '';
       };
     };
   };
@@ -157,9 +270,9 @@ in
 {
   options.aquaris.filesystem = mkOption {
     type = types.submoduleWith {
-      specialArgs = let tagger = adt.mkTagger partitionContent; in {
-        inherit (tagger) filesystem;
-        zpool = f: tagger.zpool (f config.aquaris.filesystem.zpools);
+      specialArgs = {
+        inherit (partitionContent) filesystem;
+        zpool = f: partitionContent.zpool (f cfg.zpools);
       };
 
       modules = [{
@@ -172,6 +285,30 @@ in
           zpools = mkOption {
             type = attrsOf (submodule zpool);
             default = { };
+          };
+
+          tools = mkOption {
+            type = listOf package;
+            description = "Extra tools available to the generated scripts";
+            default = with pkgs; [ dosfstools zfs ];
+          };
+
+          _format = mkOption {
+            type = lines;
+            default = ''
+              set -x
+              ${getEntriesA (d: d._format) cfg.disks}
+              ${getEntriesA (p: p._mkPool) cfg.zpools}
+            '';
+          };
+
+          _formatter = mkOption {
+            type = package;
+            default = pkgs.writeShellApplication {
+              name = "aquaris-formatter";
+              runtimeInputs = [ pkgs.util-linux ] ++ cfg.tools;
+              text = cfg._format;
+            };
           };
         };
       }];

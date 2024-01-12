@@ -2,34 +2,28 @@
   aquaris = {
     filesystem = { filesystem, zpool, ... }: {
       zpools.rpool.datasets = {
-        # "nixos" = {
-        #   datasets = {
-        #     "nix" = { };
-        #     "persist" = { };
-        #     "home" = {
-        #       "leonsch" = { };
-        #       "guy" = { };
-        #     };
-        #   };
-        # };
+        "nixos" = { };
+        "nixos/nix" = { };
+        "nixos/persist" = { };
+        "nixos/persist/home/guy" = { };
+        "nixos/persist/home/leonsch" = { };
       };
 
       disks = {
-        "root".partitions = [
-          {
-            type = "uefi";
-            size = "512M";
-            content = filesystem {
-              type = "vfat";
-              mountpoint = "/boot";
-            };
-          }
-          {
-            type = "linux";
-            size = null;
-            content = zpool (p: p.rpool);
-          }
-        ];
+        "/dev/loop0" = {
+          partSep = "p";
+          partitions = [
+            {
+              type = "uefi";
+              size = "512M";
+              content = filesystem {
+                type = "vfat";
+                mountpoint = "/boot";
+              };
+            }
+            { content = zpool (p: p.rpool); }
+          ];
+        };
       };
     };
 

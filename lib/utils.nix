@@ -83,15 +83,21 @@ in
           else submodule val;
 
         mkOneOf = choices: pipe choices [
-          (mapAttrsToList (name: opt:
-            let mod = mkMod name opt; in
+          (mapAttrsToList (name: val:
+            let mod = mkMod name val; in
             mod // { check = v: mod.check v && v._tag == name; }
           ))
           types.oneOf
         ];
 
-        mkTagger = builtins.mapAttrs
-          (name: _: v: recursiveUpdate v { _tag = name; });
+        mkTagger = choices: pipe choices [
+          (mapAttrsToList (name: val: {
+            "${name}" = v: recursiveUpdate v { _tag = name; };
+            is.${name} = v: v._tag == name;
+            tag.${name} = name;
+          }))
+          (builtins.foldl' recursiveUpdate { })
+        ];
       in
       { inherit addTag mkOneOf mkTagger; };
   };
