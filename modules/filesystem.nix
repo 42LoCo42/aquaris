@@ -331,11 +331,17 @@ in
               (builtins.sort (i1: i2: i1.prio < i2.prio))
               (map (f:
                 let
+                  mkBind =
+                    if !f.bind then "" else ''
+                      mkdir -p "$mnt/${f.val.device}"
+                    '';
                   device =
-                    if f.bind then "$mnt/${f.val.device}"
+                    if f.bind
+                    then "$mnt/${f.val.device}"
                     else f.val.device;
                 in
                 ''
+                  ${mkBind}
                   mount -m -t ${f.val.fsType}      \
                     ${joinOpts "o" f.val.options}  \
                     "${device}" "$mnt/${f.val.mountPoint}"
