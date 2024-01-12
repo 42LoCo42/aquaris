@@ -1,4 +1,4 @@
-{ pkgs, config, lib, utils, my-utils, ... }:
+{ pkgs, config, lib, my-utils, ... }:
 let
   inherit (lib)
     any
