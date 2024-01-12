@@ -329,11 +329,15 @@ in
               }))
               (builtins.sort (i1: i2: i1.prio < i2.prio))
               (map (f: ''
-                mount -t ${f.val.fsType}         \
+                mount -m -t ${f.val.fsType}      \
                   ${joinOpts "o" f.val.options}  \
-                  ${f.val.device} "''${1-/}${f.val.mountPoint}"
+                  ${f.val.device} "$mnt/${f.val.mountPoint}"
               ''))
               (builtins.concatStringsSep "\n")
+              (t: ''
+                set -x
+                mnt="''${1-/}"
+              '' + t)
             ];
           };
 
