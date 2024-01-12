@@ -316,33 +316,33 @@ in
               text = cfg._formatScript;
             };
 
-            _mountScript = mkOption {
-              type = lines;
-              default = pipe config.fileSystems [
-                builtins.attrValues
-                (map (f: {
-                  prio =
-                    if any (o: o == "bind" || o == "rbind") f.options then 9001
-                    else builtins.length (builtins.split "/" f.mountPoint);
-                  val = f;
-                }))
-                (builtins.sort (i1: i2: i1.prio < i2.prio))
-                (map (f: ''
-                  mount -t ${f.val.fsType}         \
-                    ${joinOpts "o" f.val.options}  \
-                    ${f.val.device} ${f.val.mountPoint}
-                ''))
-                (builtins.concatStringsSep "\n")
-              ];
-            };
+          };
+          _mountScript = mkOption {
+            type = lines;
+            default = pipe config.fileSystems [
+              builtins.attrValues
+              (map (f: {
+                prio =
+                  if any (o: o == "bind" || o == "rbind") f.options then 9001
+                  else builtins.length (builtins.split "/" f.mountPoint);
+                val = f;
+              }))
+              (builtins.sort (i1: i2: i1.prio < i2.prio))
+              (map (f: ''
+                mount -t ${f.val.fsType}         \
+                  ${joinOpts "o" f.val.options}  \
+                  ${f.val.device} "''${1-/}${f.val.mountPoint}"
+              ''))
+              (builtins.concatStringsSep "\n")
+            ];
+          };
 
-            _mount = mkOption {
-              type = package;
-              default = pkgs.writeShellApplication {
-                name = "aquaris-mount";
-                runtimeInputs = [ pkgs.util-linux ] ++ cfg.tools;
-                text = cfg._mountScript;
-              };
+          _mount = mkOption {
+            type = package;
+            default = pkgs.writeShellApplication {
+              name = "aquaris-mount";
+              runtimeInputs = [ pkgs.util-linux ] ++ cfg.tools;
+              text = cfg._mountScript;
             };
           };
         };
