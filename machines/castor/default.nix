@@ -1,4 +1,4 @@
-{ config, ... }: {
+{
   aquaris = {
     filesystem = { filesystem, zpool, ... }: {
       zpools.rpool.datasets = {
@@ -27,7 +27,7 @@
           {
             type = "linux";
             size = null;
-            content = zpool config.aquaris.filesystem.zpools.rpool;
+            content = zpool (p: p.rpool);
           }
         ];
       };

@@ -1,4 +1,4 @@
-{ lib, my-utils, ... }:
+{ config, lib, my-utils, ... }:
 let
   inherit (lib)
     elemAt
@@ -86,10 +86,7 @@ let
     };
   };
 
-  partitionContent = {
-    inherit filesystem zpool;
-    # zpool = zpoolRef;
-  };
+  partitionContent = { inherit filesystem zpool; };
 
   filesystem.options = {
     type = mkOption {
@@ -160,8 +157,9 @@ in
 {
   options.aquaris.filesystem = mkOption {
     type = types.submoduleWith {
-      specialArgs = {
-        inherit (adt.mkTagger partitionContent) filesystem zpool;
+      specialArgs = let tagger = adt.mkTagger partitionContent; in {
+        inherit (tagger) filesystem;
+        zpool = f: tagger.zpool (f config.aquaris.filesystem.zpools);
       };
 
       modules = [{
