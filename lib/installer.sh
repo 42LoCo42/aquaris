@@ -5,11 +5,16 @@ x() { (
 	"$@"
 ); }
 
-log "Resetting disk"
-x wipefs -af "@disk@"
-
 log "Formatting disk"
-disko --no-deps -m disko -f "@src@#@name@"
+nix run \
+	--extra-experimental-features "nix-command flakes" \
+	"@src@#nixosConfigurations.@name@.config.aquaris.filesystem._format"
+
+log "Mounting disks"
+nix run \
+	--extra-experimental-features "nix-command flakes" \
+	"@src@#nixosConfigurations.@name@.config.aquaris.filesystem._mount" \
+	-- /mnt
 
 log "Copying master key"
 x mkdir -p "$(dirname "/mnt/@keypath@")"

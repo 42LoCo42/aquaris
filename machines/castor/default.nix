@@ -8,16 +8,19 @@
     filesystem = { filesystem, zpool, ... }: {
       zpools.rpool.datasets = {
         "nixos/nix" = { };
-      } // (lib.mapAttrs'
+      } //
+      # TODO find a better place for this
+      # this is a default thing and should not be part of
+      # the machine-specific configuration
+      (lib.mapAttrs'
         (_: user: {
-          name = "nixos/persist/home/${user.name}";
+          name = "nixos${config.aquaris.persist.root}/home/${user.name}";
           value = { };
         })
         config.aquaris.users);
 
       disks = {
-        "/dev/loop0" = {
-          partSep = "p";
+        "/dev/disk/by-id/virtio-root" = {
           partitions = [
             {
               type = "uefi";

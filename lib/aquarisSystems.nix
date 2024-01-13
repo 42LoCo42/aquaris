@@ -52,13 +52,11 @@ let
         runtimeInputs = with pkgs; [
           git
           gptfdisk
-          inputs.disko.packages.${system}.disko
           jq
           nix-output-monitor
         ];
         text = substituteAll ./installer.sh {
           inherit src name;
-          disk = nixosConfig.config.disko.devices.disk.root.device;
           keypath = nixosConfig.config.aquaris.machine.secretKey;
           keys = nixosConfig.config.nix.settings.trusted-public-keys;
           subs = nixosConfig.config.nix.settings.substituters;

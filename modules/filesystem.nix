@@ -107,6 +107,7 @@ let
           label: ${config.type}
           ${getEntries (p: p._sfdiskEntry) config.partitions}
           EOF
+          udevadm settle
           ${getEntries (p: p._mkfs) config.partitions}
         '';
       };
