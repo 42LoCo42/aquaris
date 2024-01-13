@@ -2,15 +2,16 @@
 - =aquaris.filesystem=
   - =tools=: List of extra packages available to the format & mount scripts
   - =disks.<name>=
-    - =device=: Path to the disk device file
+    - =device=: Path to the disk device file (set via attribute name)
     - =type=: Partition table type
     - =partSep=:
       Separator text between disk path and partition number. Examples:
-      - =/dev/sda1= -> empty string
-      - =/dev/nvme0n1p1= -> "p"
-      - =/dev/disk/by-id/foo-part1= -> "-part"
+      - =/dev/sda1= →  empty string
+      - =/dev/nvme0n1p1= →  "p"
+      - =/dev/disk/by-id/foo-part1= →  "-part"
     - =partitions.<name>=
       - =device=: Path to the partition device file
+        (set automatically via name of respective disk & position in partition list)
       - =type=: Partition type (read by sfdisk)
       - =size=: Size of the partition (=null= fills remaining space on disk)
       - =content=: Can be a =filesystem= or =zpool=
@@ -35,12 +36,14 @@
   {
     aquaris.filesystem =
       # partition content helper functions
-      { filesystem, zpool, ... }:
-      {
+      { filesystem, zpool, ... }: {
         disks = {
+          # no need to set partSep, as the default value "-part"
+          # works for disks referenced via /dev/disk/by-*
+          # (which is the recommended method)
           "/dev/disk/by-id/foobar".partitions = [
             {
-              type = "uefi";
+              type = "uefi"; # EFI system partition
               size = "512M";
               content = filesystem {
                 type = "vfat";
