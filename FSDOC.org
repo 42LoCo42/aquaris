@@ -71,6 +71,8 @@
   }
 #+end_src
 
+See also the [[file:machines/castor/default.nix][full example]]
+
 * How to run
 This library exports two scripts & and accompanying executables
 under =nixosConfigurations.<name>.config.aquaris.filesystem=:
@@ -82,3 +84,5 @@ under =nixosConfigurations.<name>.config.aquaris.filesystem=:
 The formatter will not delete zpools that are already defined.
 Both scritps create & manage dependent resources in the correct order,
 including bind mounts.
+
+See also the [[file:lib/installer.sh][installer template]]

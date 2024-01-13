@@ -5,16 +5,14 @@ x() { (
 	"$@"
 ); }
 
+shopt -s expand_aliases
+alias nix='nix --extra-experimental-features "nix-command flakes"'
+
 log "Formatting disk"
-nix run \
-	--extra-experimental-features "nix-command flakes" \
-	"@src@#nixosConfigurations.@name@.config.aquaris.filesystem._format"
+nix run "@src@#nixosConfigurations.@name@.config.aquaris.filesystem._format"
 
 log "Mounting disks"
-nix run \
-	--extra-experimental-features "nix-command flakes" \
-	"@src@#nixosConfigurations.@name@.config.aquaris.filesystem._mount" \
-	-- /mnt
+nix run "@src@#nixosConfigurations.@name@.config.aquaris.filesystem._mount" /mnt
 
 log "Copying master key"
 x mkdir -p "$(dirname "/mnt/@keypath@")"
