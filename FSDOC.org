@@ -67,3 +67,15 @@
       };
   }
 #+end_src
+
+* How to run
+This library exports two scripts & and accompanying executables
+under =nixosConfigurations.<name>.config.aquaris.filesystem=:
+- =_formatScript=
+- =_format=
+- =_mountScript=
+- =_mount=
+
+The formatter will not delete zpools that are already defined.
+Both scritps create & manage dependent resources in the correct order,
+including bind mounts.
