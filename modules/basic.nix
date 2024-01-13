@@ -8,12 +8,12 @@ in
 {
   options.aquaris = {
     users = mkOption {
-      type = attrsOf (submodule {
+      type = attrsOf (submodule ({ name, ... }: {
         options = {
           name = mkOption {
             type = nullOr str;
             description = "Real username, overrides attrset name.";
-            default = null;
+            default = name;
           };
 
           isAdmin = mkOption {
@@ -30,7 +30,7 @@ in
             '';
           };
         };
-      });
+      }));
       default = { };
     };
 

@@ -6,6 +6,7 @@ let
     mapAttrsToList
     mkOption
     pipe
+    take
     toInt
     types;
   inherit (types)
@@ -229,6 +230,11 @@ let
         default = { };
       };
 
+      datasets' = mkOption {
+        type = attrsOf (submodule (dataset config));
+        description = "ALL datasets in this zpool";
+      };
+
       _mkPool = mkOption {
         type = lines;
         default = ''
@@ -237,10 +243,37 @@ let
             ${joinOpts "O" config.rootOpts}  \
             ${config.name}                   \
             ${zpoolDevices config}
-          ${getEntries (d: d._mkDS) (slashSort config.datasets)}
+          ${getEntries (d: d._mkDS) (slashSort config.datasets')}
         '';
       };
     };
+
+    config.datasets' = pipe config.datasets [
+      builtins.attrNames
+      (map (name: pipe name [
+        # for a dataset name: generate all parent datasets
+        # e.g. for foo/bar/baz, this returns
+        # - foo
+        # - foo/bar
+        # - foo/bar/baz
+        (builtins.split "/")
+        (builtins.filter (i: i != [ ]))
+        (i: pipe i [
+          builtins.length
+          (builtins.genList (x: take (x + 1) i))
+          (map (builtins.concatStringsSep "/"))
+        ])
+      ]))
+
+      # join inner lists & merge into attrset
+      # this removes duplicate dataset definitions
+      builtins.concatLists
+      (map (name: { inherit name; value = { }; }))
+      builtins.listToAttrs
+
+      # fill in real values
+      (i: i // config.datasets)
+    ];
   };
 
   dataset = pool: { name, config, ... }: {
@@ -386,7 +419,7 @@ in
       ];
 
       forZFS = pipe cfg.zpools [
-        (mapAttrsToList (_: val: pipe val.datasets [
+        (mapAttrsToList (_: val: pipe val.datasets' [
           (builtins.attrValues)
           (builtins.filter (d: d.mountpoint != null))
           (map (d: {
