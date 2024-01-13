@@ -144,6 +144,9 @@ in
         (name: val: { ... }: {
           home.stateVersion = "24.05";
 
+          # HACK fix nmd download timeout caused by sourcehut outage
+          manual.manpages.enable = false;
+
           home.activation.linkSSHKey = my-utils.mkHomeLinks [{
             src = config.age.secrets."users/${name}/secretKey".path;
             dst = "$HOME/.ssh/id_ed25519";
