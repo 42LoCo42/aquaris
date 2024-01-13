@@ -36,15 +36,12 @@ with secrets belonging to one of three categories:
 - =timeLocale=: Locale to display the time in (LC_TIME) (default =de_DE.UTF-8=)
 - =timeZone=: Time zone of the system (default =Europe/Berlin=)
 
-** [[file:modules/disko.nix][disko]]
-- Defines filesystems declaratively via [[https://github.com/nix-community/disko][disko]]
-- By default, this modules generates ephemeral root storage (=tmpfs=)
-  and a ZFS pool with the following datasets under =nixos=:
-  - =nix=: Storage for the =/nix= directory
-  - =persist=: Persistent storage
-  - for each user: =home/<name>=
-*** Options (=aquaris.filesystem=)
-- =rootDisk=: Path to the root disk
+** [[file:modules/filesystem.nix][filesystem]]
+- A declarative filesystem configuration library inspired by [[https://github.com/nix-community/disko][disko]]
+- Much simpler to configure, faster execution, handles edge cases
+  (e.g. I couldn't get disko to mount a tmpfs on =/=
+  unless running in disko mode, which would also reformat the disks)
+- [[file:FSDOC.org][Options documentation]]
 
 ** [[file:modules/lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader

@@ -1,0 +1,69 @@
+* Options
+- =aquaris.filesystem=
+  - =tools=: List of extra packages available to the format & mount scripts
+  - =disks.<name>=
+    - =device=: Path to the disk device file
+    - =type=: Partition table type
+    - =partSep=:
+      Separator text between disk path and partition number. Examples:
+      - =/dev/sda1= -> empty string
+      - =/dev/nvme0n1p1= -> "p"
+      - =/dev/disk/by-id/foo-part1= -> "-part"
+    - =partitions.<name>=
+      - =device=: Path to the partition device file
+      - =type=: Partition type (read by sfdisk)
+      - =size=: Size of the partition (=null= fills remaining space on disk)
+      - =content=: Can be a =filesystem= or =zpool=
+        - =filesystem=
+          - =type=: Filesystem type (read by mkfs)
+          - =mkfsOpts=: Options for mkfs
+          - =mountpoint=: Mount point of the filesystem
+          - =mountOpts=: Options for mount
+        - =zpool=: should be a zpool reference (set via helper function,
+          see example for more information)
+  - =zpools.<name>=
+    - =name=: Name of the zpool (set via attribute name)
+    - =poolOpts=: Options set on pool creation
+    - =rootOpts=: Default options for all datasets
+    - =datasets.<name>=
+      - =name=: Name of the dataset (set via attribute name)
+      - =mountpoint=: Mount point of the dataset
+      - =options=: Extra options of the dataset
+
+* Example
+#+begin_src nix
+  {
+    aquaris.filesystem =
+      # partition content helper functions
+      { filesystem, zpool, ... }:
+      {
+        disks = {
+          "/dev/disk/by-id/foobar".partitions = [
+            {
+              type = "uefi";
+              size = "512M";
+              content = filesystem {
+                type = "vfat";
+                mountpoint = "/boot";
+              };
+            }
+
+            # zpool helper function:
+            # takes a function that extracts a pool
+            # from the set of all defined pools
+            { content = zpool (p: p.rpool); }
+          ];
+        };
+
+        zpools.rpool.datasets = {
+          # default mountpoint = all but the first part of the dataset name
+          "nixos/nix" = { }; # mountpoint = /nix
+          "nixos/home/user" = { }; # mountpoint = /home/user
+
+          # parent datasets are created automatically
+          # "nixos" = {};
+          # "nixos/home" = {};
+        };
+      };
+  }
+#+end_src
