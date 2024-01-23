@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, config, my-utils, name, ... }:
 let users = config.aquaris.users; in {
   programs.zsh = {
     enable = true;
@@ -11,6 +11,31 @@ let users = config.aquaris.users; in {
   home-manager.users = builtins.mapAttrs
     (_: _: { config, ... }: {
       home = {
+        file = {
+          ".profile".text = ''
+            . "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
+          '';
+
+          "bin/use" = {
+            executable = true;
+            source = ./misc/use.sh;
+          };
+
+          "bin/_usepkgs" = {
+            executable = true;
+            source = ./misc/usepkgs.sh;
+          };
+
+          "bin/switch" = {
+            executable = true;
+            text = my-utils.substituteAll ./misc/switch.sh {
+              inherit name;
+              nom = lib.getExe pkgs.nix-output-monitor;
+              nvd = lib.getExe pkgs.nvd;
+            };
+          };
+        };
+
         packages = with pkgs; [
           file
           git-crypt
@@ -26,6 +51,7 @@ let users = config.aquaris.users; in {
           tree
         ];
 
+        sessionPath = [ "$HOME/bin" ];
         sessionVariables = {
           MANPAGER = "sh -c 'col -bx | bat -l man -p'";
           MANROFFOPT = "-c";

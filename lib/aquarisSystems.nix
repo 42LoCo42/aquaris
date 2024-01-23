@@ -7,8 +7,8 @@ let
     nixosSystem
     pipe;
 
-  utils = import ./utils.nix inputs;
-  inherit (utils) recMerge substituteAll;
+  inherit (import ./utils.nix inputs) my-utils;
+  inherit (my-utils) recMerge substituteAll;
 
   globalF = f: recMerge (mapAttrsToList f ((import src).machines));
   packagesF = f: recMerge (map f [ "x86_64-linux" ]);
@@ -19,8 +19,11 @@ let
         inherit system;
 
         specialArgs = inputs // {
-          inherit src system;
-          inherit (utils) my-utils;
+          inherit
+            my-utils
+            name
+            src
+            system;
         };
 
         modules = builtins.attrValues nixosModules ++
