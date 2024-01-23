@@ -30,6 +30,14 @@ let users = config.aquaris.users; in {
           MANPAGER = "sh -c 'col -bx | bat -l man -p'";
           MANROFFOPT = "-c";
         };
+
+        shellAliases = {
+          cd = "z";
+          ip = "ip -c";
+          mkdir = "mkdir -pv";
+          rmdir = "rmdir -pv";
+          vi = "vi -p";
+        };
       };
 
       programs = {
@@ -160,6 +168,20 @@ let users = config.aquaris.users; in {
               error_symbol = "[λ](bold red)";
             };
           };
+        };
+
+        tmux = {
+          enable = true;
+
+          clock24 = true;
+          escapeTime = 300;
+          historyLimit = 10000;
+          keyMode = "vi";
+          mouse = true;
+          shortcut = "w";
+          terminal = "tmux-256color";
+
+          extraConfig = builtins.readFile ./misc/tmux.conf;
         };
 
         zoxide.enable = true;

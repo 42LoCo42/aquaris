@@ -47,7 +47,7 @@ with secrets belonging to one of three categories:
 - Configures the user home environment
 - Shell: [[https://www.zsh.org/][zsh]] using the [[https://ohmyz.sh/][ohymzsh]] configuration framework
 - Editor: [[https://neovim.io/][neovim]]
-- Enables git, htop and a bunch of other useful tools
+- Enables git, htop, tmux and a bunch of other useful tools
 
 ** [[file:modules/lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
