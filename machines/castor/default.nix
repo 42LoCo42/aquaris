@@ -39,6 +39,7 @@
     persist = {
       users.leonsch = [
         ".cache/zsh"
+        ".local/share/zoxide"
       ];
     };
   };

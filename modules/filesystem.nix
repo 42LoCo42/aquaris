@@ -151,12 +151,12 @@ let
       _mkfs = mkOption {
         type = lines;
         default =
-          if partitionContent.is.zpool config.content then "" else ''
-            wipefs -af "${config.device}"
+          ''wipefs -af "${config.device}"'' + "\n" +
+          (if partitionContent.is.zpool config.content then "" else ''
             mkfs --verbose --type="${config.content.type}"              \
               ${builtins.concatStringsSep " " config.content.mkfsOpts}  \
               ${config.device}
-          '';
+          '');
       };
     };
   };
