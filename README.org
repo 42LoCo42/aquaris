@@ -48,6 +48,11 @@ with secrets belonging to one of three categories:
 - Shell: [[https://www.zsh.org/][zsh]] using the [[https://ohmyz.sh/][ohymzsh]] configuration framework
 - Editor: [[https://neovim.io/][neovim]]
 - Enables git, htop, tmux and a bunch of other useful tools
+- Adds the following commands:
+  - =use=: wrapper around =nix shell=,
+    prepends =nixpkgs= to package names by default
+    (e.g. =use sbctl= runs =nix shell nixpkgs#sbctl=)
+  - =switch=: builds & activates the NixOS configuration in =$HOME/config=
 
 ** [[file:modules/lanza.nix][lanza]]
 - Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
