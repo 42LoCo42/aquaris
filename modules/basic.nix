@@ -1,4 +1,4 @@
-{ config, lib, src, self, my-utils, ... }:
+{ config, lib, src, self, ... }:
 let
   inherit (lib) mkForce mkOption pipe types;
   inherit (types) attrsOf bool nullOr path str submodule;
@@ -154,10 +154,8 @@ in
     };
 
     console.keyMap = cfg.machine.keyMap;
-    i18n = {
-      defaultLocale = cfg.machine.locale;
-      extraLocaleSettings.LC_TIME = cfg.machine.timeLocale;
-    };
+    i18n.defaultLocale = cfg.machine.locale;
+    i18n.extraLocaleSettings.LC_TIME = cfg.machine.timeLocale;
     time.timeZone = cfg.machine.timeZone;
 
     environment.etc."nixos".source = src; # link config source to /etc/nixos
