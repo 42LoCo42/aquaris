@@ -137,24 +137,6 @@ in
       })
       cfg.users;
 
-    home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-      users = builtins.mapAttrs
-        (name: val: { ... }: {
-          home.stateVersion = "24.05";
-
-          # HACK fix nmd download timeout caused by sourcehut outage
-          manual.manpages.enable = false;
-
-          home.activation.linkSSHKey = my-utils.mkHomeLinks [{
-            src = config.age.secrets."users/${name}/secretKey".path;
-            dst = "$HOME/.ssh/id_ed25519";
-          }];
-        })
-        cfg.users;
-    };
-
     environment.etc."machine-id".text = cfg.machine.id;
     networking.hostId = builtins.substring 0 8 cfg.machine.id; # for ZFS
     networking.hostName = cfg.machine.name;
