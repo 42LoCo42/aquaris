@@ -385,6 +385,7 @@ in
               (builtins.concatStringsSep "\n")
               (t: ''
                 set -x
+                zpool import -a
                 mnt="$(realpath "''${1-/}")"
               '' + t)
             ];
