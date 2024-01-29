@@ -34,11 +34,33 @@
         pkgs = import nixpkgs { inherit system; };
       in
       {
-        devShells.${system}.default = pkgs.mkShell {
-          packages = with pkgs; [
+        packages.${system}.installer = pkgs.writeShellApplication {
+          name = "aquaris-installer";
+
+          runtimeInputs = with pkgs; [
+            git
             nix-output-monitor
-            shfmt
+            nvd
           ];
+
+          text =
+            let cfg = self.outputs.nixosConfigurations.castor.config; in
+            builtins.readFile (pkgs.substituteAll {
+              src = ./lib/combined.sh;
+              inherit self;
+              name = "castor";
+              subs = cfg.nix.settings.substituters;
+              keys = cfg.nix.settings.trusted-public-keys;
+              masterKeyPath = cfg.aquaris.machine.secretKey;
+            });
+        };
+
+        devShells.${system}.default = pkgs.mkShell {
+          packages = with pkgs;
+            [
+              nix-output-monitor
+              shfmt
+            ];
         };
       }
     );
