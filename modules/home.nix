@@ -231,7 +231,9 @@ let users = config.aquaris.users; in {
         shortcut = "w";
         terminal = "tmux-256color";
 
-        extraConfig = builtins.readFile ./misc/tmux.conf;
+        extraConfig = my-utils.substituteAll ./misc/tmux.conf {
+          tmux-bspwm = ./misc/tmux-bspwm.sh;
+        };
       };
 
       zoxide.enable = true;
