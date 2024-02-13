@@ -131,7 +131,7 @@ in
       (name: val: {
         name = if val.name != null then val.name else name;
         isNormalUser = true;
-        extraGroups = if val.isAdmin then [ "wheel" ] else [ ];
+        extraGroups = if val.isAdmin then [ "wheel" "networkmanager" ] else [ ];
         hashedPasswordFile = config.age.secrets."users/${name}/passwordHash".path;
         openssh.authorizedKeys.keys = [ val.publicKey ];
       })
@@ -160,7 +160,19 @@ in
 
     environment.etc."nixos".source = src; # link config source to /etc/nixos
     services.journald.extraConfig = "SystemMaxUse=500M"; # limit journal size
-    systemd.extraConfig = "DefaultTimeoutStopSec=10s"; # fix systemd being annoying
+
+    systemd = {
+      extraConfig = "DefaultTimeoutStopSec=10s"; # fix systemd being annoying
+
+      # don't wait for network
+      network.wait-online.enable = false;
+      services."NetworkManager-wait-online".enable = false;
+    };
+
+    networking = {
+      networkmanager.enable = true;
+      useNetworkd = true;
+    };
 
     nix.settings = {
       auto-optimise-store = true; # hardlink duplicate store files, massively decreases disk usage
