@@ -1,4 +1,4 @@
-{ config, lib, src, self, ... }:
+{ config, lib, self, ... }:
 let
   inherit (lib) mkForce mkOption pipe types;
   inherit (types) attrsOf bool nullOr path str submodule;
@@ -35,7 +35,7 @@ in
     };
 
     machine = {
-      # these options will be inherited from ${src}/default.nix
+      # these options will be inherited from ${self}/default.nix
 
       name = mkOption {
         type = str;
@@ -99,7 +99,7 @@ in
     };
   };
 
-  imports = [ self.inputs.home-manager.nixosModules.default ];
+  imports = [ self.inputs.aquaris.inputs.home-manager.nixosModules.default ];
 
   config = {
     system.stateVersion = "24.05";
@@ -158,7 +158,7 @@ in
     i18n.extraLocaleSettings.LC_TIME = cfg.machine.timeLocale;
     time.timeZone = cfg.machine.timeZone;
 
-    environment.etc."nixos".source = src; # link config source to /etc/nixos
+    environment.etc."nixos".source = self; # link config source to /etc/nixos
     services.journald.extraConfig = "SystemMaxUse=500M"; # limit journal size
 
     systemd = {
@@ -188,11 +188,11 @@ in
     };
 
     # pin nixpkgs to NIX_PATH
-    environment.etc."nix/channel".source = self.inputs.nixpkgs.outPath;
+    environment.etc."nix/channel".source = self.inputs.aquaris.inputs.nixpkgs.outPath;
     nix.nixPath = mkForce [ "nixpkgs=/etc/nix/channel" ];
 
     # pin nixpkgs to system flake registry
-    nix.registry.nixpkgs.to = pipe "${self}/flake.lock" [
+    nix.registry.nixpkgs.to = pipe "${self.inputs.aquaris}/flake.lock" [
       builtins.readFile
       builtins.fromJSON
       (f: f.nodes.${f.nodes.${f.root}.inputs.nixpkgs}.locked)

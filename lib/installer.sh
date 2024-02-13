@@ -9,10 +9,10 @@ shopt -s expand_aliases
 alias nix='nix --extra-experimental-features "nix-command flakes"'
 
 log "Formatting disk"
-nix run "@src@#nixosConfigurations.@name@.config.aquaris.filesystem._format"
+nix run "@self@#nixosConfigurations.@name@.config.aquaris.filesystem._format"
 
 log "Mounting disks"
-nix run "@src@#nixosConfigurations.@name@.config.aquaris.filesystem._mount" /mnt
+nix run "@self@#nixosConfigurations.@name@.config.aquaris.filesystem._mount" /mnt
 
 log "Copying master key"
 x mkdir -p "$(dirname "/mnt/@keypath@")"
@@ -31,7 +31,7 @@ sys="$(
 		--extra-substituters "@subs@" \
 		--extra-trusted-public-keys "@keys@" \
 		--store /mnt --no-link --print-out-paths \
-		"@src@#nixosConfigurations.@name@.config.system.build.toplevel"
+		"@self@#nixosConfigurations.@name@.config.system.build.toplevel"
 )"
 
 log "Installing the system"

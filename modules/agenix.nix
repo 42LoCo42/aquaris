@@ -1,4 +1,4 @@
-{ pkgs, config, lib, src, agenix, ... }: {
+{ pkgs, config, lib, self, agenix, ... }: {
   imports = [ agenix.nixosModules.default ];
   nixpkgs.overlays = [ agenix.overlays.default ];
   environment.systemPackages = [ pkgs.agenix ];
@@ -6,7 +6,7 @@
   age = {
     identityPaths = [ config.aquaris.machine.secretKey ];
     secrets =
-      let d = "${src}/secrets"; in
+      let d = "${self}/secrets"; in
       with lib; pipe "${d}/secrets.nix" [
         import
         (filterAttrs (_: val:

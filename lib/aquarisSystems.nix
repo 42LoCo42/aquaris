@@ -1,4 +1,4 @@
-{ inputs, nixosModules }: src:
+{ inputs, nixosModules }: self:
 let
   inherit (inputs) nixpkgs;
   inherit (nixpkgs.lib)
@@ -10,7 +10,7 @@ let
   inherit (import ./utils.nix inputs) my-utils;
   inherit (my-utils) recMerge substituteAll;
 
-  globalF = f: recMerge (mapAttrsToList f ((import src).machines));
+  globalF = f: recMerge (mapAttrsToList f ((import self).machines));
   packagesF = f: recMerge (map f [ "x86_64-linux" ]);
 
   out = globalF (name: cfg:
@@ -22,13 +22,13 @@ let
           inherit
             my-utils
             name
-            src
+            self
             system;
         };
 
         modules = builtins.attrValues nixosModules ++
           (
-            let d = "${src}/machines/${name}"; in
+            let d = "${self}/machines/${name}"; in
             if !builtins.pathExists d then [ ] else
             pipe d [
               builtins.readDir
@@ -59,7 +59,7 @@ let
           nix-output-monitor
         ];
         text = substituteAll ./installer.sh {
-          inherit src name;
+          inherit name self;
           keypath = nixosConfig.config.aquaris.machine.secretKey;
           keys = nixosConfig.config.nix.settings.trusted-public-keys;
           subs = nixosConfig.config.nix.settings.substituters;
