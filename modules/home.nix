@@ -97,12 +97,16 @@ let users = config.aquaris.users; in {
       git = {
         enable = true;
         lfs.enable = true;
-        delta = {
+        difftastic = {
           enable = true;
-          options = {
-            side-by-side = true;
-          };
+          display = "side-by-side-show-both";
         };
+        # delta = {
+        #   enable = true;
+        #   options = {
+        #     side-by-side = true;
+        #   };
+        # };
       };
 
       gpg.enable = true;
