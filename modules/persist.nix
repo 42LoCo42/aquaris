@@ -1,11 +1,16 @@
 { config, lib, my-utils, ... }:
 let
-  inherit (lib) concatMapStringsSep mkOption pipe types;
-  inherit (types) attrsOf listOf path str;
+  inherit (lib) mkIf mkOption pipe types;
+  inherit (types) attrsOf bool listOf path str;
   cfg = config.aquaris.persist;
 in
 {
   options.aquaris.persist = {
+    enable = mkOption {
+      type = bool;
+      default = true;
+    };
+
     root = mkOption {
       type = path;
       description = ''
@@ -33,7 +38,7 @@ in
     };
   };
 
-  config = {
+  config = mkIf cfg.enable {
     aquaris.persist.system = [
       "/etc/secureboot"
       "/var/db/sudo"
@@ -49,7 +54,14 @@ in
         };
       }))
       builtins.listToAttrs
-    ] // { ${cfg.root}.neededForBoot = true; };
+    ] // {
+      "/" = {
+        fsType = "tmpfs";
+        options = [ "mode=755" ];
+      };
+
+      ${cfg.root}.neededForBoot = true;
+    };
 
     home-manager.users = builtins.mapAttrs
       (_: paths: { ... }@hm: {
