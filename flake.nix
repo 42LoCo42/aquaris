@@ -17,7 +17,7 @@
       lib = {
         secretsHelper = import ./lib/secretsHelper.nix;
         aquarisSystems = import ./lib/aquarisSystems.nix
-          { inherit inputs nixosModules; };
+          { aquaris = self; inherit inputs nixosModules; };
       };
     in
     {

@@ -1,4 +1,4 @@
-{ inputs, nixosModules }: self:
+{ aquaris, inputs, nixosModules }: self:
 let
   inherit (inputs) nixpkgs;
   inherit (nixpkgs.lib)
@@ -20,6 +20,7 @@ let
 
         specialArgs = inputs // {
           inherit
+            aquaris
             my-utils
             name
             self

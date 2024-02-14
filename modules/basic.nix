@@ -1,4 +1,4 @@
-{ config, lib, self, ... }:
+{ config, lib, self, aquaris, nixpkgs, home-manager, ... }:
 let
   inherit (lib) mkForce mkOption pipe types;
   inherit (types) attrsOf bool nullOr path str submodule;
@@ -99,7 +99,7 @@ in
     };
   };
 
-  imports = [ self.inputs.aquaris.inputs.home-manager.nixosModules.default ];
+  imports = [ home-manager.nixosModules.default ];
 
   config = {
     system.stateVersion = "24.05";
@@ -188,11 +188,11 @@ in
     };
 
     # pin nixpkgs to NIX_PATH
-    environment.etc."nix/channel".source = self.inputs.aquaris.inputs.nixpkgs.outPath;
+    environment.etc."nix/channel".source = nixpkgs.outPath;
     nix.nixPath = mkForce [ "nixpkgs=/etc/nix/channel" ];
 
     # pin nixpkgs to system flake registry
-    nix.registry.nixpkgs.to = pipe "${self.inputs.aquaris}/flake.lock" [
+    nix.registry.nixpkgs.to = pipe "${aquaris}/flake.lock" [
       builtins.readFile
       builtins.fromJSON
       (f: f.nodes.${f.nodes.${f.root}.inputs.nixpkgs}.locked)
