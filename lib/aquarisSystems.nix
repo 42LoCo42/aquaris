@@ -8,7 +8,7 @@ let
     pipe;
 
   inherit (import ./utils.nix inputs) my-utils;
-  inherit (my-utils) recMerge substituteAll;
+  inherit (my-utils) recMerge subsT;
 
   globalF = f: recMerge (mapAttrsToList f ((import self).machines));
   packagesF = f: recMerge (map f [ "x86_64-linux" ]);
@@ -59,7 +59,7 @@ let
           jq
           nix-output-monitor
         ];
-        text = substituteAll ./installer.sh {
+        text = subsT ./installer.sh {
           inherit name self;
           keypath = nixosConfig.config.aquaris.machine.secretKey;
           keys = nixosConfig.config.nix.settings.trusted-public-keys;
@@ -73,7 +73,7 @@ let
           git
           openssh
         ];
-        text = substituteAll ./deployer.sh {
+        text = subsT ./deployer.sh {
           inherit name;
           installer = getExe (installer pkgs);
         };

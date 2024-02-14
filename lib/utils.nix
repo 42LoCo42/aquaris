@@ -24,16 +24,22 @@ in
 
     recMerge = builtins.foldl' recursiveUpdate { };
 
-    substituteAll = file: vars:
+    subsF = { file, func, subs ? { } }:
       let
-        pairs = mapAttrsToList (k: v: { inherit k v; }) vars;
+        pairs = mapAttrsToList (k: v: { inherit k v; }) subs;
         srcs = map (i: "@${i.k}@") pairs;
         dsts = map (i: toString i.v) pairs;
       in
       pipe file [
         builtins.readFile
         (builtins.replaceStrings srcs dsts)
+        (func (baseNameOf file))
       ];
+
+    subsT = file: subs: subsF {
+      inherit file subs;
+      func = _: text: text;
+    };
 
     ##### Simple ADT library #####
 

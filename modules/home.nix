@@ -36,7 +36,7 @@ let users = config.aquaris.users; in {
 
         "bin/switch" = {
           executable = true;
-          text = my-utils.substituteAll ./misc/switch.sh {
+          text = my-utils.subsT ./misc/switch.sh {
             inherit name;
             nom = lib.getExe pkgs.nix-output-monitor;
             nvd = lib.getExe pkgs.nvd;
@@ -231,7 +231,7 @@ let users = config.aquaris.users; in {
         shortcut = "w";
         terminal = "tmux-256color";
 
-        extraConfig = my-utils.substituteAll ./misc/tmux.conf {
+        extraConfig = my-utils.subsT ./misc/tmux.conf {
           tmux-bspwm = ./misc/tmux-bspwm.sh;
         };
       };
