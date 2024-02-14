@@ -2,11 +2,21 @@ let
   users = {
     leonsch = {
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVieLCkWGImVI9c7D0Z0qRxBAKf0eaQWUfMn0uyM/Ql";
+      git = {
+        name = "Leon Schumacher";
+        email = "leonsch@protonmail";
+        key = "C743EE077172986F860FC0FE2F6FE1420970404C";
+      };
     };
 
     guy = {
       name = "justaguy"; # override actual user name
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7FppRoKRh+rTSnxFHodYmZ6lVEa4UWN7c0Sgy+trgl";
+      git = {
+        name = "J. A. Guy";
+        email = "guy@example.org";
+        # key is optional
+      };
     };
   };
 

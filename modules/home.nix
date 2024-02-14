@@ -10,12 +10,12 @@ let users = config.aquaris.users; in {
 
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
-  home-manager.users = (f: builtins.mapAttrs f users) (username: _: hm: {
+  home-manager.users = (f: builtins.mapAttrs f users) (attrname: user: hm: {
     home = {
       stateVersion = "24.05";
 
       activation.linkSSHKey = my-utils.mkHomeLinks [{
-        src = config.age.secrets."users/${username}/secretKey".path;
+        src = config.age.secrets."users/${attrname}/secretKey".path;
         dst = "$HOME/.ssh/id_ed25519";
       }];
 
@@ -67,7 +67,6 @@ let users = config.aquaris.users; in {
 
       shellAliases = {
         cd = "z";
-        g = "git";
         ip = "ip -c";
         mkdir = "mkdir -pv";
         neofetch = "hyfetch";
@@ -75,6 +74,31 @@ let users = config.aquaris.users; in {
         vi = "vi -p";
         vim = "vim -p";
         yay = "nix flake update path:$HOME/config && switch";
+
+        g = "git";
+
+        ga = "git add";
+        gan = "git add --intent-to-add";
+        gap = "git add --patch";
+
+        gc = "git commit";
+        gcm = "git commit --message";
+        gcam = "git commit --all --message";
+
+        gd = "git diff";
+        gds = "git diff --staged";
+
+        gl = "git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %aN%C(reset)%C(bold yellow)%d%C(reset)' --all";
+
+        gpl = "git pull";
+
+        gps = "git push";
+        gpsf = "git push --force-with-lease --force-if-includes";
+
+        gr = "git restore";
+        grs = "git restore --staged";
+
+        gs = "git show";
       };
     };
 
@@ -111,6 +135,13 @@ let users = config.aquaris.users; in {
         #     side-by-side = true;
         #   };
         # };
+
+        userName = user.git.name;
+        userEmail = user.git.email;
+        signing = lib.mkIf (user.git.key != null) {
+          key = user.git.key;
+          signByDefault = true;
+        };
       };
 
       gpg.enable = true;
@@ -290,6 +321,7 @@ let users = config.aquaris.users; in {
           extraConfig = ''ZSH_COMPDUMP="${cache}/completion"'';
           plugins = [
             "git-auto-fetch"
+            "magic-enter"
             "sudo"
           ];
         };

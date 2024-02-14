@@ -29,6 +29,12 @@ in
               Will be authorized for logins.
             '';
           };
+
+          git = {
+            name = mkOption { type = str; };
+            email = mkOption { type = str; };
+            key = mkOption { type = nullOr str; default = null; };
+          };
         };
       }));
       default = { };
