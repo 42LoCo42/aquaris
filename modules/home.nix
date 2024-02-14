@@ -67,10 +67,14 @@ let users = config.aquaris.users; in {
 
       shellAliases = {
         cd = "z";
+        g = "git";
         ip = "ip -c";
         mkdir = "mkdir -pv";
+        neofetch = "hyfetch";
         rmdir = "rmdir -pv";
         vi = "vi -p";
+        vim = "vim -p";
+        yay = "nix flake update path:$HOME/config && switch";
       };
     };
 
@@ -168,6 +172,17 @@ let users = config.aquaris.users; in {
           (text "LoadAverage")
           (text "Uptime")
         ]);
+      };
+
+      hyfetch = {
+        enable = true;
+        settings = {
+          preset = "rainbow";
+          mode = "rgb";
+          color_align = {
+            mode = "horizontal";
+          };
+        };
       };
 
       lsd = {
