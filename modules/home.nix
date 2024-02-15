@@ -13,11 +13,17 @@ let users = config.aquaris.users; in {
   home-manager.users = (f: builtins.mapAttrs f users) (attrname: user: hm: {
     home = {
       stateVersion = "24.05";
+      activation = {
+        # this is before the write boundary on purpose
+        fixHtop = hm.lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+          rm -f -v "$HOME/.config/htop/htoprc"
+        '';
 
-      activation.linkSSHKey = my-utils.mkHomeLinks [{
-        src = config.age.secrets."users/${attrname}/secretKey".path;
-        dst = "$HOME/.ssh/id_ed25519";
-      }];
+        linkSSHKey = my-utils.mkHomeLinks [{
+          src = config.age.secrets."users/${attrname}/secretKey".path;
+          dst = "$HOME/.ssh/id_ed25519";
+        }];
+      };
 
       file = {
         ".profile".text = ''
