@@ -28,11 +28,6 @@ in
     secrets = mkOption {
       type = attrsOf (submodule ({ name, ... }: {
         options = {
-          name = mkOption {
-            type = str;
-            default = name;
-          };
-
           source = mkOption {
             type = path;
           };
@@ -100,9 +95,9 @@ in
       let d = "${cfg.secretsDir}.d/${baseNameOf self}"; in {
         aqs-install.text =
           pipe cfg.secrets [
-            (mapAttrsToList (_: s:
-              let o = "${d}/${s.name}"; in ''
-                echo "[aqs] decrypting ${s.name}"
+            (mapAttrsToList (name: s:
+              let o = "${d}/${name}"; in ''
+                echo "[aqs] decrypting ${name}"
                 mkdir -pv "${dirOf o}"
                 (umask u=r,g=,o=; ${getExe pkgs.age} -i "${cfg.machine.secretKey}" -o "${o}" -d "${s.source}")
               ''))
@@ -117,9 +112,9 @@ in
         aqs-chown = {
           deps = [ "users" "groups" ];
           text = pipe cfg.secrets [
-            (mapAttrsToList (_: s:
-              let o = "${d}/${s.name}"; in ''
-                echo "[aqs] ${s.name}: ${s.user}:${s.group} ${s.mode}"
+            (mapAttrsToList (name: s:
+              let o = "${d}/${name}"; in ''
+                echo "[aqs] ${name}: ${s.user}:${s.group} ${s.mode}"
                 chown "${s.user}:${s.group}" "${o}"
                 chmod "${s.mode}" "${o}"
               ''))

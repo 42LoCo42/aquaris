@@ -74,11 +74,12 @@ the list of secrets and their corresponding public keys.
 - Integrates secrets into system configurations
 - Secrets are decrypted from [[file:secrets/][<flake>/secrets/]] to =aquaris.secretsDir= (=/run/secrets/= by default)
 *** Options (=aquaris.secrets.<name>=)
-- =name=: Name of the secret. Don't override this, it is required for internal operations!
 - =source=: Path to the age file for this secret
 - =outPath=: Path to the decrypted secret.
+  This option allows to use the secret as a string, e.g.
+  =${config.aquaris.secrets.example}=
 - =user=: User that owns this secret
-- =group=: Group of this secret. This doesn't automaticall give the group read access!
+- =group=: Group of this secret. Won't automatically get read access!
 - =mode=: Mode/Permissions of the secret (default =0400=, meaning only the user can read it)
 
 Keep in mind that all values are set to sane defaults by AQS,
