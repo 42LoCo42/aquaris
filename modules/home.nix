@@ -20,7 +20,7 @@ let users = config.aquaris.users; in {
         '';
 
         linkSSHKey = my-utils.mkHomeLinks [{
-          src = config.age.secrets."users/${attrname}/secretKey".path;
+          src = config.aquaris.secrets."users/${attrname}/secretKey";
           dst = "$HOME/.ssh/id_ed25519";
         }];
       };

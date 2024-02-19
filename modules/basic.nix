@@ -138,7 +138,7 @@ in
         name = if val.name != null then val.name else name;
         isNormalUser = true;
         extraGroups = if val.isAdmin then [ "wheel" "networkmanager" ] else [ ];
-        hashedPasswordFile = config.age.secrets."users/${name}/passwordHash".path;
+        hashedPasswordFile = config.aquaris.secrets."users/${name}/passwordHash".outPath;
         openssh.authorizedKeys.keys = [ val.publicKey ];
       })
       cfg.users;
@@ -176,8 +176,11 @@ in
     };
 
     networking = {
-      networkmanager.enable = true;
       useNetworkd = true;
+      networkmanager = {
+        enable = true;
+        plugins = lib.mkForce [ ];
+      };
     };
 
     nix.settings = {

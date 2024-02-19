@@ -1,10 +1,5 @@
 {
   inputs = {
-    agenix.url = "github:ryantm/agenix";
-    agenix.inputs.darwin.follows = "";
-    agenix.inputs.home-manager.follows = "home-manager";
-    agenix.inputs.nixpkgs.follows = "nixpkgs";
-
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
