@@ -34,34 +34,48 @@
         pkgs = import nixpkgs { inherit system; };
       in
       {
-        packages.${system}.installer = pkgs.writeShellApplication {
-          name = "aquaris-installer";
+        packages.${system} = {
+          installer = pkgs.writeShellApplication {
+            name = "aquaris-installer";
 
-          runtimeInputs = with pkgs; [
-            git
-            nix-output-monitor
-            nvd
-          ];
+            runtimeInputs = with pkgs; [
+              git
+              nix-output-monitor
+              nvd
+            ];
 
-          text =
-            let cfg = self.outputs.nixosConfigurations.castor.config; in
-            builtins.readFile (pkgs.substituteAll {
-              src = ./lib/combined.sh;
-              inherit self;
-              name = "castor";
-              subs = cfg.nix.settings.substituters;
-              keys = cfg.nix.settings.trusted-public-keys;
-              masterKeyPath = cfg.aquaris.machine.secretKey;
-            });
+            text =
+              let cfg = self.outputs.nixosConfigurations.castor.config; in
+              builtins.readFile (pkgs.substituteAll {
+                src = ./lib/combined.sh;
+                inherit self;
+                name = "castor";
+                subs = cfg.nix.settings.substituters;
+                keys = cfg.nix.settings.trusted-public-keys;
+                masterKeyPath = cfg.aquaris.machine.secretKey;
+              });
+          };
+
+          aqs = pkgs.writeShellApplication {
+            name = "aqs";
+            text = builtins.readFile ./lib/aqs.sh;
+            runtimeInputs = with pkgs; [
+              age
+              jq
+              nix
+            ];
+          };
         };
 
         devShells.${system}.default = pkgs.mkShell {
-          packages = with pkgs;
-            [
-              nix-output-monitor
-              shfmt
-            ];
+          packages = with pkgs; [
+            age
+            nix-output-monitor
+            shfmt
+          ];
         };
+
+        aqscfg = import ./lib/aqs.nix nixpkgs (import self);
       }
     );
 }
