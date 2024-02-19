@@ -52,7 +52,7 @@ in
             default = "root";
           };
 
-          perms = mkOption {
+          mode = mkOption {
             type = str;
             default = "0400";
           };
@@ -96,21 +96,36 @@ in
       in
       toplevel // machine // user;
 
-    system.activationScripts.aquaris-secrets.text =
-      let d = "${cfg.secretsDir}.d/${baseNameOf self}"; in
-      pipe cfg.secrets [
-        (mapAttrsToList (_: s:
-          let o = "${d}/${s.name}"; in ''
-            mkdir -pv "${dirOf o}"
-            echo "[aqs] ${s.name}: ${s.user}:${s.group} ${s.perms}"
-            ${getExe pkgs.age} -i "${cfg.machine.secretKey}" -o "${o}" -d "${s.source}"
-            chown "${s.user}:${s.group}" "${o}"
-            chmod "${s.perms}" "${o}"
-          ''))
-        concatLines
-        (s: "set -e\n" + s + ''
-          ln -sfT "${d}" "${cfg.secretsDir}"
-        '')
-      ];
+    system.activationScripts =
+      let d = "${cfg.secretsDir}.d/${baseNameOf self}"; in {
+        aqs-install.text =
+          pipe cfg.secrets [
+            (mapAttrsToList (_: s:
+              let o = "${d}/${s.name}"; in ''
+                echo "[aqs] decrypting ${s.name}"
+                mkdir -pv "${dirOf o}"
+                ${getExe pkgs.age} -i "${cfg.machine.secretKey}" -o "${o}" -d "${s.source}"
+              ''))
+            concatLines
+            (s: s + ''
+              ln -sfT "${d}" "${cfg.secretsDir}"
+            '')
+          ];
+
+        users.deps = [ "aqs-install" ];
+
+        aqs-chown = {
+          deps = [ "users" "groups" ];
+          text = pipe cfg.secrets [
+            (mapAttrsToList (_: s:
+              let o = "${d}/${s.name}"; in ''
+                echo "[aqs] ${s.name}: ${s.user}:${s.group} ${s.mode}"
+                chown "${s.user}:${s.group}" "${o}"
+                chmod "${s.mode}" "${o}"
+              ''))
+            concatLines
+          ];
+        };
+      };
   };
 }
