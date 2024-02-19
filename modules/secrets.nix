@@ -104,7 +104,7 @@ in
               let o = "${d}/${s.name}"; in ''
                 echo "[aqs] decrypting ${s.name}"
                 mkdir -pv "${dirOf o}"
-                ${getExe pkgs.age} -i "${cfg.machine.secretKey}" -o "${o}" -d "${s.source}"
+                (umask u=r,g=,o=; ${getExe pkgs.age} -i "${cfg.machine.secretKey}" -o "${o}" -d "${s.source}")
               ''))
             concatLines
             (s: s + ''
