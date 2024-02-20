@@ -1,0 +1,120 @@
+* Improve =aquaris.filesystem=
+- some good templates
+  - 512M ESP, ZFS rpool with persist/home/<name> for each user
+- btrfs subvol handling
+- don't be cringe when not using impermanence
+
+* ZFS magic
+Split security domain concept:
+- root dataset uses key stored on TPM,
+  gated by Secure Boot, managed by [[https://github.com/latchset/clevis][clevis]] and [[file:zfs-autokey.nix][zfs-autokey]]
+- user datasets use user passwords as keys, managed by [[file:zfs-pam][zfs-pam]]
+
+* Preconfigured Firefox profile
+- Extensions
+  - Security
+    - uBlock Origin [[https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/][store]] =nur.repos.rycee.firefox-addons.ublock-origin=
+    - CanvasBlocker [[https://addons.mozilla.org/en-US/firefox/addon/canvasblocker/][store]] =nur.repos.rycee.firefox-addons.canvasblocker=
+    - LocalCDN [[https://addons.mozilla.org/en-US/firefox/addon/localcdn-fork-of-decentraleyes/][store]] =nur.repos.rycee.firefox-addons.localcdn=
+  - Utility
+    - DarkReader[[https://addons.mozilla.org/en-US/firefox/addon/darkreader/][ store]] =nur.repos.rycee.firefox-addons.darkreader=
+    - Hide Tabs [[https://addons.mozilla.org/en-US/firefox/addon/hide-tab/][store]] *not in NUR*
+    - KeePassXC Browser [[https://addons.mozilla.org/en-US/firefox/addon/keepassxc-browser][store]] =nur.repos.rycee.firefox-addons.keepassxc-browser=
+    - Load Reddit images directly [[https://addons.mozilla.org/en-US/firefox/addon/load-reddit-images-directly/][store]] *not in NUR*
+    - Shinigami Eyes [[https://addons.mozilla.org/en-US/firefox/addon/shinigami-eyes/][store]] *not in NUR*
+    - SponsorBlock [[https://addons.mozilla.org/en-US/firefox/addon/sponsorblock/][store]] =nur.repos.rycee.firefox-addons.sponsorblock=
+- Settings
+  - open previous windows and tabs
+  - search engines: SearXNG; remove google et al
+  - Enhanced Tracking Protection: Custom
+    - Cookies: All cross-site cookies
+    - Tracking content: In all windows
+    - Cryptominers
+    - Known fingerprinters
+    - Suspected fingerprinters: In all windows
+  - Website Privacy Preferences
+    - Tell websites not to sell or share my data
+    - Send websites a “Do Not Track” request
+  - disable builtin password & credit card autofill manager
+  - disable Firefox data collection
+  - DNS over HTTPS: Max Protection
+
+* Rewrite installer for µnd
+[[https://github.com/42LoCo42/und]]
+
+** Combined installer
+[[file:combined.sh][combined.sh]]
+
+#+begin_src nix
+  inputs.flake-utils.lib.eachDefaultSystem
+    (system:
+    let pkgs = import nixpkgs { inherit system; }; in rec {
+      packages = {
+        castor-installer = pkgs.writeShellApplication {
+          name = "castor-installer";
+
+          runtimeInputs = with pkgs; [
+            git
+            nix-output-monitor
+            nvd
+          ];
+
+          text =
+            let cfg = self.outputs.nixosConfigurations.castor.config; in
+            builtins.readFile (pkgs.substituteAll {
+              src = ./combined.sh;
+              inherit self;
+              name = "castor";
+              subs = cfg.nix.settings.substituters;
+              keys = cfg.nix.settings.trusted-public-keys;
+              masterKeyPath = cfg.aquaris.machine.secretKey;
+            });
+        };
+      };
+
+      devShells.default = pkgs.mkShell {
+        packages = with pkgs; with packages; [
+          age
+          aqs
+          nix-output-monitor
+          shfmt
+        ];
+      };
+    })
+#+end_src
+
+** Old split installer/deployer
+- [[file:installer.sh][installer.sh]]
+- [[file:deployer.sh][deployer.sh]]
+
+#+begin_src nix
+  {
+    installer = pkgs: pkgs.writeShellApplication {
+      name = "${name}-installer";
+      runtimeInputs = with pkgs; [
+        git
+        gptfdisk
+        jq
+        nix-output-monitor
+      ];
+      text = subsT ./installer.sh {
+        inherit name self;
+        keypath = nixosConfig.config.aquaris.machine.secretKey;
+        keys = nixosConfig.config.nix.settings.trusted-public-keys;
+        subs = nixosConfig.config.nix.settings.substituters;
+      };
+    };
+
+    deployer = pkgs: pkgs.writeShellApplication {
+      name = "${name}-deployer";
+      runtimeInputs = with pkgs; [
+        git
+        openssh
+      ];
+      text = subsT ./deployer.sh {
+        inherit name;
+        installer = getExe (installer pkgs);
+      };
+    };
+  }
+#+end_src

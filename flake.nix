@@ -60,40 +60,4 @@
       in
       lib.main self { inherit users machines; }
     );
-
-  # TODO remove dead code
-  # // inputs.flake-utils.lib.eachDefaultSystem (system:
-  #   let pkgs = import nixpkgs { inherit system; }; in rec {
-  #     packages = {
-  #       castor-installer = pkgs.writeShellApplication {
-  #         name = "castor-installer";
-
-  #         runtimeInputs = with pkgs; [
-  #           git
-  #           nix-output-monitor
-  #           nvd
-  #         ];
-
-  #         text =
-  #           let cfg = self.outputs.nixosConfigurations.castor.config; in
-  #           builtins.readFile (pkgs.substituteAll {
-  #             src = ./lib/combined.sh;
-  #             inherit self;
-  #             name = "castor";
-  #             subs = cfg.nix.settings.substituters;
-  #             keys = cfg.nix.settings.trusted-public-keys;
-  #             masterKeyPath = cfg.aquaris.machine.secretKey;
-  #           });
-  #       };
-  #     };
-
-  #     devShells.default = pkgs.mkShell {
-  #       packages = with pkgs; with packages; [
-  #         age
-  #         aqs
-  #         nix-output-monitor
-  #         shfmt
-  #       ];
-  #     };
-  #   });
 }

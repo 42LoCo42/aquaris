@@ -84,32 +84,3 @@ let
     };
 in
 { inherit setup main; }
-
-# TODO remove dead code
-#       installer = pkgs: pkgs.writeShellApplication {
-#         name = "${name}-installer";
-#         runtimeInputs = with pkgs; [
-#           git
-#           gptfdisk
-#           jq
-#           nix-output-monitor
-#         ];
-#         text = subsT ./installer.sh {
-#           inherit name self;
-#           keypath = nixosConfig.config.aquaris.machine.secretKey;
-#           keys = nixosConfig.config.nix.settings.trusted-public-keys;
-#           subs = nixosConfig.config.nix.settings.substituters;
-#         };
-#       };
-
-#       deployer = pkgs: pkgs.writeShellApplication {
-#         name = "${name}-deployer";
-#         runtimeInputs = with pkgs; [
-#           git
-#           openssh
-#         ];
-#         text = subsT ./deployer.sh {
-#           inherit name;
-#           installer = getExe (installer pkgs);
-#         };
-#       };
