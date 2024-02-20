@@ -23,8 +23,21 @@ let
       aqs = aqs pkgs;
       default = pkgs.writeShellApplication {
         name = "aquaris-setup";
-        text = "";
+        text = builtins.readFile ./setup/setup.sh;
+        runtimeInputs = with pkgs; [
+          age # to encrypt secrets
+          gettext # for template instantiation
+          mkpasswd # for creating a password hash
+          nixpkgs-fmt # for pretty-printing the generated flake
+          systemdMinimal # for machine ID creation
+        ];
       };
+    };
+
+    devShells.default = pkgs.mkShell {
+      packages = with pkgs; [
+        age
+      ];
     };
   });
 

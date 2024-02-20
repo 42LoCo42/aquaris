@@ -60,7 +60,6 @@
         };
       in
       lib.main self { inherit users machines; }
-      # lib.setup # TODO implement setup
     );
 
   # TODO remove dead code
