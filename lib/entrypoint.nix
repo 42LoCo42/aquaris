@@ -1,7 +1,7 @@
 { aquaris, inputs, nixosModules }:
 let
   inherit (inputs) nixpkgs;
-  inherit (nixpkgs.lib) nixosSystem pipe;
+  inherit (nixpkgs.lib) nixosSystem pipe singleton;
 
   inherit (import ./utils.nix inputs) my-utils;
 
@@ -66,7 +66,8 @@ let
                 builtins.attrNames
                 (map (i: import "${d}/${i}"))
               ]
-            ) ++ [{
+            ) ++ singleton ({ pkgs, ... }: {
+              environment.systemPackages = [ (mkAQS pkgs) ];
               aquaris = {
                 # merge admins and users
                 users = builtins.mapAttrs (_: u: u // { isAdmin = true; })
@@ -77,7 +78,7 @@ let
                   inherit (cfg) id publicKey;
                 };
               };
-            }];
+            });
           })
         config.machines;
     };
