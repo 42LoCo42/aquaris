@@ -19,8 +19,9 @@ with secrets belonging to one of three categories:
 - machine: secrets for machines like API keys or TLS certificates,
   readable only by the respective machine and its admin accounts
 
-This was inspired by [[https://github.com/ryantm/agenix][agenix]], but without the need to explicitly define
+This is inspired by [[https://github.com/ryantm/agenix][agenix]], but without the need to explicitly define
 the list of secrets and their corresponding public keys.
+Secrets are managed via the [[file:docs/aqs.org][aqs]] command exported by this flake.
 
 * Module reference
 ** [[file:modules/basic.nix][basic]]
@@ -40,7 +41,7 @@ the list of secrets and their corresponding public keys.
 - Much simpler to configure, faster execution, handles edge cases
   (e.g. I couldn't get disko to mount a tmpfs on =/=
   unless running in disko mode, which would also reformat the disks)
-- [[file:FSDOC.org][Options documentation]]
+- [[file:docs/filesystem.org][Options documentation]]
 
 ** [[file:modules/home.nix][home]]
 - Configures the user home environment

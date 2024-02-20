@@ -1,0 +1,38 @@
+* The aqs command
+aqs is the primary interface to the Aquaris secrets infrastructure.
+It is exported by this flake as a package for all major architectures.
+You could run it like this: =nix run github:42loco42/aquaris#aqs=
+or add it to your shell like this: =nix shell github:42loco42/aquaris#aqs=.
+It is also part of this flake's development shell.
+
+In contrast with agenix, aqs does *not* require you to declare your secrets
+and what public keys they should be encrypted for.
+Instead, it uses the system configuration exported by your flake to determine how to encrypt secrets.
+
+There are three kinds of secrets recognized by aqs:
+- Toplevel secrets are encrypted to all keys and thus readable by all users and machines.
+- User-specific secrets are encrypted only to the user they belong to and the machines this user is a part of.
+  They are useful for things like your password hash, SSH secret key or other personal secrets.
+- Machine-specific secrets are encrypted only to the machine they belong to and its administrators.
+  These are designed to be used by system services, which is why admins can read them
+  (since the same admins would have to manage the services anyways).
+
+** Example: Creating a new toplevel secret
+#+begin_src shell
+  # we are in /home/example/config, an Aquaris flake
+  aqs -e secrets/foo.age # this opens your $EDITOR
+  aqs secrets/foo.age    # -e is implied when just giving a path
+  aqs -d secrets/foo.age # should print what you wrote in the editor just now
+  # Decryption uses .key files from the keys/ subdirectory of the flake
+  # This is the standard place for secret keys of Aquaris system elements
+  # You can add extra key files via the -i flag
+#+end_src
+
+** Example: Rekeying the secrets
+If you change keys or add new users or machines, you need to rekey the secrets.
+#+begin_src shell
+  aqs -r                 # can be called from inside the flake...
+  aqs -r ~/config        # or with an explicit path
+  aqs -r secrets/users/  # can accept paths inside of secrets/ ...
+  aqs -r secrets/foo.age # to only rekey that file/files below that folder
+#+end_src

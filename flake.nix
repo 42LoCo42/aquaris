@@ -1,5 +1,7 @@
 {
   inputs = {
+    flake-utils.url = "github:numtide/flake-utils";
+
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -17,39 +19,36 @@
     in
     {
       inherit nixosModules lib;
+      aqscfg = import ./lib/aqs.nix nixpkgs (import self);
       templates.default = {
         path = ./template;
         description = "Blank Aquaris config flake";
       };
     }
     // lib.aquarisSystems self
-    // (
-      let
-        system = "x86_64-linux";
-        pkgs = import nixpkgs { inherit system; };
-      in
-      {
-        packages.${system} = {
-          installer = pkgs.writeShellApplication {
-            name = "aquaris-installer";
+    // inputs.flake-utils.lib.eachDefaultSystem (system:
+      let pkgs = import nixpkgs { inherit system; }; in rec {
+        packages = {
+          # castor-installer = pkgs.writeShellApplication {
+          #   name = "castor-installer";
 
-            runtimeInputs = with pkgs; [
-              git
-              nix-output-monitor
-              nvd
-            ];
+          #   runtimeInputs = with pkgs; [
+          #     git
+          #     nix-output-monitor
+          #     nvd
+          #   ];
 
-            text =
-              let cfg = self.outputs.nixosConfigurations.castor.config; in
-              builtins.readFile (pkgs.substituteAll {
-                src = ./lib/combined.sh;
-                inherit self;
-                name = "castor";
-                subs = cfg.nix.settings.substituters;
-                keys = cfg.nix.settings.trusted-public-keys;
-                masterKeyPath = cfg.aquaris.machine.secretKey;
-              });
-          };
+          #   text =
+          #     let cfg = self.outputs.nixosConfigurations.castor.config; in
+          #     builtins.readFile (pkgs.substituteAll {
+          #       src = ./lib/combined.sh;
+          #       inherit self;
+          #       name = "castor";
+          #       subs = cfg.nix.settings.substituters;
+          #       keys = cfg.nix.settings.trusted-public-keys;
+          #       masterKeyPath = cfg.aquaris.machine.secretKey;
+          #     });
+          # };
 
           aqs = pkgs.writeShellApplication {
             name = "aqs";
@@ -62,15 +61,13 @@
           };
         };
 
-        devShells.${system}.default = pkgs.mkShell {
-          packages = with pkgs; [
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; with packages; [
             age
+            aqs
             nix-output-monitor
             shfmt
           ];
         };
-
-        aqscfg = import ./lib/aqs.nix nixpkgs (import self);
-      }
-    );
+      });
 }

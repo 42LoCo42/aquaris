@@ -30,7 +30,7 @@ let
 
   ##### machine secrets: for that machine & its admins #####
 
-  adminKeys = machine: mapAttrsToList (_: a: a.publicKey) machine.admins;
+  adminKeys = machine: mapAttrsToList (_: a: a.publicKey) (machine.admins or { });
   machine = builtins.mapAttrs (_: m: [ m.publicKey ] ++ adminKeys m) machines;
 in
 { inherit toplevel user machine; }
