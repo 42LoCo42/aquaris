@@ -106,10 +106,21 @@ while var=machine prompt; do
 	pub="$(sshKeygen "machines/$machine")"
 
 	export machine id pub
-	# shellcheck disable=SC2155
-	export admins="$(printf '"%s" ' "${adminsA[@]}")"
-	# shellcheck disable=SC2155
-	export users="$(printf '"%s" ' "${usersA[@]}")"
+
+	if ((${#adminsA[@]})); then
+		admins="$(printf '"%s" ' "${adminsA[@]}")"
+	else
+		admins=""
+	fi
+	export admins
+
+	if ((${#usersA[@]})); then
+		users="$(printf '"%s" ' "${usersA[@]}")"
+	else
+		users=""
+	fi
+	export users
+
 	envsubst <"$src/machine.nix" >>"$machineF"
 done
 
@@ -118,3 +129,6 @@ users="$(<"$userF")"
 machines="$(<"$machineF")"
 export users machines
 envsubst <"$src/template.nix" | nixpkgs-fmt | tee flake.nix
+
+work "Finalizing"
+aqs -r # rekey all secrets so the machines can read them

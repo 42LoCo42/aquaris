@@ -8,7 +8,7 @@ let
   wrap = f: inputs.flake-utils.lib.eachDefaultSystem
     (system: f (import nixpkgs { inherit system; }));
 
-  aqs = pkgs: pkgs.writeShellApplication {
+  mkAQS = pkgs: pkgs.writeShellApplication {
     name = "aqs";
     text = builtins.readFile ./aqs.sh;
     runtimeInputs = with pkgs; [
@@ -18,31 +18,31 @@ let
     ];
   };
 
-  setup = wrap (pkgs: {
-    packages = {
-      aqs = aqs pkgs;
-      default = pkgs.writeShellApplication {
-        name = "aquaris-setup";
-        text = my-utils.subsT ./setup/setup.sh { src = ./setup; };
-        runtimeInputs = with pkgs; [
-          age # to encrypt secrets
-          gettext # for template instantiation
-          mkpasswd # for creating a password hash
-          nixpkgs-fmt # for pretty-printing the generated flake
-          systemdMinimal # for machine ID creation
-        ];
+  setup = wrap (pkgs:
+    let aqs = mkAQS pkgs; in {
+      packages = {
+        inherit aqs;
+        default = pkgs.writeShellApplication {
+          name = "aquaris-setup";
+          text = my-utils.subsT ./setup/setup.sh { src = ./setup; };
+          runtimeInputs = with pkgs; [
+            age # to encrypt secrets
+            aqs # to fix encryption
+            gettext # for template instantiation
+            mkpasswd # for creating a password hash
+            nixpkgs-fmt # for pretty-printing the generated flake
+            systemdMinimal # for machine ID creation
+          ];
+        };
       };
-    };
 
-    devShells.default = pkgs.mkShell {
-      packages = with pkgs; [
-        age
-      ];
-    };
-  });
+      devShells.default = pkgs.mkShell {
+        packages = with pkgs; [ age aqs ];
+      };
+    });
 
   main = self: aqscfg:
-    wrap (pkgs: { packages.aqs = aqs pkgs; }) // {
+    wrap (pkgs: { packages.aqs = mkAQS pkgs; }) // {
       inherit aqscfg;
       nixosConfigurations = builtins.mapAttrs
         (name: cfg:
