@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-src="$(realpath "${BASH_SOURCE[0]%/*}")"
+src="@src@"
 
 fail() {
 	echo "[1;31m$1[m" >&2

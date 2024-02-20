@@ -23,7 +23,7 @@ let
       aqs = aqs pkgs;
       default = pkgs.writeShellApplication {
         name = "aquaris-setup";
-        text = builtins.readFile ./setup/setup.sh;
+        text = my-utils.subsT ./setup/setup.sh { src = ./setup; };
         runtimeInputs = with pkgs; [
           age # to encrypt secrets
           gettext # for template instantiation
