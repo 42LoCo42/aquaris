@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -e
+export PATH=/run/current-system/sw/bin
+zset="$1/$PAM_USER"
+
+isKeyLoaded() {
+	zfs get -H keystatus "$zset" | awk '{exit ($3 != "available")}'
+}
+
+isPoolMounted() {
+	zfs get -H mounted "$zset" | awk '{exit ($3 != "yes")}'
+}
+
+getMountpoint() {
+	zfs get -H mountpoint "$zset" | awk '{print $3}'
+}
+
+case "$PAM_TYPE" in
+	auth)
+		key="$(cat)"
+		mnt="$(getMountpoint)"
+		echo "Welcome $PAM_USER - mounting $zset!" > "$PAM_TTY"
+
+		mkdir -p "$mnt"
+		if ! isPoolMounted; then
+			chown "root:root" "$mnt"
+			chmod 0           "$mnt"
+		fi
+
+		isKeyLoaded   || zfs load-key "$zset" <<< "$key"
+		isPoolMounted || zfs mount    "$zset"
+
+		chown "$PAM_USER:$(id -g "$PAM_USER")" "$mnt"
+		chmod 700                              "$mnt"
+
+		systemctl restart "home-manager-$PAM_USER"
+	;;
+
+	close_session)
+		loginctl terminate-user "$PAM_USER"
+		umount -l "$(zfs get -H mountpoint "$zset" | awk '{print $3}')"
+
+		while sleep 1; do
+			if isKeyLoaded; then
+				zfs unload-key "$zset" && break
+			fi
+		done
+	;;
+esac

@@ -29,8 +29,7 @@ let
   });
 
   main = self: aqscfg:
-    wrap (pkgs: { packages.aqs = aqs pkgs; }) //
-    {
+    wrap (pkgs: { packages.aqs = aqs pkgs; }) // {
       inherit aqscfg;
       nixosConfigurations = builtins.mapAttrs
         (name: cfg:
