@@ -41,9 +41,9 @@ let
       };
     });
 
-  main = self: aqscfg:
+  main = self: config:
     wrap (pkgs: { packages.aqs = mkAQS pkgs; }) // {
-      inherit aqscfg;
+      aqscfg = import ./aqs.nix nixpkgs config;
       nixosConfigurations = builtins.mapAttrs
         (name: cfg:
           let system = cfg.system or "x86_64-linux"; in nixosSystem {
@@ -79,7 +79,7 @@ let
               };
             }];
           })
-        aqscfg.machines;
+        config.machines;
     };
 in
 { inherit setup main; }

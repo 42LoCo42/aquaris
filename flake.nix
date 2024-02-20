@@ -15,7 +15,6 @@
     in
     {
       inherit nixosModules lib;
-      # aqscfg = import ./lib/aqs.nix nixpkgs (import self);
       templates.default = {
         path = ./template;
         description = "Blank Aquaris config flake";
