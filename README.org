@@ -87,10 +87,10 @@ Keep in mind that all values are set to sane defaults by AQS,
 there is usually no need to override them.
 
 * [TODO] Not yet pulled from Incubator
-A lot of useful stuff is still stuck deep within [[https://github.com/42LoCo42/.dotfiles][my dotfiles]], particularly [[https://github.com/42LoCo42/.dotfiles/tree/nixos/machines/test][the test VM]].
+A lot of useful stuff is still stuck deep within [[https://github.com/42LoCo42/.dotfiles][my dotfiles]], particularly [[https://github.com/42LoCo42/.dotfiles/tree/9f159dc820160311c4c1ab5f7abbb54d854c8d94/machines/test][the test VM]].
 All of that code needs to be cleaned up and prepared for independent usage.
 I especially want to make all my research into split security domain ZFS systems
 available as easy-to-use NixOS modules, since there are quite some challenges involved.
 This includes:
-- automatic system dataset key management ([[https://github.com/42LoCo42/.dotfiles/blob/nixos/machines/test/zfs-autokey.nix][zfs-autokey]])
-- reliable unlocking of user datasets at login ([[https://github.com/42LoCo42/.dotfiles/blob/nixos/zfs-pam][zfs-pam]])
+- automatic system dataset key management ([[https://github.com/42LoCo42/.dotfiles/blob/9f159dc820160311c4c1ab5f7abbb54d854c8d94/machines/test/zfs-autokey.nix][zfs-autokey]])
+- reliable unlocking of user datasets at login ([[https://github.com/42LoCo42/.dotfiles/blob/9f159dc820160311c4c1ab5f7abbb54d854c8d94/zfs-pam][zfs-pam]])
