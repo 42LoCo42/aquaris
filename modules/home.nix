@@ -144,7 +144,7 @@ let users = config.aquaris.users; in {
 
         userName = user.git.name;
         userEmail = user.git.email;
-        signing = lib.mkIf (user.git.key != null) {
+        signing = {
           key = user.git.key;
           signByDefault = true;
         };

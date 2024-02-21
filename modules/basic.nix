@@ -31,8 +31,8 @@ in
           };
 
           git = {
-            name = mkOption { type = str; };
-            email = mkOption { type = str; };
+            name = mkOption { type = nullOr str; default = null; };
+            email = mkOption { type = nullOr str; default = null; };
             key = mkOption { type = nullOr str; default = null; };
           };
         };

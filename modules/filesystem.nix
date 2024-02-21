@@ -386,7 +386,7 @@ in
               (t: ''
                 set -x
                 zpool import -a
-                mnt="$(realpath "''${1-/}")"
+                mnt="$(realpath "''${1-/mnt}")"
               '' + t)
             ];
           };

@@ -1,7 +1,7 @@
 { aquaris, inputs, nixosModules }:
 let
   inherit (inputs) nixpkgs;
-  inherit (nixpkgs.lib) nixosSystem pipe singleton;
+  inherit (nixpkgs.lib) filterAttrs nixosSystem pipe singleton;
 
   inherit (import ./utils.nix inputs) my-utils;
 
@@ -63,6 +63,8 @@ let
               if !builtins.pathExists d then [ ] else
               pipe d [
                 builtins.readDir
+                (filterAttrs (file: type:
+                  type == "regular" && builtins.match ".*\.nix" file != null))
                 builtins.attrNames
                 (map (i: import "${d}/${i}"))
               ]
