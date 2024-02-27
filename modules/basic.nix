@@ -201,10 +201,14 @@ in
     nix.nixPath = mkForce [ "nixpkgs=/etc/nix/channel" ];
 
     # pin nixpkgs to system flake registry
-    nix.registry.nixpkgs.to = pipe "${aquaris}/flake.lock" [
-      builtins.readFile
-      builtins.fromJSON
-      (f: f.nodes.${f.nodes.${f.root}.inputs.nixpkgs}.locked)
-    ];
+    # TODO maybe find a way to get repo info from the flake input?
+    # the old way of reading our flake.lock didn't respect an overriden nixpkgs input
+    # but at least flake.lock has repo info...
+    nix.registry.nixpkgs.to = {
+      type = "github";
+      owner = "nixos";
+      repo = "nixpkgs";
+      inherit (self.inputs.nixpkgs) rev;
+    };
   };
 }
