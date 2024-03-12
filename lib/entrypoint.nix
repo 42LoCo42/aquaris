@@ -93,6 +93,9 @@ let
               type = "app";
               program = pkgs.lib.getExe (pkgs.writeShellApplication {
                 name = "${name}-installer";
+                runtimeInputs = with pkgs; [
+                  nix-output-monitor
+                ];
                 text = my-utils.subsT ../todo/installer.sh {
                   inherit self name;
                   keypath = real.aquaris.machine.secretKey;

@@ -16,7 +16,7 @@ nix run "@self@#nixosConfigurations.@name@.config.aquaris.filesystem._mount" /mn
 
 log "Copying master key"
 x mkdir -p "$(dirname "/mnt/@keypath@")"
-x cp "@name@.key" "/mnt/@keypath@"
+x cp "keys/machines/@name@.key" "/mnt/@keypath@"
 
 log "Mounting nom-overlay"
 name="nom-overlay-$RANDOM"
