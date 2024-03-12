@@ -42,8 +42,7 @@ let
     });
 
   main = self: config:
-    wrap (pkgs: { packages.aqs = mkAQS pkgs; }) // {
-      aqscfg = import ./aqs.nix nixpkgs config;
+    let
       nixosConfigurations = builtins.mapAttrs
         (name: cfg:
           let system = cfg.system or "x86_64-linux"; in nixosSystem {
@@ -83,6 +82,29 @@ let
             });
           })
         config.machines;
+    in
+    wrap
+      (pkgs: {
+        packages.aqs = mkAQS pkgs;
+
+        apps = builtins.mapAttrs
+          (name: cfg:
+            let real = nixosConfigurations.${name}.config; in {
+              type = "app";
+              program = pkgs.lib.getExe (pkgs.writeShellApplication {
+                name = "${name}-installer";
+                text = my-utils.subsT ../todo/installer.sh {
+                  inherit self name;
+                  keypath = real.aquaris.machine.secretKey;
+                  subs = real.nix.settings.substituters;
+                  keys = real.nix.settings.trusted-public-keys;
+                };
+              });
+            })
+          config.machines;
+      }) // {
+      aqscfg = import ./aqs.nix nixpkgs config;
+      inherit nixosConfigurations;
     };
 in
 { inherit setup main; }
