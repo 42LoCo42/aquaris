@@ -1,21 +1,37 @@
 ({ pkgs, lib, ... }:
 let initial = pkgs.writeText "initial-password" "password"; in {
-  imports = [ (import ./disk.nix { inherit initial; }) ];
-
   # this fixes occasional "failures" of zfs-mount
   systemd.services."zfs-mount".serviceConfig.Restart = "on-failure";
 
+  # where the keys are stored
   fileSystems."/boot".neededForBoot = true;
+
+  aquaris.filesystem = { ... }: {
+    zpools.rpool.rootOpts = {
+      # TODO figure out how to extend options
+      acltype = "posix";
+      compression = "zstd";
+      dnodesize = "auto";
+      mountpoint = "none";
+      normalization = "formD";
+      relatime = "on";
+      xattr = "sa";
+
+      encryption = "on";
+      keyformat = "passphrase";
+      keylocation = "file://${initial}";
+    };
+  };
 
   boot.initrd.systemd = {
     initrdBin = with pkgs; [ clevis jose tpm2-tools ];
     services.zfs-import-rpool.script = lib.mkForce ''
-      zpool status rpool || zpool import -N rpool
+      zpool status rpool || zpool import -f rpool
       read -r _ _ key _ < <(zfs get -H keylocation rpool/nixos)
       if [[ "$key" =~ initial ]]; then
         zfs load-key rpool/nixos
       else
-        clevis decrypt < /sysroot/boot/primary | zfs load-key rpool/nixos
+        clevis decrypt < /sysroot/boot/zfs-primary.key | zfs load-key rpool/nixos
       fi
     '';
   };
@@ -26,8 +42,8 @@ let initial = pkgs.writeText "initial-password" "password"; in {
     read -r _ _ key _ < <(zfs get -H keylocation rpool/nixos)
     if [[ "$key" =~ initial ]]; then
       echo "[1;31mWARNING: ZFS is using the initial key![m"
-      cp "${initial}" /boot/initial
-      zfs set keylocation=file:///sysroot/boot/initial rpool/nixos
+      cp "${initial}" /boot/zfs-initial.key
+      zfs set keylocation=file:///sysroot/boot/zfs-initial.key rpool/nixos
     else
       echo "[1;32mZFS is using the secure key![m"
     fi
@@ -41,9 +57,15 @@ let initial = pkgs.writeText "initial-password" "password"; in {
         read -r _ _ key _ < <(zfs get -H keylocation rpool/nixos)
         if [[ "$key" =~ initial ]]; then
           echo "Switching to a secure ZFS key..."
-          head -c 64 /dev/urandom | clevis encrypt tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}' > /boot/primary
-          clevis decrypt < /boot/primary | zfs change-key rpool/nixos -o keylocation=prompt
-          rm -f /boot/initial
+
+          head -c 32 /dev/urandom \
+          | clevis encrypt tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}' \
+          > /boot/zfs-primary.key
+
+          clevis decrypt < /boot/zfs-primary.key \
+          | zfs change-key rpool/nixos -o keyformat=raw -o keylocation=file:///dev/stdin
+
+          rm -f /boot/zfs-initial.key
         fi
       fi
     '';
