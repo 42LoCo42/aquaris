@@ -1,10 +1,12 @@
 inputs:
 let
   inherit (inputs.nixpkgs.lib)
+    fileContents
     mapAttrsToList
     mkOption
     pipe
     recursiveUpdate
+    splitString
     types;
   inherit (types)
     int
@@ -40,6 +42,8 @@ in
       inherit file subs;
       func = _: text: text;
     };
+
+    readLines = f: splitString (fileContents f);
 
     ##### Simple ADT library #####
 

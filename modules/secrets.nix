@@ -16,6 +16,8 @@ let
     str
     submodule;
   cfg = config.aquaris;
+
+  notSAL = lib.mkIf (! cfg.standalone);
 in
 {
   options.aquaris = {
@@ -56,7 +58,7 @@ in
     };
   };
 
-  config = {
+  config = notSAL {
     aquaris.secrets =
       let
         secrets = "${self}/secrets";
@@ -73,19 +75,19 @@ in
           }))
         ];
 
-        collect = dir: out: cfg: pipe "${secrets}/${dir}" [
+        collect = dir: out: pipe "${secrets}/${dir}" [
           readDirMaybe
           (mapAttrs' (sec: _: {
             name = strip "${out}/${sec}";
-            value = cfg // { source = "${secrets}/${dir}/${sec}"; };
+            value.source = "${secrets}/${dir}/${sec}";
           }))
         ];
 
-        machine = collect "machines/${cfg.machine.name}" "machine" { };
+        machine = collect "machines/${cfg.machine.name}" "machine";
 
         user = pipe cfg.users [
-          (mapAttrsToList (userN: userV:
-            let d = "users/${userN}"; in collect d d { user = userV.name; }))
+          (mapAttrsToList (userN: _:
+            let d = "users/${userN}"; in collect d d))
           mergeAttrsList
         ];
       in

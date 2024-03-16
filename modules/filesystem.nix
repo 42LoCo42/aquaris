@@ -23,6 +23,8 @@ let
 
   cfg = config.aquaris.filesystem;
 
+  notSAL = lib.mkIf (! config.aquaris.standalone);
+
   ##### utils #####
 
   listIx = name:
@@ -404,39 +406,41 @@ in
     };
   };
 
-  config.fileSystems =
-    let
-      forDisks = pipe cfg.disks [
-        (mapAttrsToList (_: val: pipe val.partitions [
-          (builtins.filter (p: partitionContent.is.filesystem p.content))
-          (map (p: {
-            name = p.content.mountpoint;
-            value = {
-              inherit (p) device;
-              fsType = p.content.type;
-              options = p.content.mountOpts;
-            };
-          }))
-        ]))
-      ];
+  config = notSAL {
+    fileSystems =
+      let
+        forDisks = pipe cfg.disks [
+          (mapAttrsToList (_: val: pipe val.partitions [
+            (builtins.filter (p: partitionContent.is.filesystem p.content))
+            (map (p: {
+              name = p.content.mountpoint;
+              value = {
+                inherit (p) device;
+                fsType = p.content.type;
+                options = p.content.mountOpts;
+              };
+            }))
+          ]))
+        ];
 
-      forZFS = pipe cfg.zpools [
-        (mapAttrsToList (_: val: pipe val.datasets' [
-          (builtins.attrValues)
-          (builtins.filter (d: d.mountpoint != null))
-          (map (d: {
-            name = d.mountpoint;
-            value = {
-              device = d.name;
-              fsType = "zfs";
-              options = [ "zfsutil" ];
-            };
-          }))
-        ]))
+        forZFS = pipe cfg.zpools [
+          (mapAttrsToList (_: val: pipe val.datasets' [
+            (builtins.attrValues)
+            (builtins.filter (d: d.mountpoint != null))
+            (map (d: {
+              name = d.mountpoint;
+              value = {
+                device = d.name;
+                fsType = "zfs";
+                options = [ "zfsutil" ];
+              };
+            }))
+          ]))
+        ];
+      in
+      pipe (forDisks ++ forZFS) [
+        builtins.concatLists
+        builtins.listToAttrs
       ];
-    in
-    pipe (forDisks ++ forZFS) [
-      builtins.concatLists
-      builtins.listToAttrs
-    ];
+  };
 }

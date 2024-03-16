@@ -1,5 +1,9 @@
 { pkgs, lib, config, my-utils, name, ... }:
-let users = config.aquaris.users; in {
+let
+  notSAL = lib.mkIf (! config.aquaris.standalone);
+  users = config.aquaris.users;
+in
+{
   programs.zsh = {
     enable = true;
     enableGlobalCompInit = false;
@@ -7,6 +11,13 @@ let users = config.aquaris.users; in {
   environment.pathsToLink = [ "/share/zsh" ];
 
   users.users = builtins.mapAttrs (_: _: { shell = pkgs.zsh; }) users;
+
+  aquaris.secrets = lib.mapAttrs'
+    (user: cfg: {
+      name = "users/${user}/secretKey";
+      value.user = cfg.name;
+    })
+    users;
 
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
@@ -18,7 +29,7 @@ let users = config.aquaris.users; in {
         fixHtop = hm.lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
           rm -f -v "$HOME/.config/htop/htoprc"
         '';
-
+      } // notSAL {
         linkSSHKey = my-utils.mkHomeLinks [{
           src = config.aquaris.secrets."users/${attrname}/secretKey";
           dst = "$HOME/.ssh/id_ed25519";

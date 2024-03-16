@@ -1,12 +1,23 @@
-{ config, lib, self, aquaris, nixpkgs, home-manager, ... }:
+{ config, lib, self, nixpkgs, home-manager, ... }:
 let
-  inherit (lib) mkForce mkOption pipe types;
+  inherit (lib) mkForce mkOption types;
   inherit (types) attrsOf bool nullOr path str submodule;
   cfg = config.aquaris;
   persist = cfg.persist.root;
+
+  notSAL = lib.mkIf (! cfg.standalone);
 in
 {
   options.aquaris = {
+    standalone = mkOption {
+      type = bool;
+      description = ''
+        If enabled, all Aquaris modules that require explicit configuration
+        (e.g. secrets, filesystem) will be disabled.
+      '';
+      default = false;
+    };
+
     users = mkOption {
       type = attrsOf (submodule ({ name, ... }: {
         options = {
@@ -138,8 +149,8 @@ in
         name = if val.name != null then val.name else name;
         isNormalUser = true;
         extraGroups = if val.isAdmin then [ "wheel" "networkmanager" ] else [ ];
-        hashedPasswordFile = config.aquaris.secrets."users/${name}/passwordHash".outPath;
-        openssh.authorizedKeys.keys = [ val.publicKey ];
+        hashedPasswordFile = notSAL config.aquaris.secrets."users/${name}/passwordHash".outPath;
+        openssh.authorizedKeys.keys = notSAL [ val.publicKey ];
       })
       cfg.users;
 
@@ -153,7 +164,7 @@ in
         PasswordAuthentication = false;
         PermitRootLogin = "no";
       };
-      hostKeys = [{
+      hostKeys = notSAL [{
         path = cfg.machine.secretKey;
         type = "ed25519";
       }];
