@@ -1,4 +1,4 @@
-{ pkgs, lib, config, my-utils, name, ... }:
+{ obscura, pkgs, lib, config, my-utils, name, ... }:
 let
   notSAL = lib.mkIf (! config.aquaris.standalone);
   users = config.aquaris.users;
@@ -165,15 +165,7 @@ in
 
       htop = {
         enable = true;
-        package = pkgs.htop.overrideAttrs rec {
-          version = "5d778ea";
-          src = pkgs.fetchFromGitHub {
-            owner = "htop-dev";
-            repo = "htop";
-            rev = version;
-            hash = "sha256-EAqirkDle0VbG4VEaiWwIAgISP8JsUAkgfkGQWAAXkc=";
-          };
-        };
+        package = obscura.packages.${pkgs.system}.my-htop;
         settings = {
           account_guest_in_cpu_meter = 1;
           color_scheme = 5;

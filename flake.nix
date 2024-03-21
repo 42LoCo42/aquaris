@@ -6,6 +6,8 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    obscura.url = "github:42loco42/obscura";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
