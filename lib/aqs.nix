@@ -9,7 +9,7 @@ let
 
   getKeys = set: pipe set [
     builtins.attrValues
-    (map (i: i.publicKey))
+    (map (i: i.publicKey or ""))
   ];
 
   toplevel = getKeys users ++ getKeys machines;
@@ -23,14 +23,14 @@ let
 
   machineKeysForUser = userN: pipe machines [
     (filterAttrs (_: isUserInMachine userN))
-    (mapAttrsToList (_: m: m.publicKey))
+    (mapAttrsToList (_: m: m.publicKey or ""))
   ];
 
-  user = builtins.mapAttrs (userN: userV: [ userV.publicKey ] ++ machineKeysForUser userN) users;
+  user = builtins.mapAttrs (userN: userV: [ userV.publicKey or "" ] ++ machineKeysForUser userN) users;
 
   ##### machine secrets: for that machine & its admins #####
 
-  adminKeys = machine: mapAttrsToList (_: a: a.publicKey) (machine.admins or { });
-  machine = builtins.mapAttrs (_: m: [ m.publicKey ] ++ adminKeys m) machines;
+  adminKeys = machine: mapAttrsToList (_: a: a.publicKey or "") (machine.admins or { });
+  machine = builtins.mapAttrs (_: m: [ m.publicKey or "" ] ++ adminKeys m) machines;
 in
 { inherit toplevel user machine; }
