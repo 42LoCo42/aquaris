@@ -10,6 +10,7 @@ let
     pipe
     types;
   inherit (lib.attrsets) mergeAttrsList;
+  inherit (lib.filesystem) listFilesRecursive;
   inherit (types)
     attrsOf
     path
@@ -62,32 +63,34 @@ in
     aquaris.secrets =
       let
         secrets = "${self}/secrets";
-        strip = builtins.replaceStrings [ ".age" ] [ "" ];
-        readDirMaybe = dir:
-          if builtins.pathExists dir then builtins.readDir dir else { };
+        maybePipe = dir: if builtins.pathExists dir then pipe dir else (_: { });
 
-        toplevel = pipe secrets [
-          readDirMaybe
+        collect = dir: group:
+          let dir' = "${secrets}/${dir}"; in maybePipe dir' [
+            listFilesRecursive
+            (map (source: {
+              name = group + builtins.replaceStrings [ dir' ".age" ] [ "" "" ]
+                # listFilesRecursive adds context we don't need in a name
+                (builtins.unsafeDiscardStringContext source);
+              value = { inherit source; };
+            }))
+            builtins.listToAttrs
+          ];
+
+        toplevel = maybePipe secrets [
+          builtins.readDir
           (filterAttrs (_: typ: typ == "regular"))
-          (mapAttrs' (sec: _: {
-            name = strip sec;
-            value.source = "${secrets}/${sec}";
-          }))
-        ];
-
-        collect = dir: out: pipe "${secrets}/${dir}" [
-          readDirMaybe
-          (mapAttrs' (sec: _: {
-            name = strip "${out}/${sec}";
-            value.source = "${secrets}/${dir}/${sec}";
+          (mapAttrs' (name: _: {
+            name = builtins.replaceStrings [ ".age" ] [ "" ] name;
+            value.source = "${secrets}/${name}";
           }))
         ];
 
         machine = collect "machines/${cfg.machine.name}" "machine";
 
         user = pipe cfg.users [
-          (mapAttrsToList (userN: _:
-            let d = "users/${userN}"; in collect d d))
+          builtins.attrNames
+          (map (u: collect "users/${u}" "users/${u}"))
           mergeAttrsList
         ];
       in
