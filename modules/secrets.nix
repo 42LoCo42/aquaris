@@ -110,6 +110,11 @@ in
             (s: s + ''
               wait
               ln -sfT "${d}" "${cfg.secretsDir}"
+
+              echo "[aqs] collecting garbage"
+              ${pkgs.findutils}/bin/find "${cfg.secretsDir}.d" -mindepth 1 -maxdepth 1 \
+              | grep -v "${d}" \
+              | ${pkgs.findutils}/bin/xargs rm -rfv
             '')
           ];
 
