@@ -295,7 +295,7 @@ in
 
       zsh = let cache = "$HOME/.cache/zsh"; in {
         enable = true;
-        enableAutosuggestions = true;
+        autosuggestions.enable = true;
         syntaxHighlighting.enable = true;
 
         autocd = true;
