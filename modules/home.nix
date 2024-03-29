@@ -1,6 +1,6 @@
 { obscura, pkgs, lib, config, my-utils, name, ... }:
 let
-  notSAL = lib.mkIf (! config.aquaris.standalone);
+  notSAL = x: if config.aquaris.standalone then { } else x;
   users = config.aquaris.users;
 in
 {
@@ -24,17 +24,19 @@ in
   home-manager.users = (f: builtins.mapAttrs f users) (attrname: user: hm: {
     home = {
       stateVersion = "24.05";
-      activation = {
-        # this is before the write boundary on purpose
-        fixHtop = hm.lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-          rm -f -v "$HOME/.config/htop/htoprc"
-        '';
-      } // notSAL {
-        linkSSHKey = my-utils.mkHomeLinks [{
-          src = config.aquaris.secrets."users/${attrname}/secretKey";
-          dst = "$HOME/.ssh/id_ed25519";
-        }];
-      };
+      activation = lib.recursiveUpdate
+        {
+          # this is before the write boundary on purpose
+          fixHtop = hm.lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+            rm -f -v "$HOME/.config/htop/htoprc"
+          '';
+        }
+        (notSAL {
+          linkSSHKey = my-utils.mkHomeLinks [{
+            src = config.aquaris.secrets."users/${attrname}/secretKey";
+            dst = "$HOME/.ssh/id_ed25519";
+          }];
+        });
 
       file = {
         ".profile".text = ''
