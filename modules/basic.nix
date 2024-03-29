@@ -1,4 +1,4 @@
-{ config, lib, self, nixpkgs, home-manager, ... }:
+{ pkgs, config, lib, self, nixpkgs, home-manager, ... }:
 let
   inherit (lib) mkForce mkOption types;
   inherit (types) attrsOf bool nullOr path str submodule;
@@ -202,6 +202,7 @@ in
       };
     };
 
+    nix.package = pkgs.nixUnstable;
     nix.settings = {
       auto-optimise-store = true; # hardlink duplicate store files, massively decreases disk usage
       experimental-features = [ "nix-command" "flakes" ]; # enable flakes
