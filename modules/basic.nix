@@ -122,6 +122,14 @@ in
     system.stateVersion = "24.05";
     zramSwap.enable = true;
 
+    # keep flake inputs from being garbage collected
+    system.extraDependencies =
+      let
+        collect = flake: [ flake.outPath ] ++
+          builtins.concatMap collect (builtins.attrValues flake.inputs);
+      in
+      collect self;
+
     boot = {
       loader = {
         timeout = 0;
