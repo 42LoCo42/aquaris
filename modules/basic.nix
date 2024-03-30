@@ -125,10 +125,20 @@ in
     # keep flake inputs from being garbage collected
     system.extraDependencies =
       let
-        collect = flake: [ flake.outPath ] ++
-          builtins.concatMap collect (builtins.attrValues flake.inputs);
+        collect =
+          { flake, visited ? [ ] }:
+          if builtins.elem flake.narHash visited then [ ] else
+          nixpkgs.lib.pipe flake.inputs [
+            builtins.attrValues
+            (builtins.concatMap (input: collect {
+              flake = input;
+              visited = visited ++ [ flake.narHash ];
+            }))
+            (x: x ++ [ flake.outPath ])
+            nixpkgs.lib.unique
+          ];
       in
-      collect self;
+      collect { flake = self; };
 
     boot = {
       loader = {

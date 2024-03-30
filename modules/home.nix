@@ -92,7 +92,7 @@ in
         rmdir = "rmdir -pv";
         vi = "vi -p";
         vim = "vim -p";
-        yay = "nix flake update path:$HOME/config && switch";
+        yay = "nix flake update --flake path:$HOME/config && switch";
 
         g = "git";
 
