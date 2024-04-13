@@ -127,18 +127,22 @@ in
       let
         collect =
           { flake, visited ? [ ] }:
-          if builtins.elem flake.narHash visited then [ ] else
-          nixpkgs.lib.pipe flake.inputs [
-            builtins.attrValues
-            (builtins.concatMap (input: collect {
-              flake = input;
-              visited = visited ++ [ flake.narHash ];
-            }))
-            (x: x ++ [ flake.outPath ])
-            nixpkgs.lib.unique
-          ];
+          if builtins.elem flake.narHash visited ||
+            ! builtins.hasAttr "inputs" flake
+          then [ ] else
+            lib.pipe flake.inputs [
+              builtins.attrValues
+              (builtins.concatMap (input: collect {
+                flake = input;
+                visited = visited ++ [ flake.narHash ];
+              }))
+              (x: x ++ [ flake.outPath ])
+              lib.unique
+            ];
       in
-      collect { flake = self; };
+      collect {
+        flake = self;
+      };
 
     boot = {
       loader = {
