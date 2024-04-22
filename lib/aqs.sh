@@ -84,7 +84,7 @@ edit() {
 }
 
 decrypt() {
-	mapfile -td " " args < <(printf -- "-i %s " "${foundIDs[@]}" "${extraIDs[@]}")
+	mapfile -td " " args < <(echo -n "${foundIDs[@]/#/-i }" "${extraIDs[@]/#/-i }")
 	age "${args[@]}" -o "$2" -d "$1"
 }
 
