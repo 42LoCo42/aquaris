@@ -210,7 +210,6 @@ let
           autoexpand = "on";
           autoreplace = "on";
           autotrim = "on";
-          listsnapshots = "on";
         };
       };
       rootOpts = mkOption {

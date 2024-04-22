@@ -5,32 +5,40 @@ let
     mapAttrsToList
     pipe;
 
-  ##### toplevel: all keys #####
+  keysFor = o: [ o.publicKey or "" ] ++ (o.extraKeys or [ ]);
 
   getKeys = set: pipe set [
     builtins.attrValues
-    (map (i: i.publicKey or ""))
+    (map keysFor)
+    builtins.concatLists
   ];
+
+  ##### toplevel: all keys #####
 
   toplevel = getKeys users ++ getKeys machines;
 
   ##### user secrets: for that user & the machines they are part of #####
 
-  isUserInMachine = userN: machine: pipe machine [
-    (m: builtins.attrNames (m.admins or { }) ++ builtins.attrNames (m.users or { }))
-    (builtins.elem userN)
+  isUserInMachine = uN: m: pipe m [
+    (m: builtins.attrNames ((m.admins or { }) // m.users or { }))
+    (builtins.elem uN)
   ];
 
-  machineKeysForUser = userN: pipe machines [
-    (filterAttrs (_: isUserInMachine userN))
-    (mapAttrsToList (_: m: m.publicKey or ""))
+  machineKeysForUser = uN: pipe machines [
+    (filterAttrs (_: isUserInMachine uN))
+    (mapAttrsToList (_: keysFor))
+    (builtins.concatLists)
   ];
 
-  user = builtins.mapAttrs (userN: userV: [ userV.publicKey or "" ] ++ machineKeysForUser userN) users;
+  user = builtins.mapAttrs (uN: uV: keysFor uV ++ machineKeysForUser uN) users;
 
   ##### machine secrets: for that machine & its admins #####
 
-  adminKeys = machine: mapAttrsToList (_: a: a.publicKey or "") (machine.admins or { });
-  machine = builtins.mapAttrs (_: m: [ m.publicKey or "" ] ++ adminKeys m) machines;
+  machine = builtins.mapAttrs
+    (_: m: keysFor m ++ pipe (m.admins or { }) [
+      (mapAttrsToList (_: keysFor))
+      builtins.concatLists
+    ])
+    machines;
 in
 { inherit toplevel user machine; }

@@ -1,7 +1,7 @@
 { config, lib, self, nixpkgs, home-manager, ... }:
 let
   inherit (lib) mkForce mkOption types;
-  inherit (types) attrsOf bool nullOr path str submodule;
+  inherit (types) attrsOf bool listOf nullOr path str submodule;
   cfg = config.aquaris;
   persist = cfg.persist.root;
 
@@ -41,6 +41,14 @@ in
             '';
           };
 
+          extraKeys = mkOption {
+            type = listOf str;
+            description = ''
+              Extra SSH public keys for logins.
+            '';
+            default = [ ];
+          };
+
           git = {
             name = mkOption { type = nullOr str; default = null; };
             email = mkOption { type = nullOr str; default = null; };
@@ -77,6 +85,14 @@ in
           SSH ed25519 public key of the machine.
           Will be used as host key & to select secrets.
         '';
+      };
+
+      extraKeys = mkOption {
+        type = listOf str;
+        description = ''
+          Extra SSH public keys for secrets
+        '';
+        default = [ ];
       };
 
       # inheritance end
@@ -145,12 +161,12 @@ in
 
     users.mutableUsers = false; # mutability is cringe
     users.users = builtins.mapAttrs
-      (name: val: {
-        name = if val.name != null then val.name else name;
+      (uN: uV: {
+        name = if uV.name != null then uV.name else uN;
         isNormalUser = true;
-        extraGroups = if val.isAdmin then [ "wheel" "networkmanager" ] else [ ];
-        hashedPasswordFile = notSAL config.aquaris.secrets."users/${name}/passwordHash".outPath;
-        openssh.authorizedKeys.keys = notSAL [ val.publicKey ];
+        extraGroups = if uV.isAdmin then [ "wheel" "networkmanager" ] else [ ];
+        hashedPasswordFile = notSAL config.aquaris.secrets."users/${uN}/passwordHash".outPath;
+        openssh.authorizedKeys.keys = notSAL ([ uV.publicKey ] ++ uV.extraKeys);
       })
       cfg.users;
 
