@@ -94,6 +94,7 @@ let
               program = pkgs.lib.getExe (pkgs.writeShellApplication {
                 name = "${name}-installer";
                 runtimeInputs = with pkgs; [
+                  nix # provide stable nix here to fix "path foo not in Nix store"
                   nix-output-monitor
                 ];
                 text = my-utils.subsT ../todo/installer.sh {

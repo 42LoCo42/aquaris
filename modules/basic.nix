@@ -1,4 +1,4 @@
-{ config, lib, self, nixpkgs, home-manager, ... }:
+{ pkgs, config, lib, self, nixpkgs, home-manager, ... }:
 let
   inherit (lib) mkForce mkOption types;
   inherit (types) attrsOf bool listOf nullOr path str submodule;
@@ -138,6 +138,28 @@ in
     system.stateVersion = "24.05";
     zramSwap.enable = true;
 
+    # keep flake inputs from being garbage collected
+    system.extraDependencies =
+      let
+        collect =
+          { flake, visited ? [ ] }:
+          if builtins.elem flake.narHash visited ||
+            ! builtins.hasAttr "inputs" flake
+          then [ ] else
+            lib.pipe flake.inputs [
+              builtins.attrValues
+              (builtins.concatMap (input: collect {
+                flake = input;
+                visited = visited ++ [ flake.narHash ];
+              }))
+              (x: x ++ [ flake.outPath ])
+              lib.unique
+            ];
+      in
+      collect {
+        flake = self;
+      };
+
     boot = {
       loader = {
         timeout = 0;
@@ -210,6 +232,7 @@ in
       };
     };
 
+    nix.package = pkgs.nixUnstable;
     nix.settings = {
       auto-optimise-store = true; # hardlink duplicate store files, massively decreases disk usage
       experimental-features = [ "nix-command" "flakes" ]; # enable flakes
