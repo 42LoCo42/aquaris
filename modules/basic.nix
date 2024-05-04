@@ -232,7 +232,7 @@ in
       };
     };
 
-    nix.package = pkgs.nixUnstable;
+    nix.package = pkgs.nixVersions.latest;
     nix.settings = {
       auto-optimise-store = true; # hardlink duplicate store files, massively decreases disk usage
       experimental-features = [ "nix-command" "flakes" ]; # enable flakes
