@@ -257,7 +257,7 @@ in
               call deoplete#custom#option("auto_complete_delay", 0)
             '';
           }
-          { plugin = suda-vim; config = "let g:suda_smart_edit = 1"; }
+          { plugin = vim-suda; config = "let g:suda_smart_edit = 1"; }
         ];
       };
 
