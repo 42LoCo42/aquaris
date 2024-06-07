@@ -1,6 +1,7 @@
 filetype plugin on
 syntax on
-set bg=light
+set termguicolors
+set bg=dark
 set go=a
 set mouse=a
 set nohlsearch
