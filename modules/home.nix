@@ -243,49 +243,17 @@ in
         vimdiffAlias = true;
 
         extraConfig = builtins.readFile ./misc/init.vim;
+        extraLuaConfig = builtins.readFile ./misc/nvim.lua;
 
-        plugins = with pkgs.vimPlugins; let
-          autoclose-nvim' = {
-            plugin = autoclose-nvim;
-            config = ''
-              lua require("autoclose").setup({})
-            '';
-          };
-
-          deoplete-nvim' = {
-            plugin = deoplete-nvim;
-            config = ''
-              call deoplete#enable()
-              call deoplete#custom#option("auto_complete_delay", 0)
-            '';
-          };
-
-          gruvbox-nvim' = {
-            plugin = gruvbox-nvim;
-            config = ''
-              lua require("gruvbox").setup({
-                terminal_colors = true,
-                transparent_mode = true,
-              })
-
-              colorscheme gruvbox
-            '';
-          };
-
-          vim-suda' = {
-            plugin = vim-suda;
-            config = "let g:suda_smart_edit = 1";
-          };
-        in
-        [
+        plugins = with pkgs.vimPlugins; [
           airline
           ale
-          autoclose-nvim'
-          deoplete-nvim'
+          autoclose-nvim
+          deoplete-nvim
           gitgutter
-          gruvbox-nvim'
+          gruvbox-nvim
           vim-nix
-          vim-suda'
+          vim-suda
         ];
       };
 

@@ -1,3 +1,8 @@
+call deoplete#enable()
+call deoplete#custom#option('auto_complete_delay', 0)
+
+let g:suda_smart_edit = 1
+
 filetype plugin on
 syntax on
 set termguicolors
