@@ -285,7 +285,7 @@ in
         terminal = "tmux-256color";
 
         extraConfig = my-utils.subsT ./misc/tmux.conf {
-          tmux-bspwm = ./misc/tmux-bspwm.sh;
+          tmux-bspwm = "${./misc/tmux-bspwm.sh}";
         };
       };
 
