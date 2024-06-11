@@ -138,28 +138,6 @@ in
     system.stateVersion = "24.05";
     zramSwap.enable = true;
 
-    # keep flake inputs from being garbage collected
-    system.extraDependencies =
-      let
-        collect =
-          { flake, visited ? [ ] }:
-          if builtins.elem flake.narHash visited ||
-            ! builtins.hasAttr "inputs" flake
-          then [ ] else
-            lib.pipe flake.inputs [
-              builtins.attrValues
-              (builtins.concatMap (input: collect {
-                flake = input;
-                visited = visited ++ [ flake.narHash ];
-              }))
-              (x: x ++ [ flake.outPath ])
-              lib.unique
-            ];
-      in
-      collect {
-        flake = self;
-      };
-
     boot = {
       loader = {
         timeout = 0;
@@ -260,5 +238,25 @@ in
       repo = "nixpkgs";
       inherit (self.inputs.nixpkgs) rev;
     };
+    system.extraDependencies = [ self.inputs.nixpkgs ];
+    # TODO figure out if we can remove this
+    # system.extraDependencies =
+    #   let
+    #     collect =
+    #       { flake, visited ? [ ] }:
+    #       if builtins.elem flake.narHash visited ||
+    #         ! builtins.hasAttr "inputs" flake
+    #       then [ ] else
+    #         lib.pipe flake.inputs [
+    #           builtins.attrValues
+    #           (builtins.concatMap (input: collect {
+    #             flake = input;
+    #             visited = visited ++ [ flake.narHash ];
+    #           }))
+    #           (x: x ++ [ flake.outPath ])
+    #           lib.unique
+    #         ];
+    #   in
+    #   collect { flake = self; };
   };
 }
