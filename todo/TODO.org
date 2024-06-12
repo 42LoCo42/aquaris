@@ -1,3 +1,14 @@
+* MAJOR rewrite/reorganization
+- yeet the multimodule stuff, just have a single aquaris module
+- add toggles for all subsystems to allow precise control without hacks
+- remove central machine control section, instead just wrap the flake
+  and read everything from machine config files
+  (users could still be configured globally? don't see a problem here)
+- move =my-utils= functions into something like =aquaris.lib=
+  to not clutter the global namespace
+- don't mess with config inputs in general
+- look at flake-parts and snowfall-lib
+
 * Improve =aquaris.filesystem=
 - some good templates
   - 512M ESP, ZFS rpool with persist/home/<name> for each user
