@@ -216,11 +216,13 @@ in
       experimental-features = [ "nix-command" "flakes" ]; # enable flakes
       substituters = [
         "https://nix-community.cachix.org"
-        "https://42loco42.cachix.org"
+        "https://42loco42.cachix.org" # retired
+        "https://attic.eleonora.gay/default"
       ];
       trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        "42loco42.cachix.org-1:6HvWFER3RdTSqEZDznqahkqaoI6QCOiX2gRpMMsThiQ="
+        "42loco42.cachix.org-1:6HvWFER3RdTSqEZDznqahkqaoI6QCOiX2gRpMMsThiQ=" # retired
+        "default:3FYh8sZV8gWa7Jc5jlP7gZFK7pt3kaHRiV70ySaQ42g="
       ];
     };
 
@@ -239,24 +241,5 @@ in
       inherit (self.inputs.nixpkgs) rev;
     };
     system.extraDependencies = [ self.inputs.nixpkgs ];
-    # TODO figure out if we can remove this
-    # system.extraDependencies =
-    #   let
-    #     collect =
-    #       { flake, visited ? [ ] }:
-    #       if builtins.elem flake.narHash visited ||
-    #         ! builtins.hasAttr "inputs" flake
-    #       then [ ] else
-    #         lib.pipe flake.inputs [
-    #           builtins.attrValues
-    #           (builtins.concatMap (input: collect {
-    #             flake = input;
-    #             visited = visited ++ [ flake.narHash ];
-    #           }))
-    #           (x: x ++ [ flake.outPath ])
-    #           lib.unique
-    #         ];
-    #   in
-    #   collect { flake = self; };
   };
 }
