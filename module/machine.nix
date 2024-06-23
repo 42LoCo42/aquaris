@@ -73,10 +73,14 @@ in
     };
 
     networking = {
-      networkmanager.enable = mkDefault true;
       hostId = builtins.substring 0 8 cfg.id; # for ZFS
       hostName = aquaris.name;
       useNetworkd = mkDefault true;
+
+      networkmanager = {
+        enable = true;
+        plugins = lib.mkOverride 99 [ ];
+      };
     };
 
     nix = {
