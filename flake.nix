@@ -1,65 +1,57 @@
 {
-  inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
-
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-
-    obscura.url = "github:42loco42/obscura";
-  };
-
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs = { self, nixpkgs }:
     let
-      nixosModules = import ./lib/modules.nix { inherit self nixpkgs; };
-      lib = import ./lib/entrypoint.nix { aquaris = self; inherit inputs nixosModules; };
-    in
-    {
-      inherit nixosModules lib;
-      templates.default = {
-        path = ./template;
-        description = "Blank Aquaris config flake";
+      inherit (nixpkgs.lib) pipe filterAttrs nixosSystem;
+      out = {
+        nixosModules.default = import ./module;
+
+        __functor = _: src: cfg:
+          let
+            nixosConfigurations =
+              let
+                # import every nix file in the machine config directory
+                # add the aquaris module
+                mkConfig = dir: pipe dir [
+                  builtins.readDir
+                  (filterAttrs (file: type:
+                    type == "regular" && builtins.match ".*\.nix" file != null))
+                  builtins.attrNames
+                  (map (x: import "${dir}/${x}"))
+                  (x: nixosSystem {
+                    modules = x ++ [ out.nixosModules.default ];
+                    specialArgs.aquaris = cfg;
+                    # system is set by the hardware config
+                  })
+                ];
+                dir = "${src}/machines";
+              in
+              # mkConfig every directory in src/machines/
+              pipe dir [
+                builtins.readDir
+                builtins.attrNames
+                (map (x: {
+                  name = x;
+                  value = mkConfig "${dir}/${x}";
+                }))
+                builtins.listToAttrs
+              ];
+          in
+          { inherit nixosConfigurations; };
       };
-    } // (
-      let
-        users = {
-          leonsch = {
-            publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVieLCkWGImVI9c7D0Z0qRxBAKf0eaQWUfMn0uyM/Ql";
-            git = {
-              name = "Leon Schumacher";
-              email = "leonsch@protonmail";
-              key = "C743EE077172986F860FC0FE2F6FE1420970404C";
-            };
+    in
+    out // out self
+      # shared config passed as aquaris to every machine
+      # here used for shared user templates
+      {
+        users = rec {
+          alice = {
+            key = "foo";
           };
 
-          guy = {
-            name = "justaguy"; # override actual user name
-            publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7FppRoKRh+rTSnxFHodYmZ6lVEa4UWN7c0Sgy+trgl";
-            git = {
-              name = "J. A. Guy";
-              email = "guy@example.org";
-              # key is optional
-            };
+          bob = {
+            key = "bar";
+            extraKeys = [ alice.key ];
           };
         };
-
-        machines = {
-          castor = {
-            id = "10ec6fa7b2fdeea772a40b31658fead8";
-            publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH8ebcoYSzs9koGhq9KtIqwgcJYj0siYdYv6hVUT/S/G";
-            admins = { inherit (users) leonsch; }; # admins get sudo permissions & encryption access to machine secrets
-            users = { inherit (users) guy; };
-          };
-
-          pollux = {
-            # system = "aarch64-linux"; # optional, x86_64-linux is default
-            id = "e755aeadc6c3f08afd03cf71658c2190";
-            publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGosXDmm4fVV28nlworyjrUxNLzqMVDqbkXGipM7ls+B";
-            admins = { inherit (users) guy; };
-          };
-        };
-      in
-      lib.main self { inherit users machines; }
-    );
+      };
 }

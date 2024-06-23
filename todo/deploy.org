@@ -1,0 +1,46 @@
+* Environments
+- foreign
+- installer
+- system
+
+* Actions
+- kexec: in foreign, transfers to installer
+- mount: in installer, =aquaris.filesystem._mount= on /mnt
+- enter: in installer, requires mount, =nixos-enter=
+
+- overlay: in installer, requires mount
+  #+begin_src shell
+    name="nix-store-$RANDOM"
+    trap 'umount -l "$name"' EXIT
+    mount "$name" /nix/store -t overlay -o lowerdir=/nix/store:/mnt/nix/store
+  #+end_src
+
+- build:
+  #+begin_src shell
+    nom build \
+        --extra-experimental-features "nix-command flakes" \
+        --extra-substituters "@subs@" \
+        --extra-trusted-public-keys "@keys@" \
+        --store /mnt \
+        --no-link --print-out-paths \
+        "@self@#nixosConfigurations.@name@.config.system.build.toplevel"
+  #+end_src
+  these flags are only required in installer:
+  - extra-experimental-features
+  - extra-substituters
+  - extra-trusted-public-keys
+  - (Aquaris sets above in system's nix.conf)
+  - store (on system, store is implicit =/=)
+
+- activate:
+  #+begin_src shell
+    declare sys # output of build
+
+    # in installer:
+    nixos-install --no-channel-copy --no-root-password --system "$sys"
+
+    # in system:
+    nvd diff "/run/current-system" "$sys"
+    nix-env --set --profile /nix/var/nix/profiles/system "$sys"
+    "$sys/bin/switch-to-configuration" switch
+  #+end_src
