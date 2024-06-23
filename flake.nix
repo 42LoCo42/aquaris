@@ -1,7 +1,9 @@
 {
   outputs = { self, nixpkgs }:
     let
-      inherit (nixpkgs.lib) pipe filterAttrs nixosSystem;
+      inherit (nixpkgs.lib) filterAttrs nixosSystem pipe;
+      lib = import ./lib.nix self.inputs;
+
       out = {
         nixosModules.default = import ./module;
 
@@ -22,8 +24,8 @@
                     modules = x ++ [ out.nixosModules.default ];
                     specialArgs = self.inputs // {
                       aquaris = {
-                        inherit cfg name;
-                        lib = import ./lib.nix self.inputs;
+                        inherit cfg lib name;
+                        src = self;
                       };
                       self = src;
                     };
@@ -41,8 +43,16 @@
                 }))
                 builtins.listToAttrs
               ];
+
+            packages = pipe nixosConfigurations [
+              builtins.attrValues
+              (map (x:
+                let installer = x.config.aquaris.installer; in
+                { ${x.pkgs.system}.${installer.name} = installer; }))
+              lib.merge
+            ];
           in
-          { inherit nixosConfigurations; };
+          { inherit nixosConfigurations packages; };
       };
     in
     out // out self
