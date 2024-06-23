@@ -1,6 +1,6 @@
 { self, aquaris, nixpkgs, lib, config, pkgs, ... }:
 let
-  inherit (lib) mkDefault mkForce mkIf mkOption;
+  inherit (lib) mkDefault mkForce mkOption;
   inherit (lib.types) bool str;
   cfg = config.aquaris.machine;
 
@@ -14,12 +14,6 @@ in
       type = str;
     };
 
-    enableSSH = mkOption {
-      description = "Whether to enable the OpenSSH server";
-      type = bool;
-      default = true;
-    };
-
     secureboot = mkOption {
       description = "Whether to enable Secure Boot support using lanzaboote";
       type = bool;
@@ -30,11 +24,6 @@ in
   imports = [ lanza041.nixosModules.lanzaboote ];
 
   config = {
-    system = {
-      extraDependencies = [ nixpkgs ];
-      stateVersion = "24.05";
-    };
-
     boot = {
       initrd.systemd.enable = mkDefault true;
 
@@ -78,7 +67,7 @@ in
       useNetworkd = mkDefault true;
 
       networkmanager = {
-        enable = true;
+        enable = mkDefault true;
         plugins = lib.mkOverride 99 [ ];
       };
     };
@@ -102,8 +91,8 @@ in
     services = {
       journald.extraConfig = mkDefault "SystemMaxUse=100M";
 
-      openssh = mkIf cfg.enableSSH {
-        enable = true;
+      openssh = {
+        enable = mkDefault true;
 
         settings = {
           PasswordAuthentication = false;
@@ -122,6 +111,7 @@ in
     console.keyMap = mkDefault "de-latin1";
     i18n.extraLocaleSettings.LC_COLLATE = mkDefault "C.UTF-8";
     i18n.extraLocaleSettings.LC_TIME = mkDefault "de_DE.UTF-8";
+    system.stateVersion = "24.05";
     systemd.extraConfig = mkDefault "DefaultTimeoutStopSec=5s";
     time.timeZone = mkDefault "Europe/Berlin";
     zramSwap.enable = mkDefault true;
