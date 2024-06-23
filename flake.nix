@@ -5,8 +5,6 @@
       lib = import ./lib.nix self.inputs;
 
       out = {
-        nixosModules.default = import ./module;
-
         __functor = _: src: cfg:
           let
             nixosConfigurations =
@@ -21,7 +19,7 @@
                   (map (x: import "${dir}/${x}"))
                   (x: nixosSystem {
                     # system is set by the hardware config
-                    modules = x ++ [ out.nixosModules.default ];
+                    modules = x ++ [ ./module ];
                     specialArgs = self.inputs // {
                       aquaris = {
                         inherit cfg lib name;
