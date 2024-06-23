@@ -1,6 +1,6 @@
 { self, aquaris, nixpkgs, lib, config, pkgs, ... }:
 let
-  inherit (lib) mkDefault mkForce mkOption;
+  inherit (lib) mkDefault mkOption;
   inherit (lib.types) bool str;
   cfg = config.aquaris.machine;
 
@@ -11,6 +11,14 @@ in
   options.aquaris.machine = {
     id = mkOption {
       description = "The machine ID (used by systemd and others)";
+      type = str;
+    };
+
+    key = mkOption {
+      description = ''
+        AQS encryption public key.
+        If null, secrets management is disabled for this machine.
+      '';
       type = str;
     };
 

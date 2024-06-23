@@ -36,6 +36,11 @@ let
       }))
       builtins.listToAttrs
     ];
+in
+{
+  inherit nixosConfigurations;
+
+  aqscfg = import ./aqs/aqscfg.nix { inherit nixpkgs nixosConfigurations; };
 
   packages = pipe nixosConfigurations [
     builtins.attrValues
@@ -44,5 +49,4 @@ let
       { ${x.pkgs.system}.${installer.name} = installer; }))
     lib.merge
   ];
-in
-{ inherit nixosConfigurations packages; }
+}
