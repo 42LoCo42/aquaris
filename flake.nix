@@ -18,13 +18,15 @@
                   builtins.attrNames
                   (map (x: import "${dir}/${x}"))
                   (x: nixosSystem {
+                    # system is set by the hardware config
                     modules = x ++ [ out.nixosModules.default ];
                     specialArgs = self.inputs // {
-                      aquaris = { inherit cfg name; };
+                      aquaris = {
+                        inherit cfg name;
+                        lib = import ./lib.nix self.inputs;
+                      };
                       self = src;
                     };
-
-                    # system is set by the hardware config
                   })
                 ];
                 dir = "${src}/machines";
