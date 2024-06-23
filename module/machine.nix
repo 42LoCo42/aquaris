@@ -1,7 +1,7 @@
 { self, aquaris, nixpkgs, lib, config, pkgs, ... }:
 let
   inherit (lib) mkDefault mkOption;
-  inherit (lib.types) bool str;
+  inherit (lib.types) bool path str;
   cfg = config.aquaris.machine;
 
   # pin exactly this version since it's cached in nix-community.cachix.org
@@ -14,18 +14,21 @@ in
       type = str;
     };
 
-    key = mkOption {
-      description = ''
-        AQS encryption public key.
-        If null, secrets management is disabled for this machine.
-      '';
-      type = str;
-    };
-
     secureboot = mkOption {
       description = "Whether to enable Secure Boot support using lanzaboote";
       type = bool;
       default = true;
+    };
+
+    key = mkOption {
+      description = "Public key for secrets management";
+      type = str;
+    };
+
+    secretKey = mkOption {
+      description = "Path to the secret key for secrets management";
+      type = path;
+      default = "/etc/aqs.key";
     };
   };
 
