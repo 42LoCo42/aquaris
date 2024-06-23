@@ -11,7 +11,7 @@
               let
                 # import every nix file in the machine config directory
                 # add the aquaris module
-                mkConfig = dir: pipe dir [
+                mkConfig = name: dir: pipe dir [
                   builtins.readDir
                   (filterAttrs (file: type:
                     type == "regular" && builtins.match ".*\.nix" file != null))
@@ -19,7 +19,11 @@
                   (map (x: import "${dir}/${x}"))
                   (x: nixosSystem {
                     modules = x ++ [ out.nixosModules.default ];
-                    specialArgs.aquaris = cfg;
+                    specialArgs = self.inputs // {
+                      aquaris = { inherit cfg name; };
+                      self = src;
+                    };
+
                     # system is set by the hardware config
                   })
                 ];
@@ -29,9 +33,9 @@
               pipe dir [
                 builtins.readDir
                 builtins.attrNames
-                (map (x: {
-                  name = x;
-                  value = mkConfig "${dir}/${x}";
+                (map (name: {
+                  inherit name;
+                  value = mkConfig name "${dir}/${name}";
                 }))
                 builtins.listToAttrs
               ];
@@ -40,7 +44,7 @@
       };
     in
     out // out self
-      # shared config passed as aquaris to every machine
+      # shared config passed as aquaris.cfg to every machine
       # here used for shared user templates
       {
         users = rec {

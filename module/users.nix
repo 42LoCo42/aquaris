@@ -40,6 +40,8 @@ in
   };
 
   config = {
+    users.mutableUsers = false;
+
     users.users = builtins.mapAttrs
       (name: config: {
         extraGroups = ifEnable config.admin [ "wheel" ];
