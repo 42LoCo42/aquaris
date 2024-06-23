@@ -21,7 +21,7 @@ in
     };
   };
 
-  imports = [ lanza041.nixosModules.lanzaboote ];
+  imports = [ "${lanza041}/nix/modules/lanzaboote.nix" ];
 
   config = {
     boot = {
@@ -36,10 +36,21 @@ in
       lanzaboote = {
         enable = mkDefault cfg.secureboot;
         pkiBundle = "/etc/secureboot";
-        package = mkForce (pkgs.writeShellScriptBin "lzbt" ''
-          [ -e /etc/secureboot/keys ] || ${pkgs.sbctl}/bin/sbctl create-keys
-          exec ${lanza041.packages.${pkgs.system}.tool}/bin/lzbt "$@"
-        '');
+        package = pkgs.writeShellApplication {
+          name = "lzbt";
+
+          runtimeInputs = with pkgs; [
+            lanza041.packages.${pkgs.system}.lzbt
+            sbctl
+          ];
+
+          text = ''
+            if [ ! -e /etc/secureboot/keys ]; then
+              sbctl create-keys
+            fi
+            exec lzbt "$@"
+          '';
+        };
       };
 
       loader = {
