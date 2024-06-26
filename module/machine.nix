@@ -1,7 +1,7 @@
 { self, aquaris, nixpkgs, lib, config, pkgs, ... }:
 let
-  inherit (lib) mkDefault mkOption;
-  inherit (lib.types) bool path str;
+  inherit (lib) ifEnable mkDefault mkOption;
+  inherit (lib.types) bool int nullOr path str;
   cfg = config.aquaris.machine;
 
   # pin exactly this version since it's cached in nix-community.cachix.org
@@ -29,6 +29,12 @@ in
       description = "Path to the secret key for secrets management";
       type = path;
       default = "/etc/aqs.key"; # TODO persist
+    };
+
+    keepGenerations = mkOption {
+      description = "How many generations to keep (null to disable autocleanup)";
+      type = nullOr int;
+      default = 5;
     };
   };
 
@@ -127,6 +133,14 @@ in
         #   type = "ed25519";
         # }];
       };
+    };
+
+    system.activationScripts = ifEnable (! isNull cfg.keepGenerations) {
+      keepGenerations.text = ''
+        ${pkgs.nix}/bin/nix-env                  \
+          --profile /nix/var/nix/profiles/system \
+          --delete-generations "+${toString cfg.keepGenerations}"
+      '';
     };
 
     # misc
