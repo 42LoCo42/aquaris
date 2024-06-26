@@ -108,11 +108,17 @@ in
         experimental-features = [ "nix-command" "flakes" ];
       };
 
-      registry.nixpkgs.to = {
-        type = "github";
-        owner = "nixos";
-        repo = "nixpkgs";
-        inherit (nixpkgs) rev;
+      nixPath = [ "nixpkgs=/etc/nix/channel" ];
+
+      registry = {
+        config.flake = self;
+
+        nixpkgs.to = {
+          type = "github";
+          owner = "nixos";
+          repo = "nixpkgs";
+          inherit (nixpkgs) rev;
+        };
       };
     };
 
