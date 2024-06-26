@@ -8,14 +8,14 @@
     machine = {
       id = "972c7b4d10cdec204831b039667be110";
       key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAe61mAVmVqVWc+ZGoJnWDhMMpVXGwVFxeYH+QI0XSoo";
-      secretKey = "/persist/aqs.key";
+      secretKey = "/persist/aqs.key"; # TODO persist
     };
 
     filesystems = { fs, ... }: {
       zpools.rpool.datasets = {
         "nixos/nix" = { };
-        "nixos/persist" = { };
-        "nixos/home/dev" = { };
+        "nixos/persist" = { }; # TODO persist
+        "nixos/home/dev" = { }; # TODO zfshomes
       };
 
       disks."/dev/disk/by-id/virtio-root" = {
@@ -35,6 +35,7 @@
     };
   };
 
+  ##### TODO persist #####
   fileSystems = {
     "/" = {
       fsType = "tmpfs";
@@ -42,6 +43,31 @@
     };
 
     "/persist".neededForBoot = true;
+
+    "/etc/secureboot" = {
+      device = "/persist/etc/secureboot";
+      options = [ "bind" ];
+    };
+
+    "/var/db/sudo" = {
+      device = "/persist/var/db/sudo";
+      options = [ "bind" ];
+    };
+
+    "/var/lib/NetworkManager" = {
+      device = "/persist/var/lib/NetworkManager";
+      options = [ "bind" ];
+    };
+
+    "/var/lib/nixos" = {
+      device = "/persist/var/lib/nixos";
+      options = [ "bind" ];
+    };
+
+    "/var/lib/systemd" = {
+      device = "/persist/var/lib/systemd";
+      options = [ "bind" ];
+    };
 
     "/var/log" = {
       device = "/persist/var/log";

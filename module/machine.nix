@@ -28,7 +28,7 @@ in
     secretKey = mkOption {
       description = "Path to the secret key for secrets management";
       type = path;
-      default = "/etc/aqs.key";
+      default = "/etc/aqs.key"; # TODO persist
     };
   };
 
@@ -121,7 +121,7 @@ in
           PermitRootLogin = "no";
         };
 
-        # TODO
+        # TODO persist
         # hostKeys = [{
         #   path = cfg.machine.secretKey;
         #   type = "ed25519";
