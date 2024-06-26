@@ -1,6 +1,6 @@
 { self, aquaris, pkgs, config, lib, ... }:
 let
-  inherit (lib) mkOption;
+  inherit (lib) getExe mkOption;
   inherit (lib.types) package;
 in
 {
@@ -11,16 +11,17 @@ in
     '';
     type = package;
     default = pkgs.writeShellApplication {
-      name = "${aquaris.name}-installer";
+      inherit (aquaris) name;
 
-      runtimeInputs = with pkgs; [
-        nix-output-monitor
-        nixos-install-tools
-      ];
+      runtimeInputs = with pkgs; [ nix-output-monitor ];
 
       text = aquaris.lib.subsT ./installer.sh {
         inherit self;
         inherit (aquaris) name;
+
+        format = getExe config.aquaris.filesystems._create;
+        mount = getExe config.aquaris.filesystems._mount;
+
         keys = config.nix.settings.trusted-public-keys;
         subs = config.nix.settings.trusted-substituters;
       };
