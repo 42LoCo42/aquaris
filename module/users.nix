@@ -37,10 +37,12 @@ in
     users.mutableUsers = false;
 
     users.users = builtins.mapAttrs
-      (name: config: {
-        extraGroups = ifEnable config.admin [ "wheel" ];
+      (name: cfg: {
+        inherit (cfg) description;
+        extraGroups = ifEnable cfg.admin [ "wheel" ];
+        hashedPasswordFile = config.aquaris.secrets."users/${name}/passwordHash".outPath or null;
         isNormalUser = mkDefault true;
-        openssh.authorizedKeys.keys = config.sshKeys;
+        openssh.authorizedKeys.keys = cfg.sshKeys;
       })
       cfg;
   };
