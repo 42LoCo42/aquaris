@@ -41,6 +41,8 @@
       options = [ "mode=755" ];
     };
 
+    "/persist".neededForBoot = true;
+
     "/var/log" = {
       device = "/persist/var/log";
       options = [ "bind" ];
