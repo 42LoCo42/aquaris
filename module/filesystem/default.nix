@@ -3,12 +3,10 @@ let
   inherit (lib) ifEnable mkDefault mkOption pipe;
   inherit (lib.types) attrsOf listOf package submodule submoduleWith;
 
-  importContent = file: import file aquaris.lib.adt.addTag;
-
   fs = aquaris.lib.adt {
-    regular = importContent ./regular.nix;
-    swap = importContent ./swap.nix;
-    zpool = importContent ./zpoolMember.nix;
+    regular = ./regular.nix;
+    swap = ./swap.nix;
+    zpool = ./zpoolMember.nix;
   };
 
   getEntries = f: v: pipe v [
@@ -29,9 +27,9 @@ in
     description = "Declarative filesystem configuration";
     type = submoduleWith {
       specialArgs = {
-        fs = fs // {
-          swap = fs.swap { };
-          zpool = f: fs.zpool {
+        fs = fs.mk // {
+          swap = fs.mk.swap { };
+          zpool = f: fs.mk.zpool {
             pool = (f cfg.zpools).name;
           };
         };

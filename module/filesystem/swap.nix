@@ -1,9 +1,9 @@
-addTag: { name, lib, config, ... }:
+{ lib, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib.types) anything functionTo str;
 in
-addTag name {
+{
   options = {
     _create = mkOption {
       type = functionTo str;

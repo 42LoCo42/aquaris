@@ -1,9 +1,9 @@
-addTag: { name, lib, config, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib.types) anything functionTo listOf path str;
 in
-addTag name {
+{
   options = {
     type = mkOption {
       description = "Filesystem type for mkfs";

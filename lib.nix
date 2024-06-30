@@ -54,10 +54,18 @@ rec {
         };
       };
 
-      mkModule = name: val:
-        if builtins.isAttrs val
-        then submodule (addTag name val)
-        else submodule val;
+      mkModule = name:
+        let
+          gen = val:
+            if builtins.isAttrs val
+            then addTag name val
+            else if builtins.isFunction val
+            then args: gen (val args)
+            else if builtins.isPath val
+            then gen (import val)
+            else abort "unsupported ADT entry type ${builtins.typeOf val}";
+        in
+        val: submodule (gen val);
 
       mkType = choices: pipe choices [
         (mapAttrsToList (name: val:
@@ -67,15 +75,14 @@ rec {
         oneOf
       ];
 
-      __functor = _: choices: pipe choices [
+      adt = choices: pipe choices [
         (mapAttrsToList (name: _: {
-          "${name}" = v: recursiveUpdate v { _tag = name; };
           is.${name} = v: v._tag == name;
-          # tag.${name} = name;
+          mk."${name}" = v: recursiveUpdate v { _tag = name; };
           type = mkType choices;
         }))
         (builtins.foldl' recursiveUpdate { })
       ];
     in
-    { inherit addTag __functor; };
+    adt;
 }

@@ -1,9 +1,9 @@
-addTag: { lib, name, config, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib.types) anything functionTo str;
 in
-addTag name {
+{
   options = {
     pool = mkOption {
       description = "Name of the zpool this partition belongs to";
