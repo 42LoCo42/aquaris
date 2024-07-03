@@ -12,6 +12,7 @@ in
 
     _create = mkOption {
       type = functionTo str;
+      readOnly = true;
       default = device: ''
         zpool_${config.pool}+=("${device}")
       '';
@@ -19,6 +20,7 @@ in
 
     _mounts = mkOption {
       type = functionTo anything;
+      readOnly = true;
       default = _: { };
     };
   };

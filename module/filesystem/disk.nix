@@ -32,6 +32,7 @@ in
 
     _create = mkOption {
       type = str;
+      readOnly = true;
       default = ''
         wipefs -af "${config.device}"
         sfdisk "${config.device}" << EOF
@@ -45,6 +46,7 @@ in
 
     _mounts = mkOption {
       type = anything;
+      readOnly = true;
       default = pipe config.partitions [
         (map (x: x._mounts))
         util.merge

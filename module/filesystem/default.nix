@@ -54,6 +54,7 @@ in
 
           _create = mkOption {
             type = package;
+            readOnly = true;
             default = pkgs.writeShellApplication {
               name = "${aquaris.name}-create";
               runtimeInputs = cfg.tools;
@@ -67,6 +68,7 @@ in
 
           _mount = mkOption {
             type = package;
+            readOnly = true;
             default = pkgs.writeShellApplication {
               name = "${aquaris.name}-mount";
               runtimeInputs = cfg.tools;

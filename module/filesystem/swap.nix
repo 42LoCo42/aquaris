@@ -7,6 +7,7 @@ in
   options = {
     _create = mkOption {
       type = functionTo str;
+      readOnly = true;
       default = device: ''
         mkswap --verbose ${device}
       '';
@@ -14,6 +15,7 @@ in
 
     _mounts = mkOption {
       type = functionTo anything;
+      readOnly = true;
       default = device: {
         swapDevices = [{ inherit device; }];
       };

@@ -37,6 +37,7 @@ in
 
     _create = mkOption {
       type = str;
+      readOnly = true;
       default = ''
         zpool create                       \
           ${joinOpts "o" config.poolOpts}  \
@@ -49,6 +50,7 @@ in
 
     _mounts = mkOption {
       type = anything;
+      readOnly = true;
       default = pipe config.datasets [
         builtins.attrValues
         (map (x: x._mounts))

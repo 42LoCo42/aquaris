@@ -40,6 +40,7 @@ in
 
     _entry = mkOption {
       type = str;
+      readOnly = true;
       default = builtins.concatStringsSep "," (
         [ "type=${config.type}" ] ++
         (if config.size != null then [ "size=${config.size}" ] else [ ])
@@ -48,6 +49,7 @@ in
 
     _create = mkOption {
       type = str;
+      readOnly = true;
       default = ''
         wipefs -af "${config.device}"
         ${config.content._create config.device}
@@ -56,6 +58,7 @@ in
 
     _mounts = mkOption {
       type = anything;
+      readOnly = true;
       default = config.content._mounts config.device;
     };
   };

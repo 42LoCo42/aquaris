@@ -4,12 +4,13 @@ let
   inherit (lib.types) package;
 in
 {
-  options.aquaris.installer = mkOption {
+  options.aquaris._installer = mkOption {
     description = ''
       Installation script for this configuration.
       It uses nom and the configured binary caches.
     '';
     type = package;
+    readOnly = true;
     default = pkgs.writeShellApplication {
       inherit (aquaris) name;
 

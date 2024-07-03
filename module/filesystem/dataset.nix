@@ -27,6 +27,7 @@ in
 
     _create = mkOption {
       type = str;
+      readOnly = true;
       default = ''
         zfs create -p \
           ${joinOpts "o" config.options} \
@@ -36,6 +37,7 @@ in
 
     _mounts = mkOption {
       type = anything;
+      readOnly = true;
       default.fileSystems.${config.mountpoint} = {
         device = config.name;
         fsType = "zfs";

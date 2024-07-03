@@ -29,6 +29,7 @@ in
 
     _create = mkOption {
       type = functionTo str;
+      readOnly = true;
       default = device: ''
         mkfs --verbose --type ${config.type} \
           ${builtins.concatStringsSep " " config.mkfsOpts} \
@@ -38,6 +39,7 @@ in
 
     _mounts = mkOption {
       type = functionTo anything;
+      readOnly = true;
       default = device: {
         fileSystems.${config.mountpoint} = {
           inherit device;

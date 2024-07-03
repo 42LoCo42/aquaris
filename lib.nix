@@ -50,6 +50,7 @@ rec {
       addTag = name: val: recursiveUpdate val {
         options._tag = mkOption {
           type = str;
+          readOnly = true;
           default = name;
         };
       };

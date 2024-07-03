@@ -45,7 +45,7 @@ in
   packages = pipe nixosConfigurations [
     builtins.attrValues
     (map (x:
-      let installer = x.config.aquaris.installer; in
+      let installer = x.config.aquaris._installer; in
       { ${x.pkgs.system}.${installer.name} = installer; }))
     lib.merge
   ];
