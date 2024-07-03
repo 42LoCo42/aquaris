@@ -141,7 +141,7 @@ in
       };
     };
 
-    system.activationScripts = ifEnable (! isNull cfg.keepGenerations) {
+    system.activationScripts = ifEnable (cfg.keepGenerations != null) {
       keepGenerations.text = ''
         ${pkgs.nix}/bin/nix-env                  \
           --profile /nix/var/nix/profiles/system \

@@ -35,7 +35,7 @@ in
 
     content = mkOption {
       description = "Partition content";
-      type = fs.type;
+      inherit (fs) type;
     };
 
     _entry = mkOption {

@@ -117,10 +117,10 @@ in
       ];
     in
     {
-      aquaris.filesystems.tools = (with pkgs; [
+      aquaris.filesystems.tools = with pkgs; [
         config.boot.zfs.package
         dosfstools
-      ]);
+      ];
 
       fileSystems = mounts.fileSystems or { };
       swapDevices = mounts.swapDevices or [ ];

@@ -16,7 +16,7 @@ in
       type = nullOr path;
       default =
         let x = builtins.match "[^/]+(/.*)" name;
-        in if isNull x then null else builtins.head x;
+        in if x == null then null else builtins.head x;
     };
 
     options = mkOption {
