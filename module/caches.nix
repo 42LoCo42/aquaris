@@ -37,7 +37,7 @@ in
     ];
 
     nix.settings = {
-      trusted-substituters = map (x: x.url) cfg;
+      substituters = map (x: x.url) cfg;
       trusted-public-keys = map (x: x.key) cfg;
     };
   };

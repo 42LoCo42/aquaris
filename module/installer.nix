@@ -24,7 +24,7 @@ in
         mount = getExe config.aquaris.filesystems._mount;
 
         keys = config.nix.settings.trusted-public-keys;
-        subs = config.nix.settings.trusted-substituters;
+        subs = config.nix.settings.substituters;
       };
     };
   };
