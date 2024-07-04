@@ -1,4 +1,4 @@
-{ nixpkgs, ... }:
+nixpkgs:
 let
   inherit (nixpkgs.lib)
     fileContents

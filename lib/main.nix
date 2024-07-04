@@ -14,7 +14,7 @@ let
         (map (x: import "${dir}/${x}"))
         (x: nixosSystem {
           # system is set by the hardware config
-          modules = x ++ [ ./module ];
+          modules = x ++ [ ../module ];
           specialArgs = self.inputs // {
             aquaris = {
               inherit cfg lib name;
@@ -40,7 +40,7 @@ in
 {
   inherit nixosConfigurations;
 
-  aqscfg = import ./aqs/aqscfg.nix { inherit nixpkgs nixosConfigurations; };
+  aqscfg = import ./aqscfg.nix { inherit nixpkgs nixosConfigurations; };
 
   packages = pipe nixosConfigurations [
     builtins.attrValues

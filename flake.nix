@@ -8,14 +8,14 @@
     obscura.url = "github:42loco42/obscura";
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs = { self, nixpkgs, ... }:
     let
-      lib = import ./lib.nix inputs;
+      lib = import ./lib nixpkgs;
 
-      out = import ./aqs { inherit lib nixpkgs; } // {
+      out = {
         inherit lib;
-        __functor = _: import ./main.nix { inherit self lib nixpkgs; };
-      };
+        __functor = _: import ./lib/main.nix { inherit self lib nixpkgs; };
+      } // import ./packages { inherit lib nixpkgs; };
 
       example = out self {
         # shared config passed as aquaris.cfg to every machine

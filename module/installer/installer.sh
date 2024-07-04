@@ -26,14 +26,12 @@ doInstall() {
 	trap 'umount -l "$overlay"' EXIT
 
 	log "Building system configuration"
-	sys="$(
-		nom build \
-			--extra-experimental-features "nix-command flakes" \
-			--extra-substituters "@subs@" \
-			--extra-trusted-public-keys "@keys@" \
-			--store "$mnt" --no-link --print-out-paths \
-			"@self@#nixosConfigurations.@name@.config.system.build.toplevel"
-	)"
+	sys="$(nom build \
+		--extra-experimental-features "nix-command flakes" \
+		--extra-substituters "@subs@" \
+		--extra-trusted-public-keys "@keys@" \
+		--store "$mnt" --no-link --print-out-paths \
+		"@self@#nixosConfigurations.@name@.config.system.build.toplevel")"
 
 	log "Installing the system"
 	nixos-install \
