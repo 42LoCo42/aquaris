@@ -19,6 +19,8 @@
       ip = "ip -c";
       mkdir = "mkdir -pv";
       rmdir = "rmdir -pv";
+      switch = "sys rebuild";
+      yay = "sys update build switch";
     };
   };
 
