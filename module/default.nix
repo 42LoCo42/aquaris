@@ -1,8 +1,10 @@
 {
   imports = [
     ./caches.nix
+    ./commands
     ./filesystem
-    ./installer.nix
+    ./home
+    ./installer
     ./machine.nix
     ./secrets.nix
     ./users.nix

@@ -47,19 +47,18 @@ rec {
 
   adt =
     let
-      addTag = name: val: recursiveUpdate val {
+      addTag = val: recursiveUpdate val {
         options._tag = mkOption {
           type = str;
           readOnly = true;
-          default = name;
         };
       };
 
-      mkModule = name:
+      mkModule =
         let
           gen = val:
             if builtins.isAttrs val
-            then addTag name val
+            then addTag val
             else if builtins.isFunction val
             then args: gen (val args)
             else if builtins.isPath val
@@ -70,7 +69,7 @@ rec {
 
       mkType = choices: pipe choices [
         (mapAttrsToList (name: val:
-          let mod = mkModule name val; in
+          let mod = mkModule val; in
           mod // { check = v: mod.check v && v._tag == name; }
         ))
         oneOf

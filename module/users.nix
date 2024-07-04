@@ -1,13 +1,13 @@
 { config, lib, ... }:
 let
   inherit (lib) ifEnable mkDefault mkOption;
-  inherit (lib.types) attrsOf bool listOf str submodule;
+  inherit (lib.types) attrsOf bool listOf nullOr str submodule;
   cfg = config.aquaris.users;
 in
 {
   options.aquaris.users = mkOption {
     description = "User accounts of this configuration";
-    type = attrsOf (submodule {
+    type = attrsOf (submodule ({ config, ... }: {
       options = {
         description = mkOption {
           description = "A longer description of the username, e.g. the full name";
@@ -27,9 +27,27 @@ in
           default = [ ];
         };
 
-        # TODO maybe re-add git identity config?
+        git = {
+          name = mkOption {
+            description = "Full name of this user for Git";
+            type = nullOr str;
+            default = if config.description != "" then config.description else null;
+          };
+
+          email = mkOption {
+            description = "Email of this user for Git";
+            type = nullOr str;
+            default = null;
+          };
+
+          key = mkOption {
+            description = "Signing key ID of this user for Git";
+            type = nullOr str;
+            default = null;
+          };
+        };
       };
-    });
+    }));
     default = { };
   };
 
