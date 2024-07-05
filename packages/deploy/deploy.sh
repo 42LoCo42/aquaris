@@ -19,6 +19,7 @@ usage() {
 		Options:
 		  --kexec-url <url>    Alternative URL for kexec, SYSTEM will be replaced
 		  --force-kexec        Always run kexec, even if target is nixos-installer
+		  --show-hwconf        Show the target's hardware config & wait for keypress
 		  --dont-format        Don't run the formatting step of the installer
 		  --dont-mount         Don't run the mount step of the installer
 		  --dont-reboot        Don't reboot after installing
@@ -32,6 +33,7 @@ config=""
 
 kexec_url="https://github.com/nix-community/nixos-images/releases/download/nixos-24.05/nixos-kexec-installer-noninteractive-SYSTEM.tar.gz"
 force_kexec=0
+show_hwconf=0
 dont_format=0
 dont_mount=0
 dont_reboot=0
@@ -45,6 +47,7 @@ while (($#)); do
 	case "$1" in
 	--kexec-url) shift && kexec_url="$1" ;;
 	--force-kexec) force_kexec=1 ;;
+	--show-hwconf) show_hwconf=1 ;;
 	--dont-format) dont_format=1 ;;
 	--dont-mount) dont_mount=1 ;;
 	--dont-reboot) dont_reboot=1 ;;
@@ -82,8 +85,8 @@ fi
 
 target_arch="$(r uname -m)"
 case "$target_arch" in
-x86_64) kexec=@kexec-amd@ ;;
-aarch64) kexec=@kexec-arm@ ;;
+x86_64) kexec="@kexec-amd@" ;;
+aarch64) kexec="@kexec-arm@" ;;
 *) die "Unsupported target architecture $target_arch" ;;
 esac
 
@@ -124,7 +127,7 @@ if ((force_kexec)); then
 else
 	log "Checking if kexec is required"
 
-	os="$(r "sh -c 'source /etc/os-release && echo \$ID-\$VARIANT_ID'")"
+	os="$(r "sh -c 'source /etc/os-release && echo \${ID-unknown}-\${VARIANT_ID-unknown}'")"
 	if [ "$os" == "nixos-installer" ]; then
 		dots=! log "No, already running on nixos-installer"
 	else
@@ -136,10 +139,18 @@ fi
 ##### at this point, we are root in a nixos-installer #####
 
 target_root
-bin="$(nix eval --raw "$config.outPath")/bin/*"
+
+if ((show_hwconf)); then
+	log "Generating the hardware configuration"
+	r nixos-generate-config --show-hardware-config --no-filesystems
+	read -rp "[1;33mPress ENTER to continue... [m"
+fi
 
 log "Copying configuration $config to installer"
 nix copy "$config" --to "ssh://$target" --substitute-on-destination
+
+log "Evaluating config installer path"
+bin="$(nix eval --raw "$config.bin")"
 
 ((dont_format)) || r "$bin" --format
 ((dont_mount)) || r "$bin" --mount

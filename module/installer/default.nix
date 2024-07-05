@@ -2,6 +2,23 @@
 let
   inherit (lib) getExe mkOption;
   inherit (lib.types) package;
+
+  installer = pkgs.writeShellApplication {
+    inherit (aquaris) name;
+
+    runtimeInputs = with pkgs; [ nix-output-monitor ];
+
+    text = aquaris.lib.subsT ./installer.sh {
+      inherit self;
+      inherit (aquaris) name;
+
+      format = getExe config.aquaris.filesystems._create;
+      mount = getExe config.aquaris.filesystems._mount;
+
+      keys = config.nix.settings.trusted-public-keys;
+      subs = config.nix.settings.substituters;
+    };
+  };
 in
 {
   options.aquaris._installer = mkOption {
@@ -11,21 +28,8 @@ in
     '';
     type = package;
     readOnly = true;
-    default = pkgs.writeShellApplication {
-      inherit (aquaris) name;
-
-      runtimeInputs = with pkgs; [ nix-output-monitor ];
-
-      text = aquaris.lib.subsT ./installer.sh {
-        inherit self;
-        inherit (aquaris) name;
-
-        format = getExe config.aquaris.filesystems._create;
-        mount = getExe config.aquaris.filesystems._mount;
-
-        keys = config.nix.settings.trusted-public-keys;
-        subs = config.nix.settings.substituters;
-      };
+    default = installer.overrideAttrs {
+      bin = getExe installer;
     };
   };
 }
