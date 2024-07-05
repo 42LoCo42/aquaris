@@ -110,36 +110,12 @@
         "type": "github"
       }
     },
-    "relocatable": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1656215737,
-        "narHash": "sha256-WxXa9Yca6LnsyhnMNPgoQHoxIMkVXvW5Q6bB00C8yis=",
-        "owner": "Ninlives",
-        "repo": "relocatable.nix",
-        "rev": "d8dbbb7a7749320a76f6d7c147d4332f6cba45bf",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Ninlives",
-        "repo": "relocatable.nix",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
-        "obscura": "obscura",
-        "relocatable": "relocatable"
+        "obscura": "obscura"
       }
     },
     "systems": {

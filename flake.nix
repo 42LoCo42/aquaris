@@ -8,10 +8,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     obscura.url = "github:42loco42/obscura";
-
-    relocatable.url = "github:Ninlives/relocatable.nix";
-    relocatable.inputs.flake-utils.follows = "flake-utils";
-    relocatable.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -21,7 +17,7 @@
       out = {
         inherit lib;
         __functor = _: import ./lib/main.nix { inherit self lib nixpkgs; };
-      } // import ./packages lib inputs;
+      } // import ./packages lib nixpkgs;
 
       example = out self {
         # shared config passed as aquaris.cfg to every machine

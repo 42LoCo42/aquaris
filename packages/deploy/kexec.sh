@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+url="${1//SYSTEM/@system@}"
+
 d="$(mktemp -d)"
-curl -L "$1" | tar xz -C "$d"
+curl -L "$url" | tar xz -C "$d"
 
 ip --json addr | jq -r '
    .[]
