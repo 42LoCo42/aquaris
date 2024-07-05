@@ -1,4 +1,4 @@
-nixpkgs:
+{ flake-utils, nixpkgs, ... }:
 let
   inherit (nixpkgs.lib)
     fileContents
@@ -13,8 +13,6 @@ let
     str
     submodule
     ;
-
-  flake-utils = builtins.getFlake "github:numtide/flake-utils/b1d9ab70662946ef0850d488da1c9019f3a9752a?narHash=sha256-SZ5L6eA7HJ/nmkzGG7/ISclqe6oZdOZTNoesiInkXPQ%3D";
 in
 rec {
   inherit (flake-utils.lib) eachDefaultSystem;

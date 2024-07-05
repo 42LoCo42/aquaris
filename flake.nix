@@ -1,21 +1,27 @@
 {
   inputs = {
+    flake-utils.url = "github:numtide/flake-utils";
+
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     obscura.url = "github:42loco42/obscura";
+
+    relocatable.url = "github:Ninlives/relocatable.nix";
+    relocatable.inputs.flake-utils.follows = "flake-utils";
+    relocatable.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs = { self, nixpkgs, ... }@inputs:
     let
-      lib = import ./lib nixpkgs;
+      lib = import ./lib inputs;
 
       out = {
         inherit lib;
         __functor = _: import ./lib/main.nix { inherit self lib nixpkgs; };
-      } // import ./packages { inherit lib nixpkgs; };
+      } // import ./packages lib inputs;
 
       example = out self {
         # shared config passed as aquaris.cfg to every machine
