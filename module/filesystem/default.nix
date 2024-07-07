@@ -74,6 +74,7 @@ in
               runtimeInputs = cfg.tools;
               text = ''
                 mnt="''${1-/mnt}"
+                zpool import -af
 
                 < ${config.environment.etc.fstab.source}  \
                   grep -v '^#' | grep .                   \

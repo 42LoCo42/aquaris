@@ -2,8 +2,7 @@
 
 url="${1//SYSTEM/@system@}"
 
-d="$(mktemp -d)"
-curl -L "$url" | tar xz -C "$d"
+curl -L "$url" | tar xz
 
 ip --json addr | jq -r '
    .[]
@@ -15,4 +14,4 @@ ip --json addr | jq -r '
 	ip addr change dev "$i" "$a"
 done
 
-exec "$d/kexec/run"
+exec kexec/run

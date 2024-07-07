@@ -3,12 +3,6 @@ let
   inherit (pkgs) system;
   inherit (pkgs.lib) getExe;
 
-  relocatable = builtins.getFlake "github:Ninlives/relocatable.nix/d8dbbb7a7749320a76f6d7c147d4332f6cba45bf?narHash=sha256-WxXa9Yca6LnsyhnMNPgoQHoxIMkVXvW5Q6bB00C8yis%3D";
-
-  mkReloc = drv: (pkgs.callPackage relocatable { } drv).overrideAttrs {
-    meta.mainProgram = "${drv.name}.deploy";
-  };
-
   mkKexec = crossSystem:
     let
       pkgs' = import nixpkgs {
@@ -30,8 +24,20 @@ let
           system = crossSystem;
         };
       };
+
+      bundle = pkgs.runCommand "kexec-bundle" { } ''
+        cat <<-\EOF > $out
+        d="$(mktemp -d)"
+        tail -n+6 "$0" | tar xz -C "$d" --strip-components 2
+        mkdir -p /nix/store
+        mount -t overlay -o "lowerdir=/nix/store:$d" aquaris-kexec /nix/store
+        exec ${getExe kexec} "$@"
+        EOF
+
+        tar cz -T ${pkgs.writeClosure kexec} >> $out
+      '';
     in
-    getExe (mkReloc kexec);
+    bundle;
 
   deploy = pkgs.writeShellApplication {
     name = "deploy";

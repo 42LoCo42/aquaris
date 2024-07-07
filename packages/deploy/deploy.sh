@@ -23,6 +23,7 @@ usage() {
 		  --dont-format        Don't run the formatting step of the installer
 		  --dont-mount         Don't run the mount step of the installer
 		  --dont-reboot        Don't reboot after installing
+		  --key <path>         Path to the master encryption key
 
 		  --help    Show this help
 	EOF
@@ -37,6 +38,7 @@ show_hwconf=0
 dont_format=0
 dont_mount=0
 dont_reboot=0
+key=""
 
 if ! (($#)); then
 	usage
@@ -51,6 +53,7 @@ while (($#)); do
 	--dont-format) dont_format=1 ;;
 	--dont-mount) dont_mount=1 ;;
 	--dont-reboot) dont_reboot=1 ;;
+	--key) shift && key="$1" ;;
 
 	--help) usage && exit ;;
 
@@ -63,6 +66,11 @@ while (($#)); do
 	*)
 		target="$1"
 		config="$2"
+
+		if [ -z "$key" ]; then
+			echo "[1;33mWarning: --key is unset, secrets won't be readable![m"
+		fi
+
 		break
 		;;
 	esac
@@ -76,46 +84,61 @@ r() {
 log "Authorizing client SSH key"
 ssh_cmd=ssh-copy-id r
 
-log "Checking target platform"
+log "Gathering facts"
+while IFS='=' read -r var val; do
+	echo "$var = $val"
+	declare "$var=$val"
+done < <(
+	r <<-\EOF
+		echo "target_kernel=$(uname -s)"
+		echo "target_arch=$(uname -m)"
+		echo "target_uid=$(id -u)"
+		echo "target_sudo=$(command -v sudo)"
+		echo "target_doas=$(command -v doas)"
+		echo "target_os=$(sh -c 'source /etc/os-release && echo "${ID-unknown}-${VARIANT_ID-unknown}"')"
+	EOF
+)
 
-target_kernel="$(r uname -s)"
+declare target_kernel target_arch target_uid target_os
+
 if [ "$target_kernel" != "Linux" ]; then
 	die "Target kernel is $target_kernel, not Linux"
 fi
 
-target_arch="$(r uname -m)"
 case "$target_arch" in
 x86_64) kexec="@kexec-amd@" ;;
 aarch64) kexec="@kexec-arm@" ;;
 *) die "Unsupported target architecture $target_arch" ;;
 esac
 
+asroot=""
+if [ "$target_uid" != "0" ]; then
+	if [ -n "$target_sudo" ]; then
+		asroot="$target_sudo"
+	elif [ -n "$target_doas" ]; then
+		asroot="$target_doas"
+	else
+		die "We are $target_uid and neither sudo nor doas exist"
+	fi
+fi
+
 target_root() {
 	target="root@${target#*@}"
 }
 
 run_kexec() {
-	cmd="$(
-		cat <<-\EOF | sed -Ez 's|\n+| \&\& |g;'
-			set -euo pipefail
-
-			d="$(mktemp -d)"
-			cat > "$d/bundle"
-			sh "$d/bundle" -d "$d" >&2
-
-			echo "$d"
-		EOF
-	):"
-
 	log "Uploading kexec helper"
-	d="$(r "$cmd" <"$kexec")"
+	r "cat > aquaris-kexec" <"$kexec"
 
 	log "Running kexec helper as root"
-	r -t sudo "$d/root/bin/kexec" "$kexec_url"
+	r -t "$asroot sh aquaris-kexec $kexec_url"
 
 	target_root
 
-	while ! r -o ConnectTimeout=3 -o PasswordAuthentication=no test ! -f "$d/bundle"; do
+	while ! r \
+		-o ConnectTimeout=3 \
+		-o PasswordAuthentication=no \
+		test -f network/addrs.json; do
 		log "Waiting to kexec to finish"
 		sleep 2
 	done
@@ -124,16 +147,11 @@ run_kexec() {
 if ((force_kexec)); then
 	dots=! log "kexec is forced"
 	run_kexec
+elif [ "$target_os" != "nixos-installer" ]; then
+	dots=! log "kexec is required"
+	run_kexec
 else
-	log "Checking if kexec is required"
-
-	os="$(r "sh -c 'source /etc/os-release && echo \${ID-unknown}-\${VARIANT_ID-unknown}'")"
-	if [ "$os" == "nixos-installer" ]; then
-		dots=! log "No, already running on nixos-installer"
-	else
-		dots=! log "Yes (OS = $os), proceeding with kexec"
-		run_kexec
-	fi
+	dots=! log "kexec is not required"
 fi
 
 ##### at this point, we are root in a nixos-installer #####
@@ -146,17 +164,21 @@ if ((show_hwconf)); then
 	read -rp "[1;33mPress ENTER to continue... [m"
 fi
 
-log "Copying configuration $config to installer"
-nix copy "$config" --to "ssh://$target" --substitute-on-destination
+log "Copying configuration $config to target"
+rsync -azvP --delete "$(nix eval --raw "$config.self")/" "$target:config/"
 
-log "Evaluating config installer path"
-bin="$(nix eval --raw "$config.bin")"
+log "Building installer"
+bin="$(r "cd config; nix build -L --no-link --print-out-paths \"$config\"")/bin/*"
 
 ((dont_format)) || r "$bin" --format
 ((dont_mount)) || r "$bin" --mount
 
-log "Copying extra files" # TODO copy an entire folder
-rsync -azvP ./keys/example.key "$target:/mnt/persist/aqs.key"
+if [ -n "$key" ]; then
+	log "Copying master key from $key"
+	keypath="/mnt/$(nix eval --raw "$config.keypath")"
+	rsync -azvP "$key" "$target:$keypath"
+	r "chown root:root $keypath && chmod 0400 $keypath"
+fi
 
 r -t "$bin" --install # TTY for nom
 

@@ -29,7 +29,8 @@ in
     type = package;
     readOnly = true;
     default = installer.overrideAttrs {
-      bin = getExe installer;
+      inherit self;
+      keypath = config.aquaris.machine.secretKey;
     };
   };
 }
