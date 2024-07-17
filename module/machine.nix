@@ -52,7 +52,7 @@ in
 
       lanzaboote = {
         enable = mkDefault cfg.secureboot;
-        pkiBundle = "/etc/secureboot";
+        pkiBundle = mkDefault "/etc/secureboot";
         package = pkgs.writeShellApplication {
           name = "lzbt";
 
@@ -62,8 +62,10 @@ in
           ];
 
           text = ''
-            if [ ! -e /etc/secureboot/keys ]; then
-              sbctl create-keys
+            if [ ! -f "${config.boot.lanzaboote.pkiBundle}/GUID" ]; then
+              sbctl create-keys                          \
+                -d "${config.boot.lanzaboote.pkiBundle}" \
+                -e "${config.boot.lanzaboote.pkiBundle}/keys"
             fi
             exec lzbt "$@"
           '';

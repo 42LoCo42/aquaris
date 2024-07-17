@@ -36,6 +36,8 @@
   };
 
   ##### TODO persist #####
+  boot.lanzaboote.pkiBundle = "/persist/etc/secureboot";
+
   fileSystems = {
     "/" = {
       fsType = "tmpfs";
@@ -43,11 +45,6 @@
     };
 
     "/persist".neededForBoot = true;
-
-    "/etc/secureboot" = {
-      device = "/persist/etc/secureboot";
-      options = [ "bind" ];
-    };
 
     "/var/db/sudo" = {
       device = "/persist/var/db/sudo";
