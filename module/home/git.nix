@@ -56,6 +56,11 @@ in
         key = user.key;
         signByDefault = config.programs.git.signing.key != null;
       };
+
+      extraConfig = {
+        pull.rebase = false;
+        push.autoSetupRemote = true;
+      };
     };
 
     gpg.enable = true;
