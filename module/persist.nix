@@ -70,13 +70,19 @@ in
       "/var/lib/nixos"
       "/var/lib/systemd"
       "/var/log"
-    ] ++
-    ifEnable config.networking.networkmanager.enable [
+    ] ++ ifEnable config.networking.networkmanager.enable [
       { d = "/etc/NetworkManager/system-connections"; m = "0700"; }
       { d = "/var/lib/NetworkManager"; m = "0755"; }
-    ] ++
-    ifEnable config.security.sudo.enable [
+    ] ++ ifEnable config.security.sudo.enable [
       { d = "/var/db/sudo"; m = "0711"; }
+    ] ++ ifEnable config.services.caddy.enable [
+      "/var/lib/caddy"
+    ] ++ ifEnable config.services.tailscale.enable [
+      { d = "/var/lib/tailscale"; m = "0700"; }
+    ] ++ ifEnable config.virtualisation.libvirtd.enable [
+      "/var/lib/libvirt"
+    ] ++ ifEnable config.virtualisation.podman.enable [
+      "/var/lib/containers"
     ];
 
     fileSystems = pipe cfg.dirs [
