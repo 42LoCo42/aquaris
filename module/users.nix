@@ -46,6 +46,12 @@ in
             default = null;
           };
         };
+
+        persist = mkOption {
+          description = "List of persistent directories";
+          type = listOf str;
+          default = [ ];
+        };
       };
     }));
     default = { };

@@ -1,8 +1,8 @@
-{ pkgs, config, lib, ... }:
+{ config, lib, ... }:
 let
   inherit (lib)
-    getExe
     ifEnable
+    mapAttrsToList
     mkIf
     mkOption
     pipe
@@ -43,17 +43,6 @@ let
         default = "root";
       };
     };
-  };
-
-  persist-setup = pkgs.writeShellApplication {
-    name = "persist-setup";
-    text = pipe cfg.dirs [
-      (map (x: ''
-        chown "${x.u}:${x.g}" "${x.d}"
-        chmod "${x.m}"        "${x.d}"
-      ''))
-      (builtins.concatStringsSep "\n")
-    ];
   };
 in
 {
@@ -108,6 +97,19 @@ in
       })
     ];
 
-    system.activationScripts.persist-setup = getExe persist-setup;
+    systemd.tmpfiles.rules = pipe config.aquaris.users [
+      (mapAttrsToList (n: x:
+        let u = config.users.users.${n}; in
+        pipe x.persist [
+          (map (y: [
+            "d ${cfg.root}/${u.home}/${y} 0755 ${n} ${u.group} - -"
+            "L ${u.home}/${y} - - - - ${cfg.root}/${u.home}/${y}"
+          ]))
+          builtins.concatLists
+          (x: [ "d ${cfg.root}/${u.home} 0700 ${n} ${u.group} - -" ] ++ x)
+        ]))
+      builtins.concatLists
+      (x: map (x: "d ${cfg.root}/${x.d} ${x.m} ${x.u} ${x.g} - -") cfg.dirs ++ x)
+    ];
   };
 }

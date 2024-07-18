@@ -2,7 +2,12 @@
   aquaris = {
     users = aquaris.lib.merge [
       { inherit (aquaris.cfg.users) dev; }
-      { dev.admin = true; }
+      {
+        dev = {
+          admin = true;
+          persist = [ "foo" ];
+        };
+      }
     ];
 
     machine = {
