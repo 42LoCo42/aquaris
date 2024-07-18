@@ -6,6 +6,8 @@ let
 
   # pin exactly this version since it's cached in nix-community.cachix.org
   lanza041 = builtins.getFlake "github:nix-community/lanzaboote/b627ccd97d0159214cee5c7db1412b75e4be6086?narHash=sha256-eSZyrQ9uoPB9iPQ8Y5H7gAmAgAvCw3InStmU3oEjqsE%3D";
+
+  inherit (config.aquaris.persist) root;
 in
 {
   options.aquaris.machine = {
@@ -28,7 +30,7 @@ in
     secretKey = mkOption {
       description = "Path to the secret key for secrets management";
       type = path;
-      default = "/etc/aqs.key"; # TODO persist
+      default = "${root}/etc/aqs.key";
     };
 
     keepGenerations = mkOption {
@@ -52,7 +54,7 @@ in
 
       lanzaboote = {
         enable = mkDefault cfg.secureboot;
-        pkiBundle = mkDefault "/etc/secureboot";
+        pkiBundle = mkDefault "${root}/etc/secureboot";
         package = pkgs.writeShellApplication {
           name = "lzbt";
 
@@ -61,11 +63,9 @@ in
             sbctl
           ];
 
-          text = ''
-            if [ ! -f "${config.boot.lanzaboote.pkiBundle}/GUID" ]; then
-              sbctl create-keys                          \
-                -d "${config.boot.lanzaboote.pkiBundle}" \
-                -e "${config.boot.lanzaboote.pkiBundle}/keys"
+          text = let pki = config.boot.lanzaboote.pkiBundle; in ''
+            if [ ! -f "${pki}/GUID" ]; then
+              sbctl create-keys -d "${pki}" -e "${pki}/keys"
             fi
             exec lzbt "$@"
           '';
@@ -135,11 +135,10 @@ in
           PermitRootLogin = "no";
         };
 
-        # TODO persist
-        # hostKeys = [{
-        #   path = cfg.machine.secretKey;
-        #   type = "ed25519";
-        # }];
+        hostKeys = [{
+          path = "${root}/etc/ssh/ssh_host_ed25519_key";
+          type = "ed25519";
+        }];
       };
     };
 

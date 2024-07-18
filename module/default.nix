@@ -7,6 +7,7 @@
     ./home
     ./installer
     ./machine.nix
+    ./persist.nix
     ./secrets.nix
     ./users.nix
   ];

@@ -72,31 +72,9 @@ in
             default = pkgs.writeShellApplication {
               name = "${aquaris.name}-mount";
               runtimeInputs = cfg.tools;
-              text = ''
-                mnt="''${1-/mnt}"
-                zpool import -af
-
-                < ${config.environment.etc.fstab.source}  \
-                  grep -v '^#' | grep .                   \
-                | while read -r src dst type options _; do
-                    if [ "$type" == "swap" ]; then
-                      (set -x; swapon "$src")
-                      continue
-                    fi
-
-                    if tr ',' '\n' <<< "$options" | grep -Eqx 'r?bind'; then
-                      src="$mnt/$src"
-                      (set -x; mkdir -p "$src")
-                    fi
-
-                    dst="$mnt/$dst"
-
-                    # shellcheck disable=SC2001
-                    options="$(sed "s|=/|=$mnt/|g" <<< "$options")"
-
-                    (set -x; mount -m "$src" "$dst" -t "$type" -o "$options")
-                done
-              '';
+              text = aquaris.lib.subsT ./mount.sh {
+                fstab = config.environment.etc.fstab.source;
+              };
             };
           };
         };
