@@ -1,6 +1,7 @@
 { pkgs, config, lib, aquaris, ... }:
 let
   inherit (lib) ifEnable mapAttrs' mkDefault mkOption pipe;
+  inherit (lib.strings) normalizePath;
   inherit (lib.types) attrsOf listOf package submodule submoduleWith;
 
   fs = aquaris.lib.adt {
@@ -40,7 +41,10 @@ in
           } // mapAttrs'
             (n: x: {
               name = "nixos/home/${n}";
-              value.mountpoint = x.home;
+              value.mountpoint = pipe x.home [
+                (x: "${config.aquaris.persist.root}/${x}")
+                normalizePath
+              ];
             })
             config.aquaris.users;
         };
