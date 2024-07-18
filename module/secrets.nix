@@ -90,6 +90,14 @@ let
       concatLines
     ];
   };
+
+  aqs-protect-key = pkgs.writeShellApplication {
+    name = "aqs-protect-key";
+    text = ''
+      chown 0:0  "${secretKey}"
+      chmod 0400 "${secretKey}"
+    '';
+  };
 in
 {
   options.aquaris.secrets = mkOption {
@@ -140,6 +148,8 @@ in
         deps = [ "users" "groups" ];
         text = getExe aqs-chown;
       };
+
+      aqs-protect-key = getExe aqs-protect-key;
     };
   };
 }
