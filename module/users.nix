@@ -63,7 +63,7 @@ in
     users.users = builtins.mapAttrs
       (name: cfg: {
         inherit (cfg) description;
-        extraGroups = ifEnable cfg.admin [ "wheel" ];
+        extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
         hashedPasswordFile = config.aquaris.secrets."users/${name}/passwordHash".outPath or null;
         isNormalUser = mkDefault true;
         openssh.authorizedKeys.keys = cfg.sshKeys;
