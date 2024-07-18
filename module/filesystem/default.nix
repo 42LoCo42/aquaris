@@ -1,6 +1,6 @@
 { pkgs, config, lib, aquaris, ... }:
 let
-  inherit (lib) ifEnable mkDefault mkOption pipe;
+  inherit (lib) ifEnable mapAttrs' mkDefault mkOption pipe;
   inherit (lib.types) attrsOf listOf package submodule submoduleWith;
 
   fs = aquaris.lib.adt {
@@ -32,6 +32,17 @@ in
           zpool = f: fs.mk.zpool {
             pool = (f cfg.zpools).name;
           };
+
+          defaultPool.datasets = {
+            "nixos/nix" = { };
+          } // ifEnable config.aquaris.persist.enable {
+            "nixos/persist" = { };
+          } // mapAttrs'
+            (n: x: {
+              name = "nixos/home/${n}";
+              value.mountpoint = x.home;
+            })
+            config.aquaris.users;
         };
       };
 

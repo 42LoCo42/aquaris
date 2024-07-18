@@ -1,13 +1,13 @@
 { config, lib, ... }:
 let
   inherit (lib) ifEnable mkDefault mkOption;
-  inherit (lib.types) attrsOf bool listOf nullOr str submodule;
+  inherit (lib.types) attrsOf bool listOf nullOr path str submodule;
   cfg = config.aquaris.users;
 in
 {
   options.aquaris.users = mkOption {
     description = "User accounts of this configuration";
-    type = attrsOf (submodule ({ config, ... }: {
+    type = attrsOf (submodule ({ name, config, ... }: {
       options = {
         description = mkOption {
           description = "A longer description of the username, e.g. the full name";
@@ -25,6 +25,12 @@ in
           description = "SSH public keys that may log in as this user";
           type = listOf str;
           default = [ ];
+        };
+
+        home = mkOption {
+          description = "Path to the user's home directory";
+          type = path;
+          default = "/home/${name}";
         };
 
         git = {
@@ -62,7 +68,7 @@ in
 
     users.users = builtins.mapAttrs
       (name: cfg: {
-        inherit (cfg) description;
+        inherit (cfg) description home;
         extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
         hashedPasswordFile = config.aquaris.secrets."users/${name}/passwordHash".outPath or null;
         isNormalUser = mkDefault true;

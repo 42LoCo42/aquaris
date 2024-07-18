@@ -18,12 +18,7 @@
     persist.enable = true;
 
     filesystems = { fs, ... }: {
-      # TODO defaultPool
-      zpools.rpool.datasets = {
-        "nixos/nix" = { };
-        "nixos/persist" = { };
-        "nixos/home/dev" = { };
-      };
+      zpools.rpool = fs.defaultPool;
 
       disks."/dev/disk/by-id/virtio-root" = {
         partitions = [
