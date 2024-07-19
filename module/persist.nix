@@ -58,6 +58,8 @@ in
         "/var/lib/nixos"
         "/var/lib/systemd"
         "/var/log"
+      ] ++ ifEnable config.boot.lanzaboote.enable [
+        config.boot.lanzaboote.pkiBundle
       ] ++ ifEnable config.networking.networkmanager.enable [
         { d = "/etc/NetworkManager/system-connections"; m = "0700"; }
         { d = "/var/lib/NetworkManager"; m = "0755"; }

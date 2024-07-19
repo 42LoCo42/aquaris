@@ -1,6 +1,6 @@
 { self, aquaris, nixpkgs, lib, config, pkgs, ... }:
 let
-  inherit (lib) ifEnable mkDefault mkOption;
+  inherit (lib) ifEnable mkDefault mkOption pipe;
   inherit (lib.types) bool int nullOr path str;
   cfg = config.aquaris.machine;
 
@@ -54,7 +54,13 @@ in
 
       lanzaboote = {
         enable = mkDefault cfg.secureboot;
-        pkiBundle = mkDefault "${root}/etc/secureboot";
+
+        pkiBundle = pipe pkgs.sbctl.ldflags [
+          (builtins.concatStringsSep " ")
+          (builtins.match ".*DatabasePath=([^ ]+).*")
+          builtins.head
+        ];
+
         package = pkgs.writeShellApplication {
           name = "lzbt";
 
@@ -65,7 +71,7 @@ in
 
           text = let pki = config.boot.lanzaboote.pkiBundle; in ''
             if [ ! -f "${pki}/GUID" ]; then
-              sbctl create-keys -d "${pki}" -e "${pki}/keys"
+              sbctl create-keys
             fi
             exec lzbt "$@"
           '';
