@@ -1,4 +1,4 @@
-{ aquaris, ... }: {
+{ pkgs, aquaris, ... }: {
   aquaris = {
     users = aquaris.lib.merge [
       { inherit (aquaris.cfg.users) dev; }
@@ -34,6 +34,17 @@
           { content = fs.zpool (p: p.rpool); }
         ];
       };
+    };
+
+    # TODO: move into module/home
+    emacs = {
+      enable = true;
+      package = pkgs.emacs-gtk;
+      config = ./emacs.org;
+      extraPrograms = with pkgs; [
+        gopls
+        nil
+      ];
     };
   };
 

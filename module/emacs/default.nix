@@ -31,6 +31,7 @@ let
   mkConfig = file: pipe file [
     builtins.readFile
     (x: ''
+      ;;; -*- lexical-binding: t -*-
       (setenv "PATH" (format "%s:%s" (car exec-path) (getenv "PATH")))
     '' + x)
   ];
