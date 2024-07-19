@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
   inherit (lib)
+    flip
     ifEnable
     mapAttrsToList
     mkIf
@@ -45,10 +46,6 @@ let
       };
     };
   };
-
-  allParents = file:
-    if file == "/" || file == "." then [ ]
-    else allParents (dirOf file) ++ [ file ];
 in
 {
   options.aquaris.persist = {
@@ -97,7 +94,7 @@ in
       ];
 
       userDirs =
-        ifEnable config.programs.zsh.enable (allParents ".cache/zsh");
+        ifEnable config.programs.zsh.enable [ ".cache/zsh" ];
     };
 
     fileSystems = pipe cfg.dirs [
@@ -122,20 +119,55 @@ in
       })
     ];
 
-    systemd.tmpfiles.rules = pipe config.aquaris.users [
-      (mapAttrsToList (n: x:
-        let u = config.users.users.${n}; in
-        pipe x.persist [
-          (x: unique (x ++ cfg.userDirs))
-          (map (y: [
-            "d ${cfg.root}/${u.home}/${y} 0755 ${n} ${u.group} - -"
-            "L ${u.home}/${y} - - - - ${cfg.root}/${u.home}/${y}"
+    systemd.tmpfiles.rules =
+      let
+        allParents = file:
+          if file == "/" || file == "." then [ ]
+          else allParents (dirOf file) ++ [ file ];
+
+        mkDir = x: "d ${cfg.root}/${x.d} ${x.m} ${x.u} ${x.g} - -";
+
+        mkUserEntry = u: d: {
+          d = "${u.home}/${d}";
+          m = "0755";
+          u = u.name;
+          g = u.group;
+        };
+
+        mkUserDir = u: d: pipe d [
+          allParents
+          (map (flip pipe [
+            (mkUserEntry u)
+            mkDir
           ]))
+          (x: x ++ [
+            "L ${u.home}/${d} - - - - ${cfg.root}/${u.home}/${d}"
+          ])
+        ];
+
+        system = map mkDir cfg.dirs;
+
+        homes = pipe config.aquaris.users [
+          (mapAttrsToList (n: _: config.users.users.${n}))
+          (map (flip pipe [
+            (flip mkUserEntry "")
+            (x: x // { m = "0700"; })
+            mkDir
+          ]))
+        ];
+
+        users = pipe config.aquaris.users [
+          (mapAttrsToList (n: x:
+            let u = config.users.users.${n}; in
+            pipe x.persist [
+              (x: x ++ cfg.userDirs)
+              (map (mkUserDir u))
+              builtins.concatLists
+            ]
+          ))
           builtins.concatLists
-          (x: [ "d ${cfg.root}/${u.home} 0700 ${n} ${u.group} - -" ] ++ x)
-        ]))
-      builtins.concatLists
-      (x: map (x: "d ${cfg.root}/${x.d} ${x.m} ${x.u} ${x.g} - -") cfg.dirs ++ x)
-    ];
+        ];
+      in
+      unique (system ++ homes ++ users);
   };
 }
