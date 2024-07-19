@@ -35,6 +35,7 @@ in
         ./misc.nix
         ./neofetch.nix
         ./neovim
+        ./persist.nix
         ./starship.nix
         ./tmux
         ./zsh.nix

@@ -1,22 +1,7 @@
 { config, lib, ... }:
 let
-  inherit (lib)
-    flip
-    ifEnable
-    mapAttrsToList
-    mkIf
-    mkOption
-    pipe
-    unique
-    ;
-  inherit (lib.types)
-    bool
-    coercedTo
-    listOf
-    path
-    str
-    submodule
-    ;
+  inherit (lib) ifEnable mapAttrsToList mkIf mkOption pipe;
+  inherit (lib.types) bool coercedTo listOf path str submodule;
 
   cfg = config.aquaris.persist;
 
@@ -65,11 +50,6 @@ in
       description = "List of persistent directories";
       type = listOf (coercedTo path (d: { inherit d; }) entry);
     };
-
-    userDirs = mkOption {
-      description = "Default list of persistent user directories";
-      type = listOf str;
-    };
   };
 
   config = mkIf cfg.enable {
@@ -92,9 +72,6 @@ in
       ] ++ ifEnable config.virtualisation.podman.enable [
         "/var/lib/containers"
       ];
-
-      userDirs =
-        ifEnable config.programs.zsh.enable [ ".cache/zsh" ];
     };
 
     fileSystems = pipe cfg.dirs [
@@ -121,67 +98,15 @@ in
 
     systemd.tmpfiles.rules =
       let
-        allParents = file:
-          if file == "/" || file == "." then [ ]
-          else allParents (dirOf file) ++ [ file ];
-
-        mkPersist = x: x // { d = "${cfg.root}/${x.d}"; };
-        mkDir = x: "d ${x.d} ${x.m} ${x.u} ${x.g} - -";
-        mkDirP = x: mkDir (mkPersist x);
-
-        mkUserDir = u: d:
-          let
-            mkIn = pfx: map (x: mkDir {
-              d = "${pfx}/${x}";
-              m = "0755";
-              u = u.name;
-              g = u.group;
-            });
-
-            persistDirs = pipe d [
-              allParents
-              (mkIn "${cfg.root}/${u.home}")
-            ];
-
-            targetDirs = pipe d [
-              dirOf
-              allParents
-              (mkIn u.home)
-            ];
-
-            link = let hd = "${u.home}/${d}"; in [
-              "L+ ${hd} - ${u.name} ${u.group} - ${cfg.root}/${hd}"
-            ];
-          in
-          persistDirs ++ targetDirs ++ link;
-
-        system = map mkDirP cfg.dirs;
+        system = map
+          (x: "d ${cfg.root}/${x.d} ${x.m} ${x.u} ${x.g} - -")
+          cfg.dirs;
 
         homes = pipe config.aquaris.users [
           (mapAttrsToList (n: _: config.users.users.${n}))
-          (map (flip pipe [
-            (x: {
-              d = x.home;
-              m = "0700";
-              u = x.name;
-              g = x.group;
-            })
-            mkDirP
-          ]))
-        ];
-
-        users = pipe config.aquaris.users [
-          (mapAttrsToList (n: x:
-            let u = config.users.users.${n}; in
-            pipe x.persist [
-              (x: x ++ cfg.userDirs)
-              (map (mkUserDir u))
-              builtins.concatLists
-            ]
-          ))
-          builtins.concatLists
+          (map (x: "d ${cfg.root}/${x.home} 0700 ${x.name} ${x.group} - -"))
         ];
       in
-      unique (system ++ homes ++ users);
+      system ++ homes;
   };
 }

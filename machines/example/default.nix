@@ -2,12 +2,7 @@
   aquaris = {
     users = aquaris.lib.merge [
       { inherit (aquaris.cfg.users) dev; }
-      {
-        dev = {
-          admin = true;
-          persist = [ "foo/bar/baz" ];
-        };
-      }
+      { dev.admin = true; }
     ];
 
     machine = {
@@ -40,14 +35,19 @@
   boot.initrd.systemd.emergencyAccess = true;
 
   home-manager.users.dev = {
-    aquaris.zsh = false;
-    aquaris.emacs = {
-      enable = true;
-      package = pkgs.emacs-gtk;
-      config = ./emacs.org;
-      extraPrograms = with pkgs; [
-        gopls
-        nil
+    aquaris = {
+      emacs = {
+        enable = true;
+        package = pkgs.emacs-gtk;
+        config = ./emacs.org;
+        extraPrograms = with pkgs; [
+          gopls
+          nil
+        ];
+      };
+
+      persist = [
+        "foo/bar/baz"
       ];
     };
   };
