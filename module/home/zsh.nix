@@ -24,16 +24,8 @@ let cache = "$HOME/.cache/zsh"; in {
       zstyle ':bracketed-paste-magic' active-widgets '.self-*'
     '';
 
-    plugins = [
-      rec {
-        name = "zsh-fzf-history-search";
-        src = pkgs.fetchFromGitHub {
-          owner = "joshskidmore";
-          repo = name;
-          rev = "d1aae98";
-          hash = "sha256-4Dp2ehZLO83NhdBOKV0BhYFIvieaZPqiZZZtxsXWRaQ=";
-        };
-      }
+    plugins = with pkgs; [
+      (pkgs.lib.getAttrs [ "name" "src" ] zsh-fzf-history-search)
     ];
 
     oh-my-zsh = {
