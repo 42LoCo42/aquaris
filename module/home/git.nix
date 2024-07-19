@@ -1,68 +1,72 @@
-{ pkgs, config, osConfig, ... }:
+{ pkgs, config, osConfig, mkEnableOption, ... }:
 let
   user = osConfig.aquaris.users.${config.home.username}.git;
 in
 {
-  home = {
-    packages = with pkgs; [
-      git-crypt
-    ];
+  options.aquaris.git = mkEnableOption "Git with helpful aliases and features";
 
-    shellAliases = {
-      g = "git";
+  config = {
+    home = {
+      packages = with pkgs; [
+        git-crypt
+      ];
 
-      ga = "git add";
-      gan = "git add --intent-to-add";
-      gap = "git add --patch";
+      shellAliases = {
+        g = "git";
 
-      gc = "git commit";
-      gcm = "git commit --message";
-      gcam = "git commit --all --message";
+        ga = "git add";
+        gan = "git add --intent-to-add";
+        gap = "git add --patch";
 
-      gd = "git diff";
-      gds = "git diff --staged";
+        gc = "git commit";
+        gcm = "git commit --message";
+        gcam = "git commit --all --message";
 
-      gl = "git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %aN%C(reset)%C(bold yellow)%d%C(reset)' --all";
+        gd = "git diff";
+        gds = "git diff --staged";
 
-      gpl = "git pull";
+        gl = "git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %aN%C(reset)%C(bold yellow)%d%C(reset)' --all";
 
-      gps = "git push";
-      gpsf = "git push --force-with-lease --force-if-includes";
+        gpl = "git pull";
 
-      gr = "git restore";
-      grs = "git restore --staged";
+        gps = "git push";
+        gpsf = "git push --force-with-lease --force-if-includes";
 
-      gs = "git show";
+        gr = "git restore";
+        grs = "git restore --staged";
+
+        gs = "git show";
+      };
     };
-  };
 
-  programs = {
-    git = {
-      enable = true;
-      lfs.enable = true;
-
-      delta = {
+    programs = {
+      git = {
         enable = true;
-        options = {
-          paging = "always";
-          side-by-side = true;
+        lfs.enable = true;
+
+        delta = {
+          enable = true;
+          options = {
+            paging = "always";
+            side-by-side = true;
+          };
+        };
+
+        userName = user.name;
+        userEmail = user.email;
+
+        signing = {
+          key = user.key;
+          signByDefault = config.programs.git.signing.key != null;
+        };
+
+        extraConfig = {
+          pull.rebase = false;
+          push.autoSetupRemote = true;
         };
       };
 
-      userName = user.name;
-      userEmail = user.email;
-
-      signing = {
-        key = user.key;
-        signByDefault = config.programs.git.signing.key != null;
-      };
-
-      extraConfig = {
-        pull.rebase = false;
-        push.autoSetupRemote = true;
-      };
+      gpg.enable = true;
     };
-
-    gpg.enable = true;
   };
 }

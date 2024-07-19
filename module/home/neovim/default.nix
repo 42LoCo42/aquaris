@@ -1,23 +1,27 @@
-{ pkgs, ... }: {
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
+{ pkgs, mkEnableOption, ... }: {
+  options.aquaris.neovim = "preconfigured neovim";
 
-    extraConfig = builtins.readFile ./init.vim;
-    extraLuaConfig = builtins.readFile ./nvim.lua;
+  config = {
+    programs.neovim = {
+      enable = true;
+      defaultEditor = true;
+      viAlias = true;
+      vimAlias = true;
+      vimdiffAlias = true;
 
-    plugins = with pkgs.vimPlugins; [
-      airline
-      ale
-      autoclose-nvim
-      deoplete-nvim
-      gitgutter
-      gruvbox-nvim
-      vim-nix
-      vim-suda
-    ];
+      extraConfig = builtins.readFile ./init.vim;
+      extraLuaConfig = builtins.readFile ./nvim.lua;
+
+      plugins = with pkgs.vimPlugins; [
+        airline
+        ale
+        autoclose-nvim
+        deoplete-nvim
+        gitgutter
+        gruvbox-nvim
+        vim-nix
+        vim-suda
+      ];
+    };
   };
 }

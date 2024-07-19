@@ -95,17 +95,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    home-manager.sharedModules = [{
-      programs.emacs = {
-        inherit (cfg) enable package;
-        inherit extraConfig extraPackages;
+    programs.emacs = {
+      inherit (cfg) enable package;
+      inherit extraConfig extraPackages;
 
-        overrides = final: prev:
-          cfg.overrides final prev //
-          extraOverrides final prev;
-      };
+      overrides = final: prev:
+        cfg.overrides final prev //
+        extraOverrides final prev;
+    };
 
-      xdg.configFile."emacs/early-init.el".source = ./early-init.el;
-    }];
+    xdg.configFile."emacs/early-init.el".source = ./early-init.el;
   };
 }

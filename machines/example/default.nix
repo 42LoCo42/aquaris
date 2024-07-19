@@ -35,9 +35,13 @@
         ];
       };
     };
+  };
 
-    # TODO: move into module/home
-    emacs = {
+  boot.initrd.systemd.emergencyAccess = true;
+
+  home-manager.users.dev = {
+    aquaris.zsh = false;
+    aquaris.emacs = {
       enable = true;
       package = pkgs.emacs-gtk;
       config = ./emacs.org;
@@ -47,6 +51,4 @@
       ];
     };
   };
-
-  boot.initrd.systemd.emergencyAccess = true;
 }

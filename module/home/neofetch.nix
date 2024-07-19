@@ -1,24 +1,28 @@
-{
-  home.shellAliases.neofetch = "hyfetch";
+{ mkEnableOption, ... }: {
+  options.aquaris.neofetch = mkEnableOption "neofetch (but trans :3)";
 
-  programs = {
-    fastfetch.enable = true;
+  config = {
+    home.shellAliases.neofetch = "hyfetch";
 
-    hyfetch = {
-      enable = true;
-      settings = {
-        backend = "fastfetch";
+    programs = {
+      fastfetch.enable = true;
 
-        mode = "rgb";
-        light_dark = "dark";
-        lightness = 0.5;
+      hyfetch = {
+        enable = true;
+        settings = {
+          backend = "fastfetch";
 
-        preset = "transgender";
-        color_align = {
-          mode = "custom";
-          custom_colors = {
-            "1" = 1;
-            "2" = 0;
+          mode = "rgb";
+          light_dark = "dark";
+          lightness = 0.5;
+
+          preset = "transgender";
+          color_align = {
+            mode = "custom";
+            custom_colors = {
+              "1" = 1;
+              "2" = 0;
+            };
           };
         };
       };

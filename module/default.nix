@@ -2,7 +2,6 @@
   imports = [
     ./caches.nix
     ./commands
-    ./emacs
     ./filesystem
     ./home
     ./installer
