@@ -5,7 +5,7 @@
       {
         dev = {
           admin = true;
-          persist = [ "foo" ];
+          persist = [ "foo/bar/baz" ];
         };
       }
     ];

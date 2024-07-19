@@ -125,34 +125,48 @@ in
           if file == "/" || file == "." then [ ]
           else allParents (dirOf file) ++ [ file ];
 
-        mkDir = x: "d ${cfg.root}/${x.d} ${x.m} ${x.u} ${x.g} - -";
+        mkPersist = x: x // { d = "${cfg.root}/${x.d}"; };
+        mkDir = x: "d ${x.d} ${x.m} ${x.u} ${x.g} - -";
+        mkDirP = x: mkDir (mkPersist x);
 
-        mkUserEntry = u: d: {
-          d = "${u.home}/${d}";
-          m = "0755";
-          u = u.name;
-          g = u.group;
-        };
+        mkUserDir = u: d:
+          let
+            mkIn = pfx: map (x: mkDir {
+              d = "${pfx}/${x}";
+              m = "0755";
+              u = u.name;
+              g = u.group;
+            });
 
-        mkUserDir = u: d: pipe d [
-          allParents
-          (map (flip pipe [
-            (mkUserEntry u)
-            mkDir
-          ]))
-          (x: x ++ [
-            "L ${u.home}/${d} - - - - ${cfg.root}/${u.home}/${d}"
-          ])
-        ];
+            persistDirs = pipe d [
+              allParents
+              (mkIn "${cfg.root}/${u.home}")
+            ];
 
-        system = map mkDir cfg.dirs;
+            targetDirs = pipe d [
+              dirOf
+              allParents
+              (mkIn u.home)
+            ];
+
+            link = let hd = "${u.home}/${d}"; in [
+              "L+ ${hd} - ${u.name} ${u.group} - ${cfg.root}/${hd}"
+            ];
+          in
+          persistDirs ++ targetDirs ++ link;
+
+        system = map mkDirP cfg.dirs;
 
         homes = pipe config.aquaris.users [
           (mapAttrsToList (n: _: config.users.users.${n}))
           (map (flip pipe [
-            (flip mkUserEntry "")
-            (x: x // { m = "0700"; })
-            mkDir
+            (x: {
+              d = x.home;
+              m = "0700";
+              u = x.name;
+              g = x.group;
+            })
+            mkDirP
           ]))
         ];
 
