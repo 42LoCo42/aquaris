@@ -47,6 +47,8 @@ in
       ".mozilla/firefox"
     ] ++ ifEnable config.programs.gpg.enable [
       ".gnupg"
+    ] ++ ifEnable osConfig.services.sshd.enable [
+      ".ssh"
     ] ++ ifEnable config.programs.zoxide.enable [
       ".local/share/zoxide"
     ] ++ ifEnable config.programs.zsh.enable [
