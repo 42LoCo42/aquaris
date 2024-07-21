@@ -45,6 +45,8 @@ in
     ] ++ ifEnable config.programs.firefox.enable [
       ".cache/mozilla/firefox"
       ".mozilla/firefox"
+    ] ++ ifEnable config.programs.gpg.enable [
+      ".gnupg"
     ] ++ ifEnable config.programs.zoxide.enable [
       ".local/share/zoxide"
     ] ++ ifEnable config.programs.zsh.enable [
