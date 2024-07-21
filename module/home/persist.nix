@@ -42,10 +42,13 @@ in
   config = ifEnable osConfig.aquaris.persist.enable {
     aquaris.persist = [
       ".cache/nix"
-    ] ++ ifEnable config.programs.zsh.enable [
-      ".cache/zsh"
+    ] ++ ifEnable config.programs.firefox.enable [
+      ".cache/mozilla/firefox"
+      ".mozilla/firefox"
     ] ++ ifEnable config.programs.zoxide.enable [
       ".local/share/zoxide"
+    ] ++ ifEnable config.programs.zsh.enable [
+      ".cache/zsh"
     ];
 
     systemd.user.tmpfiles.rules = builtins.concatMap mkEntry cfg;
