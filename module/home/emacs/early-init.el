@@ -12,3 +12,5 @@
    (message "gc-cons-threshold restored to %s" gc-cons-threshold)))
 
 (setq package-enable-at-startup nil)
+
+(defalias 'greaterthan #'>)
