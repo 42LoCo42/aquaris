@@ -23,5 +23,10 @@
         vim-suda
       ];
     };
+
+    home.shellAliases = {
+      vi = "vi -p";
+      vim = "vim -p";
+    };
   };
 }
