@@ -91,10 +91,16 @@ in
       tmp.useTmpfs = mkDefault true;
     };
 
-    environment.etc = {
-      "machine-id".text = cfg.id;
-      "nix/channel".source = nixpkgs.outPath;
-      "nixos".source = self;
+    environment = {
+      etc = {
+        "machine-id".text = cfg.id;
+        "nix/channel".source = nixpkgs.outPath;
+        "nixos".source = self;
+      };
+
+      systemPackages = [
+        aquaris.src.packages.${pkgs.system}.aqs
+      ];
     };
 
     networking = {
