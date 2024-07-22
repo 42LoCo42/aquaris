@@ -15,7 +15,7 @@ while read -r src dst type option_str _; do
 		continue
 	fi
 
-	declare -A options
+	declare -A options=()
 	while IFS='=' read -r key val; do
 		options[$key]="$val"
 	done < <(tr ',' '\n' <<<"$option_str")
