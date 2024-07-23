@@ -22,6 +22,10 @@ let
   };
 
   cfg = config.aquaris.filesystems;
+
+  options = ifEnable config.services.zfs.autoSnapshot.enable {
+    "com.sun:auto-snapshot" = "true";
+  };
 in
 {
   options.aquaris.filesystems = mkOption {
@@ -37,14 +41,17 @@ in
           defaultPool.datasets = {
             "nixos/nix" = { };
           } // ifEnable config.aquaris.persist.enable {
-            "nixos/persist" = { };
+            "nixos/persist" = { inherit options; };
           } // mapAttrs'
             (n: x: {
               name = "nixos/home/${n}";
-              value.mountpoint = pipe x.home [
-                (x: "${config.aquaris.persist.root}/${x}")
-                normalizePath
-              ];
+              value = {
+                inherit options;
+                mountpoint = pipe x.home [
+                  (x: "${config.aquaris.persist.root}/${x}")
+                  normalizePath
+                ];
+              };
             })
             config.aquaris.users;
         };

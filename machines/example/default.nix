@@ -34,6 +34,8 @@
 
   boot.initrd.systemd.emergencyAccess = true;
 
+  services.zfs.autoSnapshot.enable = true;
+
   home-manager.users.dev = {
     aquaris = {
       emacs = {
