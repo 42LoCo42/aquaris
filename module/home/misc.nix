@@ -1,4 +1,4 @@
-{ pkgs, mkEnableOption, ... }: {
+{ pkgs, lib, mkEnableOption, config, osConfig, ... }: {
   options.aquaris.misc = mkEnableOption "miscellaneous packages and settings";
 
   config = {
@@ -25,6 +25,9 @@
         switch = "sys rebuild";
         yay = "sys update build switch";
       };
+
+      sessionVariables.NIXOS_CONFIG_DIR = lib.mkDefault
+        "${osConfig.aquaris.persist.root}/${config.home.homeDirectory}/config";
     };
 
     programs = {
