@@ -1,7 +1,7 @@
 { config, lib, osConfig, ... }:
 let
   inherit (lib) ifEnable mkOption pipe;
-  inherit (lib.types) listOf str;
+  inherit (lib.types) coercedTo listOf str submodule;
 
   cfg = config.aquaris.persist;
 
@@ -16,27 +16,43 @@ let
 
   mkEntry = x:
     let
-      persistDirs = pipe x [
+      persistDirs = pipe x.d [
         allParents
         (mkIn "${root}/${home}")
       ];
 
-      targetDirs = pipe x [
+      targetDirs = pipe x.d [
         dirOf
         allParents
         (mkIn home)
       ];
 
-      link = let hd = "${home}/${x}"; in [
+      final = let hd = "${home}/${x.d}"; in [
+        "z ${root}/${hd} ${x.m} - - - - "
         "L+ ${hd} - - - - ${root}/${hd}"
       ];
     in
-    persistDirs ++ targetDirs ++ link;
+    persistDirs ++ targetDirs ++ final;
+
+  entry = submodule {
+    options = {
+      d = mkOption {
+        description = "Directory";
+        type = str;
+      };
+
+      m = mkOption {
+        description = "Mode";
+        type = str;
+        default = "0755";
+      };
+    };
+  };
 in
 {
   options.aquaris.persist = mkOption {
     description = "List of persistent directories";
-    type = listOf str;
+    type = listOf (coercedTo str (d: { inherit d; }) entry);
   };
 
   config = ifEnable osConfig.aquaris.persist.enable {
@@ -46,9 +62,9 @@ in
       ".cache/mozilla/firefox"
       ".mozilla/firefox"
     ] ++ ifEnable config.programs.gpg.enable [
-      ".gnupg"
+      { d = ".gnupg"; m = "0700"; }
     ] ++ ifEnable osConfig.services.sshd.enable [
-      ".ssh"
+      { d = ".ssh"; m = "0700"; }
     ] ++ ifEnable config.programs.zoxide.enable [
       ".local/share/zoxide"
     ] ++ ifEnable config.programs.zsh.enable [
