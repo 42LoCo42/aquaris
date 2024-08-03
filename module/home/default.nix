@@ -1,4 +1,4 @@
-{ pkgs, lib, config, specialArgs, home-manager, ... }:
+{ pkgs, lib, config, specialArgs, aquaris, home-manager, ... }:
 let
   inherit (lib) ifEnable mkOption;
   inherit (lib.types) bool;
@@ -25,21 +25,7 @@ in
         };
       };
 
-      sharedModules = [
-        ./bat.nix
-        ./direnv.nix
-        ./emacs
-        ./git.nix
-        ./htop.nix
-        ./lsd.nix
-        ./misc.nix
-        ./neofetch.nix
-        ./neovim
-        ./persist.nix
-        ./starship.nix
-        ./tmux
-        ./zsh.nix
-      ];
+      sharedModules = aquaris.lib.importDir ./.;
     };
 
     ##### global settings for zsh submodule #####

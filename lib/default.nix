@@ -2,6 +2,7 @@
 let
   inherit (nixpkgs.lib)
     fileContents
+    filterAttrs
     mapAttrsToList
     mkOption
     pipe
@@ -40,6 +41,18 @@ rec {
     fileContents
     (splitString "\n")
   ];
+
+  importDir' = { default ? false, dirs ? true }: dir: pipe dir [
+    builtins.readDir
+    (filterAttrs (name: type:
+      (type == "regular" && builtins.match ".*\.nix" name != null &&
+      (default || name != "default.nix")) ||
+      (type == "directory" && dirs)))
+    builtins.attrNames
+    (map (x: "${dir}/${x}"))
+  ];
+
+  importDir = importDir' { };
 
   ##### Simple ADT library #####
 

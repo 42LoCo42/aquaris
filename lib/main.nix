@@ -1,29 +1,26 @@
 { self, lib, nixpkgs }: src: cfg:
 let
-  inherit (nixpkgs.lib) filterAttrs nixosSystem pipe;
+  inherit (nixpkgs.lib) nixosSystem pipe;
 
   nixosConfigurations =
     let
       # import every nix file in the machine config directory
       # add the aquaris module
-      mkConfig = name: dir: pipe dir [
-        builtins.readDir
-        (filterAttrs (file: type:
-          type == "regular" && builtins.match ".*\.nix" file != null))
-        builtins.attrNames
-        (map (x: import "${dir}/${x}"))
-        (x: nixosSystem {
-          # system is set by the hardware config
-          modules = x ++ [ ../module ];
-          specialArgs = self.inputs // {
-            aquaris = {
-              inherit cfg lib name;
-              src = self;
-            };
-            self = src;
+      mkConfig = name: dir: nixosSystem {
+        # system is set by the hardware config
+
+        modules = lib.importDir'
+          { default = true; dirs = false; }
+          dir ++ [ ../module ];
+
+        specialArgs = self.inputs // {
+          aquaris = {
+            inherit cfg lib name;
+            src = self;
           };
-        })
-      ];
+          self = src;
+        };
+      };
       dir = "${src}/machines";
     in
     # mkConfig every directory in src/machines/
