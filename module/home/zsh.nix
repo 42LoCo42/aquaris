@@ -1,8 +1,13 @@
-{ pkgs, config, mkEnableOption, ... }:
-let cache = "$HOME/.cache/zsh"; in {
+{ pkgs, config, lib, mkEnableOption, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.zsh;
+  cache = "$HOME/.cache/zsh";
+in
+{
   options.aquaris.zsh = mkEnableOption "ZSH with OMZ and some plugins";
 
-  config = {
+  config = mkIf cfg {
     home.file.".profile".text = ''
       source "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
     '';
@@ -33,10 +38,14 @@ let cache = "$HOME/.cache/zsh"; in {
 
       oh-my-zsh = {
         enable = true;
-        extraConfig = ''ZSH_COMPDUMP="${cache}/completion"'';
+        extraConfig = ''
+          MAGIC_ENTER_GIT_COMMAND=' git status'
+          MAGIC_ENTER_OTHER_COMMAND=' ls -lh'
+
+          ZSH_COMPDUMP="${cache}/completion"
+        '';
         plugins = [
           "fancy-ctrl-z"
-          "git-auto-fetch"
           "magic-enter"
           "sudo"
         ];

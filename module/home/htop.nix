@@ -1,7 +1,12 @@
-{ pkgs, config, lib, obscura, mkEnableOption, ... }: {
+{ pkgs, config, lib, obscura, mkEnableOption, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.htop;
+in
+{
   options.aquaris.htop = mkEnableOption "preconfigured htop";
 
-  config = {
+  config = mkIf cfg {
     home.activation.fix-htop = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
       rm -f -v "$HOME/.config/htop/htoprc"
     '';

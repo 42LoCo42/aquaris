@@ -1,7 +1,12 @@
-{ pkgs, lib, mkEnableOption, config, osConfig, ... }: {
+{ pkgs, lib, mkEnableOption, config, osConfig, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.misc;
+in
+{
   options.aquaris.misc = mkEnableOption "miscellaneous packages and settings";
 
-  config = {
+  config = mkIf cfg {
     home = {
       packages = with pkgs; [
         file

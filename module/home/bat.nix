@@ -1,7 +1,12 @@
-{ pkgs, mkEnableOption, ... }: {
+{ pkgs, lib, config, mkEnableOption, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.bat;
+in
+{
   options.aquaris.bat = mkEnableOption "bat for manpage rendering";
 
-  config = {
+  config = mkIf cfg {
     home.sessionVariables = {
       MANPAGER = "sh -c 'col -bx | bat -l man -p'";
       MANROFFOPT = "-c";

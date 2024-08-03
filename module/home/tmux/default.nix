@@ -1,7 +1,12 @@
-{ aquaris, mkEnableOption, ... }: {
+{ config, lib, aquaris, mkEnableOption, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.tmux;
+in
+{
   options.aquaris.tmux = mkEnableOption "preconfigured tmux";
 
-  config = {
+  config = mkIf cfg {
     programs.tmux = {
       enable = true;
 

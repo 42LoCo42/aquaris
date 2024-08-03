@@ -1,7 +1,12 @@
-{ mkEnableOption, ... }: {
+{ config, lib, mkEnableOption, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.neofetch;
+in
+{
   options.aquaris.neofetch = mkEnableOption "neofetch (but trans :3)";
 
-  config = {
+  config = mkIf cfg {
     home.shellAliases.neofetch = "hyfetch";
 
     programs = {

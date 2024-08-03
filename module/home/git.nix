@@ -1,11 +1,13 @@
-{ pkgs, config, osConfig, mkEnableOption, ... }:
+{ pkgs, lib, config, osConfig, mkEnableOption, ... }:
 let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.git;
   user = osConfig.aquaris.users.${config.home.username}.git;
 in
 {
   options.aquaris.git = mkEnableOption "Git with helpful aliases and features";
 
-  config = {
+  config = mkIf cfg {
     home = {
       packages = with pkgs; [
         git-crypt

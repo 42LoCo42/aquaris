@@ -1,7 +1,12 @@
-{ pkgs, mkEnableOption, ... }: {
-  options.aquaris.neovim = "preconfigured neovim";
+{ pkgs, config, lib, mkEnableOption, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.neovim;
+in
+{
+  options.aquaris.neovim = mkEnableOption "preconfigured neovim";
 
-  config = {
+  config = mkIf cfg {
     programs.neovim = {
       enable = true;
       defaultEditor = true;

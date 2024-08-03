@@ -1,7 +1,12 @@
-{ mkEnableOption, ... }: {
+{ config, lib, mkEnableOption, ... }:
+let
+  inherit (lib) mkIf;
+  cfg = config.aquaris.starship;
+in
+{
   options.aquaris.starship = mkEnableOption "the starship shell prompt";
 
-  config = {
+  config = mkIf cfg {
     programs.starship = {
       enable = true;
       settings = {
