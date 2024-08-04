@@ -17,14 +17,7 @@
 
       disks."/dev/disk/by-id/virtio-root" = {
         partitions = [
-          {
-            type = "uefi";
-            size = "512M";
-            content = fs.regular {
-              type = "vfat";
-              mountpoint = "/boot";
-            };
-          }
+          fs.defaultBoot
           {
             content = fs.luks {
               content = fs.zpool (p: p.rpool);

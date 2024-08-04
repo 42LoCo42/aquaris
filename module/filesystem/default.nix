@@ -39,6 +39,15 @@ in
             pool = (f cfg.zpools).name;
           };
 
+          defaultBoot = {
+            type = "uefi";
+            size = "512M";
+            content = fs.mk.regular {
+              type = "vfat";
+              mountpoint = "/boot";
+            };
+          };
+
           defaultPool.datasets = {
             "nixos/nix" = { };
           } // ifEnable config.aquaris.persist.enable {
