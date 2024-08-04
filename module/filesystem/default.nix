@@ -138,7 +138,7 @@ in
       swapDevices = mounts.swapDevices or [ ];
 
       boot = mkMerge [
-        (mkIf config.boot.supportedFilesystems.zfs {
+        (mkIf (config.boot.supportedFilesystems.zfs or false) {
           kernelPackages = mkDefault config.boot.zfs.package.latestCompatibleLinuxPackages;
         })
         { initrd.luks.devices = mounts.luks or { }; }
