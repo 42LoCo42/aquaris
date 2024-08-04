@@ -25,8 +25,11 @@
               mountpoint = "/boot";
             };
           }
-          { size = "2G"; content = fs.swap; }
-          { content = fs.zpool (p: p.rpool); }
+          {
+            content = fs.luks {
+              content = fs.zpool (p: p.rpool);
+            };
+          }
         ];
       };
     };

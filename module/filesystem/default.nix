@@ -5,6 +5,7 @@ let
   inherit (lib.types) attrsOf listOf package submodule submoduleWith;
 
   fs = aquaris.lib.adt {
+    luks = import ./luks.nix util;
     regular = ./regular.nix;
     swap = ./swap.nix;
     zpool = ./zpoolMember.nix;
@@ -126,9 +127,11 @@ in
       fileSystems = mounts.fileSystems or { };
       swapDevices = mounts.swapDevices or [ ];
 
-      boot = ifEnable (cfg.zpools != { }) {
-        kernelPackages = mkDefault config.boot.zfs.package.latestCompatibleLinuxPackages;
-        supportedFilesystems.zfs = mkDefault true;
-      };
+      boot = util.merge [
+        (ifEnable config.boot.supportedFilesystems.zfs {
+          kernelPackages = mkDefault config.boot.zfs.package.latestCompatibleLinuxPackages;
+        })
+        { initrd.luks.devices = mounts.luks or { }; }
+      ];
     };
 }

@@ -170,7 +170,7 @@ rsync -azvP --delete "$(nix eval --raw "$config.self")/" "$target:config/"
 log "Building installer"
 bin="$(r "cd config; nix build -L --no-link --print-out-paths \"$config\"")/bin/*"
 
-((dont_format)) || r "$bin" --format
+((dont_format)) || r -t "$bin" --format # TTY for LUKS passwords
 ((dont_mount)) || r "$bin" --mount
 
 if [ -n "$key" ]; then
