@@ -1,6 +1,6 @@
 { pkgs, config, lib, aquaris, ... }:
 let
-  inherit (lib) ifEnable mapAttrs' mkDefault mkOption pipe;
+  inherit (lib) ifEnable mapAttrs' mkDefault mkIf mkMerge mkOption pipe;
   inherit (lib.strings) normalizePath;
   inherit (lib.types) attrsOf listOf package submodule submoduleWith;
 
@@ -127,8 +127,8 @@ in
       fileSystems = mounts.fileSystems or { };
       swapDevices = mounts.swapDevices or [ ];
 
-      boot = util.merge [
-        (ifEnable config.boot.supportedFilesystems.zfs {
+      boot = mkMerge [
+        (mkIf config.boot.supportedFilesystems.zfs {
           kernelPackages = mkDefault config.boot.zfs.package.latestCompatibleLinuxPackages;
         })
         { initrd.luks.devices = mounts.luks or { }; }
