@@ -5,6 +5,7 @@ let
   inherit (lib.types) attrsOf listOf package submodule submoduleWith;
 
   fs = aquaris.lib.adt {
+    btrfs = import ./btrfs.nix pkgs;
     luks = import ./luks.nix util;
     regular = ./regular.nix;
     swap = ./swap.nix;

@@ -19,6 +19,13 @@
         partitions = [
           fs.defaultBoot
           {
+            size = "2G";
+            content = fs.btrfs {
+              defaultVol.mountpoint = "/foo";
+              subvols.bar.mountpoint = "/bar";
+            };
+          }
+          {
             content = fs.luks {
               content = fs.zpool (p: p.rpool);
             };
