@@ -3,11 +3,14 @@ let
   inherit (lib)
     concatLines
     filterAttrs
+    flip
     getExe
     mapAttrs'
     mapAttrsToList
     mergeAttrsList
-    mkOption pipe
+    mkOption
+    pipe
+    sourceFilesBySuffices
     ;
   inherit (lib.filesystem) listFilesRecursive;
   inherit (lib.types) attrsOf path str submodule;
@@ -15,8 +18,8 @@ let
   cfg = config.aquaris.secrets;
 
   decryptDir = "/run/aqs";
-  outputDir = "${decryptDir}.d/${baseNameOf self}";
-  secretsDir = "${self}/secrets";
+  secretsDir = (sourceFilesBySuffices "${self}/secrets" [ ".age" ]).outPath;
+  outputDir = "${decryptDir}.d/${baseNameOf secretsDir}";
   inherit (config.aquaris.machine) secretKey;
 
   ##########################################
@@ -52,52 +55,19 @@ let
     mergeAttrsList
   ];
 
-  aqs-decrypt = pkgs.writeShellApplication {
-    name = "aqs-decrypt";
-    runtimeInputs = with pkgs; [ age findutils ];
-    text = pipe cfg [
-      (mapAttrsToList (name: s:
-        let o = "${outputDir}/${name}"; in ''
-          echo "[aqs] decrypting ${name}"
-          mkdir -p "${dirOf o}"
-          (umask u=r,g=,o=; age \
-            -i "${secretKey}"   \
-            -o "${o}"           \
-            -d "${s.source}") &
-        ''))
-      concatLines
-      (x: x + ''
-        wait
-        ln -sfT "${outputDir}" "${decryptDir}"
+  ##########################################
 
-        echo "[aqs] collecting garbage"
-        find "${decryptDir}.d" -mindepth 1 -maxdepth 1 \
-        | { grep -v "${decryptDir}" || :; }            \
-        | xargs rm -rfv
-      '')
-    ];
-  };
+  aqs = getExe (pkgs.writeShellApplication {
+    name = "aqs";
+    runtimeInputs = with pkgs; [ age findutils jq ];
+    text = builtins.readFile ./aqs.sh;
+  });
 
-  aqs-chown = pkgs.writeShellApplication {
-    name = "aqs-chown";
-    text = pipe cfg [
-      (mapAttrsToList (name: s:
-        let o = "${outputDir}/${name}"; in ''
-          echo "[aqs] ${name}: ${s.user}:${s.group} ${s.mode}"
-          chown "${s.user}:${s.group}" "${o}"
-          chmod "${s.mode}" "${o}"
-        ''))
-      concatLines
-    ];
-  };
-
-  aqs-protect-key = pkgs.writeShellApplication {
-    name = "aqs-protect-key";
-    text = ''
-      chown 0:0  "${secretKey}"
-      chmod 0400 "${secretKey}"
-    '';
-  };
+  secrets = pipe cfg [
+    (builtins.mapAttrs (_: flip removeAttrs [ "outPath" ]))
+    builtins.toJSON
+    (pkgs.writeText "secrets.json")
+  ];
 in
 {
   options.aquaris.secrets = mkOption {
@@ -140,16 +110,29 @@ in
     aquaris.secrets = toplevel // machine // user;
 
     system.activationScripts = {
-      aqs-decrypt = getExe aqs-decrypt;
+      aqs-decrypt = ''
+        ${aqs} decrypt  \
+          ${secrets}    \
+          ${secretKey}  \
+          ${outputDir}  \
+          ${decryptDir}
+      '';
 
       users.deps = [ "aqs-decrypt" ];
 
       aqs-chown = {
         deps = [ "users" "groups" ];
-        text = getExe aqs-chown;
+        text = ''
+          ${aqs} chown  \
+            ${secrets}  \
+            ${outputDir}
+        '';
       };
 
-      aqs-protect-key = getExe aqs-protect-key;
+      aqs-protect = ''
+        ${aqs} protect \
+          ${secretKey}
+      '';
     };
   };
 }

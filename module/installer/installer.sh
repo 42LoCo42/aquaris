@@ -25,6 +25,10 @@ doInstall() {
 	x mount -t overlay -o "lowerdir=/nix/store:$mnt/nix/store" "$overlay" "/nix/store"
 	trap 'umount -l "$overlay"' EXIT
 
+	log "Mounting proc"
+	x umount "$mnt/proc" || :
+	x mount -m -t proc proc "$mnt/proc"
+
 	log "Building system configuration"
 	sys="$(nom build \
 		--extra-experimental-features "nix-command flakes" \

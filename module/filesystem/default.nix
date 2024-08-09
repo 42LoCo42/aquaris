@@ -83,6 +83,7 @@ in
           tools = mkOption {
             description = "Packages available to the generated scripts";
             type = listOf package;
+            default = [ ];
           };
 
           _create = mkOption {
@@ -129,11 +130,6 @@ in
       ];
     in
     {
-      aquaris.filesystems.tools = with pkgs; [
-        config.boot.zfs.package
-        dosfstools
-      ];
-
       fileSystems = mounts.fileSystems or { };
       swapDevices = mounts.swapDevices or [ ];
 

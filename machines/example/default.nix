@@ -42,7 +42,7 @@
   home-manager.users.dev = {
     aquaris = {
       emacs = {
-        enable = true;
+        # enable = true;
         package = pkgs.emacs-gtk;
         config = ./emacs.org;
         extraPrograms = with pkgs; [
