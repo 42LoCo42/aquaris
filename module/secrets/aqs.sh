@@ -28,7 +28,7 @@ decrypt)
 
 	echo "[aqs] collecting garbage"
 	find "$decryptDir.d" -mindepth 1 -maxdepth 1 |
-		{ grep -v "$decryptDir" || :; } |
+		{ grep -v "$outputDir" || :; } |
 		xargs rm -rfv
 	;;
 
