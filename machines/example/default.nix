@@ -27,6 +27,7 @@
           }
           {
             content = fs.luks {
+              keyFile = pkgs.writeText "key" "password";
               content = fs.zpool (p: p.rpool);
             };
           }
