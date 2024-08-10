@@ -45,7 +45,7 @@ in
               p2="$(systemd-ask-password "Verify password:")"
 
               if [ "$p1" == "$p2" ]; then
-                echo "$p1" > "$key"
+                echo -n "$p1" > "$key"
                 break
               else
                 echo "[1;31mError:[m Passwords don't match!" >&2
