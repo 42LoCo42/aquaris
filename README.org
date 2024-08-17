@@ -24,6 +24,8 @@ the list of secrets and their corresponding public keys.
 Secrets are managed via the [[file:docs/aqs.org][aqs]] command exported by this flake.
 
 ** Documentation
+- [[file:docs/aqs.org][aqs]] (secrets management command)
+- [[file:docs/lib.org][Standard library]]
 - Modules:
   - [[file:docs/module/caches.org][Binary caches]]
   - [[file:docs/module/filesystems.org][Filesystems]]

@@ -1,0 +1,45 @@
+* [[file:../lib/default.nix][aquaris.lib]]
+Aquaris standard library for use in modules.
+
+Functions:
+- =merge=: [[https://noogle.dev/f/lib/recursiveUpdate][recursiveUpdate]] folded over a list of values
+
+- =subsF=: Generalized text substitution function.
+  Takes the following parameters as a set:
+  - =file= (path): Path to the original file that should be read
+  - =subs= (set of strings): Substitutions that should be applied to the file's content
+  - =func=: Function that takes the filename and the substituted text
+    and should output the result of =subsF=. Example: =pkgs.writeScript=
+
+- =subsT=: A specialized version of =subsF= that just returns the text.
+
+- =readLines=: Reads a file and returns the list of lines with =\n= stripped
+
+- =importDir'=: A function to import Nix files in a directory.
+  Takes two parameters:
+  - a set containing:
+    - =default= (boolean): should =default.nix= be included? Default: false
+    - =dirs= (boolean): should directories be included? Default: true
+  - the directory to import
+
+- =importDir=: Identical to =importDir' {}= aka.: takes a directory,
+  imports all files (except =default.nix=) and subdirectories.
+
+- =adt=: Converts NixOS submodules into Algebraic Data Types ([[https://en.wikipedia.org/wiki/Algebraic_data_type][Wikipedia]]).
+  Takes a set of submodules, functions to submodules
+  or files containing the previous items.
+  Returns a set of:
+  - =is.foo=: Functions that checks if a given set is an instance of the =foo= submodule
+  - =mk.foo=: Function that converts a given set into an instance of the =foo= submodule
+  - =type=: Type value suitable for =lib.mkOption=
+
+  The =is= and =mk= subsets include items for all passed submodules
+  (=foo= is just an example)
+
+  ADT instances are submodules with the added option =_tag=,
+  set to the name of the instance.
+  This means a submodule =foo= passed to =adt=
+  would be given a default ~_tag = "foo";~ value.
+
+  This is used by Aquaris's [[file:../module/filesystems/default.nix#L7][filesystem]] module
+  (the actual type is passed [[file:../module/filesystems/partition.nix#L38][here]]).
