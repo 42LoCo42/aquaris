@@ -13,3 +13,17 @@ Root-on-tmpfs and persistent files management
   - =m=: Mode of the persistent directory. Default =0755=
   - =u=: User of the persistent directory. Default =root=
   - =g=: Group of the persistent directory. Default =root=
+
+** Example
+#+begin_src nix
+  {
+    aquaris.persist = {
+      enable = true;
+      dirs = [
+        "/var/lib/foo"
+        { d = "/var/lib/bar"; } # identical to just "/var/lib/bar"
+        { d = "/var/lib/baz"; m = "0700"; u = "baz"; g = "baz"; }
+      ];
+    };
+  }
+#+end_src
