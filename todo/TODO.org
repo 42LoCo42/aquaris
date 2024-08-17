@@ -1,3 +1,8 @@
+* Documentation
+- how is the =aquaris= set passed to modules?
+- installer & deployer
+- the [[file:../module/commands/default.nix][commands]] module
+
 * ZFS magic
 Split security domain concept:
 - root dataset uses key stored on TPM,
