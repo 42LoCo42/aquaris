@@ -17,6 +17,11 @@
       out = {
         inherit lib;
         __functor = _: import ./lib/main.nix { inherit self lib nixpkgs; };
+
+        templates.default = {
+          path = ./template;
+          description = "Aquaris example config template";
+        };
       } // import ./packages lib nixpkgs;
 
       example = out self {

@@ -3,13 +3,11 @@ Use Aquaris to easily manage related machines, their users and secrets!
 
 Check out the example configuration to see how this looks in practice:
 - [[file:flake.nix][flake.nix]] - Definition of users and machines
-- [[file:machines/castor/default.nix][machines/castor/default.nix]] - A machine-specific configuration
+- [[file:machines/example/default.nix][machines/example/default.nix]] - A machine-specific configuration
 
 Or create a blank configuration from the template by running:
 #+begin_src shell
   nix flake new -t github:42loco42/aquaris config
-  cd config
-  nix run # this runs the setup wizard
 #+end_src
 
 ** Secrets management
@@ -17,76 +15,10 @@ Aquaris includes a powerful secrets management facility (AQS),
 with secrets belonging to one of three categories:
 - toplevel: included by all NixOS configurations
 - user: personal secrets like SSH keys or password hashes,
-  readable only by their owner and machines they're on
+  readable by all machines the user is part of
 - machine: secrets for machines like API keys or TLS certificates,
-  readable only by the respective machine and its admin accounts
+  readable only by the respective machine itself
 
 This is inspired by [[https://github.com/ryantm/agenix][agenix]], but without the need to explicitly define
 the list of secrets and their corresponding public keys.
 Secrets are managed via the [[file:docs/aqs.org][aqs]] command exported by this flake.
-
-* Module reference
-** [[file:modules/basic.nix][basic]]
-- Configures a lot of basic system options, including sane defaults for Nix
-- Creates the user accounts
-*** Options (=aquaris.machine=)
-- =secretKey=: Location of the SSH secret key;
-  should be changed when using an ephemeral root storage
-  (default: =/etc/ssh/ssh_host_ed25519_key=)
-- =keyMap=: Key map of the system consoles (default =de-latin1=)
-- =locale=: System locale (default =en_US.UTF-8=)
-- =timeLocale=: Locale to display the time in (LC_TIME) (default =de_DE.UTF-8=)
-- =timeZone=: Time zone of the system (default =Europe/Berlin=)
-
-** [[file:modules/filesystem.nix][filesystem]]
-- A declarative filesystem configuration library inspired by [[https://github.com/nix-community/disko][disko]]
-- Much simpler to configure, faster execution, handles edge cases
-  (e.g. I couldn't get disko to mount a tmpfs on =/=
-  unless running in disko mode, which would also reformat the disks)
-- [[file:docs/filesystem.org][Options documentation]]
-
-** [[file:modules/home.nix][home]]
-- Configures the user home environment
-- Shell: [[https://www.zsh.org/][zsh]] using the [[https://ohmyz.sh/][ohymzsh]] configuration framework
-- Editor: [[https://neovim.io/][neovim]]
-- Enables git, htop, tmux and a bunch of other useful tools
-- Adds the following commands:
-  - =use=: wrapper around =nix shell=,
-    prepends =nixpkgs= to package names by default
-    (e.g. =use sbctl= runs =nix shell nixpkgs#sbctl=)
-  - =switch=: builds & activates the NixOS configuration in =$HOME/config=
-
-** [[file:modules/lanza.nix][lanza]]
-- Enables [[https://github.com/nix-community/lanzaboote/][lanzaboote]], a Secure Boot-capable boot loader
-- Automatically creates Secure Boot key with [[https://github.com/Foxboron/sbctl][sbctl]]
-- Lanzaboote is fetched from [[https://42loco42.cachix.org][my binary cache]], so no lengthy Rust compilation process!
-
-** [[file:modules/persist.nix][persist]]
-- Tools for working with persistent files on a system with ephemeral root storage
-- Inspired by [[https://github.com/nix-community/impermanence][impermanence]], but much simpler
-- Designed to be used only with directories
-- All system dirs are bind-mounted, all user dirs are symlinked
-*** Options (=aquaris.persist=)
-- =root=: Location of the persistent root directory (default =/persist=)
-- =system=: List of persistent system paths.
-  Default entries: =/etc/secureboot=, =/var/db/sudo=, =/var/log=
-- =users.<name>=:
-  For each user in the set: list of its persistent paths.
-
-** [[file:modules/secrets.nix][secrets]]
-- Integrates secrets into system configurations
-- Secrets are decrypted from [[file:secrets/][<flake>/secrets/]] to =aquaris.secretsDir= (=/run/secrets/= by default)
-*** Options (=aquaris.secrets.<name>=)
-- =source=: Path to the age file for this secret
-- =outPath=: Path to the decrypted secret.
-  This option allows to use the secret as a string, e.g.
-  =${config.aquaris.secrets.example}=
-- =user=: User that owns this secret
-- =group=: Group of this secret. Won't automatically get read access!
-- =mode=: Mode/Permissions of the secret (default =0400=, meaning only the user can read it)
-
-Keep in mind that all values are set to sane defaults by AQS,
-there is usually no need to override them.
-
-* TODOs
-Check out the [[file:todo/TODO.org][TODO list]] if you want to see what's coming up!
