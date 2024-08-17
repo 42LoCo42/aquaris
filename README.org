@@ -1,8 +1,8 @@
-* Aquaris - [WIP] My NixOS module library
+* Aquaris - My NixOS module library
 Use Aquaris to easily manage related machines, their users and secrets!
 
 Check out the example configuration to see how this looks in practice:
-- [[file:flake.nix][flake.nix]] - Definition of users and machines
+- [[file:template/flake.nix][flake.nix]] - Usage of the Aquaris functor & global config
 - [[file:machines/example/default.nix][machines/example/default.nix]] - A machine-specific configuration
 
 Or create a blank configuration from the template by running:
