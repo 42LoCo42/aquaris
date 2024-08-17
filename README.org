@@ -10,6 +10,8 @@ Or create a blank configuration from the template by running:
   nix flake new -t github:42loco42/aquaris config
 #+end_src
 
+** Documentation
+
 ** Secrets management
 Aquaris includes a powerful secrets management facility (AQS),
 with secrets belonging to one of three categories:
