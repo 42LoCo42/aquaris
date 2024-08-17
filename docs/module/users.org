@@ -24,3 +24,34 @@ Attribute set of:
 
   - =key= (null or string): GPG key ID to sign commits with.
     When null, commits signing is disabled.
+
+** Example
+#+begin_src nix
+  # flake.nix
+  {
+    # inputs = { ... };
+    outputs = { aquaris, self, ... }: aquaris self {
+      users.alice = {
+        description = "Alice Exampleuser";
+
+        sshKeys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAe61mAVmVqVWc+ZGoJnWDhMMpVXGwVFxeYH+QI0XSoo"
+        ];
+
+        git = {
+          email = "alice@example.org";
+          key = "C743EE077172986F860FC0FE2F6FE1420970404C";
+        };
+      };
+    };
+  }
+#+end_src
+#+begin_src nix
+  # machine/example/default.nix
+  { aquaris, ... }: {
+    aquaris.users = aquaris.lib.merge [
+      { inherit (aquaris.cfg.users) alice; }
+      { alice.admin = true; }
+    ];
+  }
+#+end_src
