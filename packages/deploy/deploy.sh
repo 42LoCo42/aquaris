@@ -97,7 +97,7 @@ done < <(
 		echo "target_uid=$(id -u)"
 		echo "target_sudo=$(command -v sudo)"
 		echo "target_doas=$(command -v doas)"
-		echo "target_os=$(sh -c 'source /etc/os-release && echo "${ID-unknown}-${VARIANT_ID-unknown}"')"
+		echo "target_os=$(sh -c '. /etc/os-release && echo "${ID-unknown}-${VARIANT_ID-unknown}"')"
 	EOF
 )
 
