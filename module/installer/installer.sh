@@ -7,6 +7,7 @@ x() { (
 ); }
 
 mnt="${MNT-/mnt}"
+machineKey="keys/@name@.key"
 
 doFormat() {
 	log "Running formatter"
@@ -19,6 +20,9 @@ doMount() {
 }
 
 doInstall() {
+	log "Installing machine key"
+	x cp "$machineKey" "$mnt/@secretKey@"
+
 	log "Mounting nom-overlay"
 	overlay="nom-overlay-$RANDOM"
 	x mkdir -p "$mnt/nix/store"
@@ -49,9 +53,10 @@ usage() {
 	cat <<-EOF
 		Usage: $0 [actions...]
 		Actions:
-		  -f, --format     Format disks
-		  -m, --mount      Mount the configured filesystems
-		  -i, --install    Build & install the system
+		  -f, --format      Format disks
+		  -m, --mount       Mount the configured filesystems
+		  -k, --key <path>  Alternative machine key location
+		  -i, --install     Build & install the system
 	EOF
 }
 
@@ -62,9 +67,13 @@ usage() {
 
 while (($#)); do
 	case "$1" in
-	-f | --format | f*) doFormat ;;
-	-m | --mount | m*) doMount ;;
-	-i | --install | i*) doInstall ;;
+	-f | --format) doFormat ;;
+	-m | --mount) doMount ;;
+	-k | --key)
+		shift
+		machineKey="$1"
+		;;
+	-i | --install) doInstall ;;
 
 	*)
 		echo "Unknown option $1"

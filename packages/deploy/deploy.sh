@@ -68,7 +68,8 @@ while (($#)); do
 		config="$2"
 
 		if [ -z "$key" ]; then
-			echo "[1;33mWarning: --key is unset, secrets won't be readable![m"
+			err "--key is unset; secrets decryption impossible!"
+			exit 1
 		fi
 
 		break
@@ -173,14 +174,11 @@ bin="$(r "cd config; nix build -L --no-link --print-out-paths \"$config\"")/bin/
 ((dont_format)) || r -t "$bin" --format # TTY for LUKS passwords
 ((dont_mount)) || r "$bin" --mount
 
-if [ -n "$key" ]; then
-	log "Copying master key from $key"
-	keypath="/mnt/$(nix eval --raw "$config.keypath")"
-	rsync -azvP "$key" "$target:$keypath"
-	r "chown root:root $keypath && chmod 0400 $keypath"
-fi
+log "Copying master key from $key"
+keypath="$(r mktemp)"
+rsync -azvP "$key" "$target:$keypath"
 
-r -t "$bin" --install # TTY for nom
+r -t "$bin" --key "$keypath" --install # TTY for nom
 
 if ! ((dont_reboot)); then
 	log "Rebooting"

@@ -1,6 +1,5 @@
 * Documentation
 - how is the =aquaris= set passed to modules?
-- installer & deployer
 - the [[file:../module/commands/default.nix][commands]] module
 
 * ZFS magic

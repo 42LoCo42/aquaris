@@ -1,0 +1,100 @@
+* Create a configuration
+This repo provides a [[file:../template/][template]] configuration. Get it via
+#+begin_src shell
+  nix flake new -t github:42loco42/aquaris config
+  cd config
+#+end_src
+
+* Create a machine
+Create the file =machines/<machineName>/default.nix=;
+adapt it from [[file:../template/machines/example/default.nix][the example]].
+
+Generate the required ID and key:
+#+begin_src shell
+  dbus-uuidgen # for the machine ID
+  ssh-keygen -qN "" -t ed25519 -f "keys/<machineName>.key"
+  cat "keys/<machineName>.key.pub" # for the machine key; third part can be removed
+  rm "keys/<machineName>.key.pub" # this file is now obsolete
+#+end_src
+
+Adapt the filesystem configuration and other stuff to your requirements.
+We will generate a hardware configuration later.
+
+* Create a user
+The [[file:../template/flake.nix#L17][global config]] is a good place to put
+user accounts shared over multiple machines
+(and was originally /only/ designed for this).
+For one-off accounts, you can skip it and
+just define them directly in the machine config file.
+
+In any case, make sure you have at least one admin on your machine.
+I like to set the =admin= option locally, but if you want,
+you can put in in your global user config too.
+
+Finally, set a password for the user:
+#+begin_src shell
+  mkpasswd -S "$(mkpasswd)" # twice for verification
+  # copy the resulting hash...
+  mkdir "secrets/users/<userName>"
+  aqs "secrets/users/<userName>/passwordHash.age"
+  # ...and paste it in the editor
+#+end_src
+
+* Installation
+** Standard
+Boot a recent NixOS live ISO on your target machine,
+preferably one with flakes enabled by default (like [[https://github.com/42LoCo42/.dotfiles/releases/tag/guanyin][this one]]).
+
+Obtain the hardware configuration:
+#+begin_src shell
+  nixos-generate-config --show-hardware-config --no-filesystems
+#+end_src
+Write it to your config at =machines/<machineName>/hardware.nix=.
+Don't forget to =git add= that file when using Git (as you should)!
+
+Copy/clone your configuration onto the live system;
+make sure to also copy =keys/<machineName>.key= somewhere!
+
+Run the installer:
+#+begin_src shell
+  nix run .#machineName -f -m -i # format, mount, install
+#+end_src
+You can pass the option =-k <path>= to specify where the machine key is.
+By default, =keys/<machineName>.key= is used relative to where the installer runs.
+
+** Remote deployment
+If you want to deploy your configuration from a different machine,
+either just for convenience or because you can't physically access your target,
+try out this method instead!
+
+Inspired by [[https://github.com/nix-community/nixos-anywhere][nixos-anywhere]], it supports replacing whatever old system
+is running on your target with a [[https://github.com/nix-community/nixos-images][NixOS kexec image]],
+which is like a stripped-down live ISO that lives in the RAM!
+This of course requires kexec support, but not much else
+other than basic Linux shell utilities (tested on Alpine, so even Busybox works!)
+
+Use it like this:
+#+begin_src shell
+  nix shell github:42loco42/aquaris#deploy
+  deploy --show-hwconf --key "keys/<machineName>.key" user@host .#machineName
+#+end_src
+
+The specified user requires root access for this process!
+Both sudo and doas are supported.
+If you need to pass custom SSH options, you can do so via =~/.ssh/config=.
+Please don't forcefully request a TTY; the deployer chooses when to do this.
+
+If the current target is not already a NixOS live system,
+a kexec image is downloaded & executed.
+The URL for this can be set via =--kexec-url <url>=.
+Running the kexec step can be forced via =--force-kexec=.
+
+After booting into the kexec environment,
+=--show-hwconf= prints the hardware configuration and pauses the deployment,
+allowing you to add it to your local configuration.
+
+You can skip certain steps of the installation process using.
+=--dont-format=, =--dont-mount= and =--dont-reboot=.
+
+Everything is built on the target in order to support other CPU architectures.
+A local build mode might be added in the future.

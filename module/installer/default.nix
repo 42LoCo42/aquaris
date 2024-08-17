@@ -15,6 +15,8 @@ let
       format = getExe config.aquaris.filesystems._create;
       mount = getExe config.aquaris.filesystems._mount;
 
+      inherit (config.aquaris.machine) secretKey;
+
       keys = config.nix.settings.trusted-public-keys;
       subs = config.nix.settings.substituters;
     };

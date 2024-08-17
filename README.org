@@ -1,17 +1,15 @@
 * Aquaris - My NixOS module library
 Use Aquaris to easily manage related machines, their users and secrets!
 
-Check out the example configuration to see how this looks in practice:
-- [[file:template/flake.nix][flake.nix]] - Usage of the Aquaris functor & global config
-- [[file:machines/example/default.nix][machines/example/default.nix]] - A machine-specific configuration
+** Quickstart
+Check out the [[file:docs/quickstart.org][quickstart]] guide and the provided example & template!
 
-Or create a blank configuration from the template by running:
-#+begin_src shell
-  nix flake new -t github:42loco42/aquaris config
-#+end_src
+- [[file:template/flake.nix][flake.nix]] - Usage of the Aquaris functor & global config
+- [[file:machines/example/default.nix][example]] - An example machine-specific configuration
+- [[file:template/machines/example/default.nix][template]] - The mostly empty template configuration
 
 ** Declarative filesystem configuration
-Inspired by [[https://github.com/nix-community/disko][disko]], but dissatisfied with its pretty verbose configuration,
+Inspired by [[https://github.com/nix-community/disko][disko]], but dissatisfied with its verbosity,
 suboptimal integration and some edge-case bugs,
 Aquaris implements a fairly complete filesystem configuration library.
 
@@ -19,7 +17,7 @@ It supports regular filesystems, btrfs subvolumes, swap,
 LUKS-encrypted partitions and even ZFS pools and datasets.
 LVM support is not currently planned, but will be added when it becomes neccessary.
 
-With very compact semantics, default configurations
+With very compact semantics, provided default options
 and deep integration into the rest of Aquaris's modules,
 most disko users should find this library a worthy replacement
 for [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/swap.nix][dozens]] of [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/luks-btrfs-subvolumes.nix][lines]] of [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/zfs.nix][code]]!
