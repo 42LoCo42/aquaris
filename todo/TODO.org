@@ -7,18 +7,21 @@ Split security domain concept:
 
 * Preconfigured Firefox profile
 - could live at =module/home/firefox=
+
 - Extensions
   - Security
-    - uBlock Origin [[https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/][store]] =nur.repos.rycee.firefox-addons.ublock-origin=
+    - Bitwarden [[https://addons.mozilla.org/en-US/firefox/addon/bitwarden-password-manager/][store]] =nur.repos.rycee.firefox-addons.bitwarden=
     - CanvasBlocker [[https://addons.mozilla.org/en-US/firefox/addon/canvasblocker/][store]] =nur.repos.rycee.firefox-addons.canvasblocker=
     - LocalCDN [[https://addons.mozilla.org/en-US/firefox/addon/localcdn-fork-of-decentraleyes/][store]] =nur.repos.rycee.firefox-addons.localcdn=
+    - uBlock Origin [[https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/][store]] =nur.repos.rycee.firefox-addons.ublock-origin=
   - Utility
     - DarkReader[[https://addons.mozilla.org/en-US/firefox/addon/darkreader/][ store]] =nur.repos.rycee.firefox-addons.darkreader=
     - Hide Tabs [[https://addons.mozilla.org/en-US/firefox/addon/hide-tab/][store]] *not in NUR*
-    - KeePassXC Browser [[https://addons.mozilla.org/en-US/firefox/addon/keepassxc-browser][store]] =nur.repos.rycee.firefox-addons.keepassxc-browser=
+    - I still don't care about cookies [[https://addons.mozilla.org/en-US/firefox/addon/istilldontcareaboutcookies/][store]] =nur.repos.rycee.firefox-addons.istilldontcareaboutcookies=
     - Load Reddit images directly [[https://addons.mozilla.org/en-US/firefox/addon/load-reddit-images-directly/][store]] *not in NUR*
-    - Shinigami Eyes [[https://addons.mozilla.org/en-US/firefox/addon/shinigami-eyes/][store]] *not in NUR*
+    - Shinigami Eyes [[https://addons.mozilla.org/en-US/firefox/addon/shinigami-eyes/][store]] =nur.repos.rycee.firefox-addons.shinigami-eyes=
     - SponsorBlock [[https://addons.mozilla.org/en-US/firefox/addon/sponsorblock/][store]] =nur.repos.rycee.firefox-addons.sponsorblock=
+
 - Settings
   - open previous windows and tabs
   - search engines: SearXNG; remove google et al
