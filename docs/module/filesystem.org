@@ -1,0 +1,186 @@
+* [[file:../../module/filesystem/default.nix][aquaris.filesystem]]
+Declarative filesystem configuration inspired by [[https://github.com/nix-community/disko][disko]], but much more compact.
+
+This module is set as a function accepting ={fs, ...}=
+with the =fs= object serving as a holder for partition content types and default settings.
+
+** Options
+- =disks=: Set of disks
+  - =device= (path): Path to the disk device file.
+    Default: disk entry name
+
+  - =type= (string): Partition table type.
+    Default: =gpt=
+
+  - =separator= (string): Separator between disk path and partition number.
+    Default: =-part=
+
+  - =partitions=: List of partitions
+    - =device= (path): Path to the partition device file.
+      Default: disk name + separator + partition list index
+
+    - =type= (string): Partition type for sfdisk.
+      Default: =swap= if content is swap, else =linux=
+
+    - =size= (null or string): Size of the partition for sfdisk.
+      null means remaining size.
+      Default: null
+
+    - =content=: Partition content (see [[#partition-content][relevant section]])
+
+- =zpools=: Set of ZFS pools
+  - =name= (string): Name of the zpool.
+    Default: zpool entry name
+
+  - =poolOpts= (set of strings): Options set on pool creation (see =man zpoolprops=).
+    Default:
+    #+begin_src nix
+      {
+        ashift = "12";
+        autoexpand = "on";
+        autoreplace = "on";
+        autotrim = "on";
+      }
+    #+end_src
+
+  - =rootOpts= (set of strings): Default dataset options (see =man zfsprops=).
+    Default:
+    #+begin_src nix
+      {
+        acltype = "posix";
+        compression = "zstd";
+        dnodesize = "auto";
+        mountpoint = "none";
+        normalization = "formD";
+        relatime = "on";
+        xattr = "sa";
+      }
+    #+end_src
+
+- =tools= (list of packages): Extra packages available to the format and mount scripts.
+  Default: empty list.
+
+** Partition content
+These items are part of the passed =fs= object and should be called
+with their respective arguments, except for =swap=.
+
+*** =regular=: A regular filesystem
+- =type= (string): Filesystem type for mkfs
+
+- =mkfsOpts= (list of strings): Options for mkfs.
+  Default: empty list
+
+- =mountpoint= (path): Mount point of the filesyste
+
+- =mountOpts= (list of strings): Options for mounting the filesystem.
+  Default: empty list
+
+#+begin_src nix
+  fs.regular {
+    type = "ext4";
+    mountpoint = "/";
+  }
+#+end_src
+
+*** =btrfs=: The B-Tree filesystem with support for subvolumes
+- =mkfsOpts= (list of strings): Options for mkfs.btrfs.
+  Default: empty list
+
+- =mountOpts= (list of strings): Default mount options
+  for all subvolumes (including the default one).
+  Default: =[ "compres-force=zstd" ]=
+
+- =defaultVol=: The default subvolume
+  - =mountpoint= (null or path): Mountpoint of the default subvolume.
+    Default: null
+
+  - =mountOpts= (list of strings): Options for mounting the subvolume.
+    Default: =[ "defaults" ]=
+
+- =subvols=: Set of subvolumes
+  - =mountpoint= (null or path): Mountpoint of the subvolume.
+    Default: null
+
+  - =mountOpts= (list of strings): Options for mounting the subvolume.
+    Default: =[ "defaults" ]=
+
+#+begin_src nix
+  fs.btrfs {
+    defaultVol.mountpoint = "/btrfs";
+    subvols = {
+      root.mountpoint = "/";
+      home.mountpoint = "/home";
+    };
+  }
+#+end_src
+
+*** =swap=: A swap partition
+This is not a function. Just use =content = fs.swap;=
+
+*** =luks=: A partition encrypted with LUKS2
+- =keyFile= (null or path): Path to a key file used for encryption.
+  If null, a password is used instead.
+  Default: null
+
+- =formatOpts= (list of strings): Options for =cryptsetup luksFormat=
+  Default: empty list
+
+- =openOpts= (list of strings): Options for =cryptsetup open=
+  Default: empty list
+
+- =content=: Inner partition content (anything from [[#partition-content][this section]])
+
+#+begin_src nix
+  fs.luks {
+    content = fs.regular {
+      type = "ext4";
+      mountpoint = "/";
+    };
+  }
+#+end_src
+
+*** =zpool=: Add this partition to a ZFS pool
+This passes the set of all zpools to a function
+that should return the desired pool.
+
+#+begin_src nix
+  fs.zpool (p: p.rpool)
+#+end_src
+
+** Default objects in =fs=
+- =defaultBoot=: A standard EFI system partition for UEFI boot.
+  #+begin_src nix
+    {
+      type = "uefi";
+      size = "512M";
+      content = fs.regular {
+        type = "vfat";
+        mountpoint = "/boot";
+      };
+    }
+  #+end_src
+
+- =defaultPool=: A ZFS pool usable as the root pool.
+  Contains the =nixos/nix= dataset for =/nix=,
+  =nixos/persist= if =aquaris.persist= is enabled (see [[file:persist.org][here]])
+  and =nixos/home/<username>= datasets
+  for every user defined in =aquaris.users= (see [[file:users.org][here]]).
+
+  The =persist= and =home= datasets additionally get the flag
+  =com.sun:auto-snapshot= set to =true=
+  if =services.zfs.autoSnapshot= is enabled.
+
+** Example
+#+begin_src nix
+  {
+    aquaris.filesystems = { fs, ... }: {
+      disks."/dev/disk/by-id/foobar".partitions = [
+        fs.defaultBoot
+        { size = "4G"; content = fs.swap; }
+        { content = fs.zpool (p: p.rpool); }
+      ];
+
+      zpools.rpool = fs.defaultPool;
+    };
+  }
+#+end_src

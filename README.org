@@ -11,6 +11,7 @@ Or create a blank configuration from the template by running:
 #+end_src
 
 ** Documentation
+- [[file:docs/module/][Module documentation]]
 
 ** Secrets management
 Aquaris includes a powerful secrets management facility (AQS),
