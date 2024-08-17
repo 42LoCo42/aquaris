@@ -1,4 +1,4 @@
-* [[file:../../module/filesystem/default.nix][aquaris.filesystem]]
+* [[file:../../module/filesystems/default.nix][aquaris.filesystems]]
 Declarative filesystem configuration inspired by [[https://github.com/nix-community/disko][disko]], but much more compact.
 
 This module is set as a function accepting ={fs, ...}=
