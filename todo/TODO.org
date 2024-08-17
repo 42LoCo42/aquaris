@@ -5,10 +5,13 @@
 
 * ZFS magic
 Split security domain concept:
-- root dataset uses key stored on TPM,
-  gated by Secure Boot, managed by [[https://github.com/latchset/clevis][clevis]] and [[file:zfs-autokey.nix][zfs-autokey]]
-- user datasets use user passwords as keys, managed by [[file:zfs-pam][zfs-pam]]
-- or maybe something like [[https://github.com/jkool702/systemd-homed_ZFS][this]]?
+- root dataset:
+  - uses key stored on TPM, gated by Secure Boot, managed by [[https://github.com/latchset/clevis][clevis]] and [[file:zfs-autokey.nix][zfs-autokey]]
+  - or: ZFS on LUKS, managed by systemd-cryptenroll
+  - track [[https://github.com/nix-community/lanzaboote/issues/348][this]] PR for binding to OS-specific PCRs
+- user datasets:
+  - use user passwords as keys, managed by [[file:zfs-pam][zfs-pam]]
+  - or maybe something like [[https://github.com/jkool702/systemd-homed_ZFS][this]]?
 
 * Preconfigured Firefox profile
 - could live at =module/home/firefox=
