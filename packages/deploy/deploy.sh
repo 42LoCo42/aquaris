@@ -83,6 +83,7 @@ r() {
 }
 
 log "Authorizing client SSH key"
+ssh-add
 ssh_cmd=ssh-copy-id r
 
 log "Gathering facts"
@@ -90,7 +91,7 @@ while IFS='=' read -r var val; do
 	echo "$var = $val"
 	declare "$var=$val"
 done < <(
-	r <<-\EOF
+	r sh <<-\EOF
 		echo "target_kernel=$(uname -s)"
 		echo "target_arch=$(uname -m)"
 		echo "target_uid=$(id -u)"
