@@ -1,0 +1,15 @@
+* [[file:../../module/persist.nix][aquaris.persist]]
+Root-on-tmpfs and persistent files management
+
+** Options
+- =enable= (boolean): Enable root-on-tmpfs and persistency options.
+  Default: false
+
+- =root= (path): Path to persistent root (used as =${persistentRoot}= in other docs).
+  Default: =/persist=. This has to be a device mountpoint!
+
+- =dirs=: List of persistent directories. List of paths (used as =d=) or entries:
+  - =d=: The directory to persist
+  - =m=: Mode of the persistent directory. Default =0755=
+  - =u=: User of the persistent directory. Default =root=
+  - =g=: Group of the persistent directory. Default =root=

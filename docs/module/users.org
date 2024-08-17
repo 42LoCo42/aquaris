@@ -1,0 +1,26 @@
+* [[file:../../module/users.nix][aquaris.users]]
+User accounts of this configuration.
+Attribute set of:
+
+** Options
+- =description= (string): Full description of the username, e.g. the full name.
+  Default: empty. Also used for =git.name= if that is unset
+
+- =admin= (boolean): Grant this user administrative rights (sudo, NetworkManager).
+  Default: false
+
+- =sshKeys= (list of string): SSH public keys that may log in as this user.
+  Default: empty
+
+- =home= (path): Path to this user's home directory.
+  Default: =/home/${username}=
+
+- =git=: Submodule
+  - =name= (null or string): Full name of this user for Git commits.
+    When null, toplevel =description= is used as a fallback.
+
+  - =email= (null or string): Email address of this user for Git commits.
+    When null, commits can't be created.
+
+  - =key= (null or string): GPG key ID to sign commits with.
+    When null, commits signing is disabled.

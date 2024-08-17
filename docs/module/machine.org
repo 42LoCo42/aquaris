@@ -1,0 +1,18 @@
+* [[file:../../module/machine.nix][aquaris.machine]]
+General machine settings
+
+** Options
+- =id= (string): The machine ID (used by systemd, ZFS and others).
+  Generate with =dbus-uuidgen=
+
+- =keepGenerations= (null or int): How many generations to keep
+  (null to disable autocleanup). Default: 5
+
+- =key= (string): Public SSH key for secrets management.
+  Generate with =ssh-keygen -qN "" -t ed25519 -f <name>.key=
+
+- =secretKey= (path): Path to the secret key file for secrets management.
+  Default: =${persistentRoot}/etc/aqs.key= (See [[file:persist.org][persist]])
+
+- =secureboot= (boolean): Whether to enable Secure Boot support using [[https://github.com/nix-community/lanzaboote][lanzaboote]].
+  Default: true
