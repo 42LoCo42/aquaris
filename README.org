@@ -10,6 +10,20 @@ Or create a blank configuration from the template by running:
   nix flake new -t github:42loco42/aquaris config
 #+end_src
 
+** Declarative filesystem configuration
+Inspired by [[https://github.com/nix-community/disko][disko]], but dissatisfied with its pretty verbose configuration,
+suboptimal integration and some edge-case bugs,
+Aquaris implements a fairly complete filesystem configuration library.
+
+It supports regular filesystems, btrfs subvolumes, swap,
+LUKS-encrypted partitions and even ZFS pools and datasets.
+LVM support is not currently planned, but will be added when it becomes neccessary.
+
+With very compact semantics, default configurations
+and deep integration into the rest of Aquaris's modules,
+most disko users should find this library a worthy replacement
+for [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/swap.nix][dozens]] of [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/luks-btrfs-subvolumes.nix][lines]] of [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/zfs.nix][code]]!
+
 ** Secrets management
 Aquaris includes a powerful secrets management facility (AQS),
 with secrets belonging to one of three categories:
