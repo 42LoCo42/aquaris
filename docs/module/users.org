@@ -1,7 +1,7 @@
 * [[file:../../module/users.nix][aquaris.users]]
 User accounts of this configuration.
-Attribute set of:
 
+Attribute set of the following options:
 ** Options
 - =description= (string): Full description of the username, e.g. the full name.
   Default: empty. Also used for =git.name= if that is unset

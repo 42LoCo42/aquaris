@@ -1,5 +1,6 @@
 * [[file:../../module/caches.nix][aquaris.caches]]
 Binary caches this configuration should use
+
 List of submodules:
 - =url=: URL of the binary cache
 - =key=: Public key of the binary cache
