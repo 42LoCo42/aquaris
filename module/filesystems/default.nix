@@ -83,7 +83,6 @@ in
           tools = mkOption {
             description = "Packages available to the generated scripts";
             type = listOf package;
-            default = [ ];
           };
 
           _create = mkOption {
@@ -130,6 +129,11 @@ in
       ];
     in
     {
+      aquaris.filesystems.tools = with pkgs; [
+        cryptsetup
+        e2fsprogs
+      ];
+
       fileSystems = mounts.fileSystems or { };
       swapDevices = mounts.swapDevices or [ ];
 
