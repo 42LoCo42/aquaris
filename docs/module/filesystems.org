@@ -58,7 +58,7 @@ with the =fs= object serving as a holder for partition content types and default
     #+end_src
 
 - =tools= (list of packages): Extra packages available to the format and mount scripts.
-  Default: empty list.
+  Default: =[ cryptsetup e2fsprogs ]=
 
 ** Partition content
 These items are part of the passed =fs= object and should be called
@@ -70,10 +70,10 @@ with their respective arguments, except for =swap=.
 - =mkfsOpts= (list of strings): Options for mkfs.
   Default: empty list
 
-- =mountpoint= (path): Mount point of the filesyste
+- =mountpoint= (path): Mount point of the filesystem
 
 - =mountOpts= (list of strings): Options for mounting the filesystem.
-  Default: empty list
+  Default: =[ "defaults" ]=
 
 #+begin_src nix
   fs.regular {

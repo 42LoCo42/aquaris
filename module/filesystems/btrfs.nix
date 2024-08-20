@@ -3,7 +3,7 @@ let
   inherit (lib) concatLines getExe ifEnable mapAttrs' mapAttrsToList mkOption pipe;
   inherit (lib.types) anything attrsOf functionTo listOf nullOr path str submodule;
 
-  subvol.options = {
+  subvol = {
     mountpoint = mkOption {
       description = "Mount point of the subvolume";
       type = nullOr path;
@@ -34,23 +34,11 @@ in
       default = [ "compress-force=zstd" ];
     };
 
-    defaultVol = {
-      mountpoint = mkOption {
-        description = "Mount point of the default subvolume";
-        type = nullOr path;
-        default = null;
-      };
-
-      mountOpts = mkOption {
-        description = "Options for mount";
-        type = listOf str;
-        default = [ "defaults" ];
-      };
-    };
+    defaultVol = subvol;
 
     subvols = mkOption {
       description = "Subvolumes";
-      type = attrsOf (submodule subvol);
+      type = attrsOf (submodule { options = subvol; });
       default = { };
     };
 
