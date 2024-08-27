@@ -13,7 +13,7 @@ let
           { default = true; dirs = false; }
           dir ++ [ ../module ];
 
-        specialArgs = self.inputs // {
+        specialArgs = {
           aquaris = {
             inherit cfg lib name;
             src = self;

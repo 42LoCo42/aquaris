@@ -1,10 +1,10 @@
-{ pkgs, lib, config, specialArgs, aquaris, home-manager, ... }:
+{ pkgs, lib, config, specialArgs, aquaris, self, ... }:
 let
   inherit (lib) ifEnable mkOption;
   inherit (lib.types) bool;
 in
 {
-  imports = [ home-manager.nixosModules.default ];
+  imports = [ self.inputs.home-manager.nixosModules.default ];
 
   config = {
     home-manager = {
