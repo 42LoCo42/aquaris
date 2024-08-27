@@ -1,3 +1,14 @@
+* Obtain the tools
+This repo exports two important tools: =aqs= and =deploy=.
+Enter a shell that has them:
+#+begin_src shell
+  nix shell \
+      github:42loco42/aquaris#aqs \
+      github:42loco42/aquaris#deploy
+#+end_src
+You can skip =deploy= if you don't plan on remotely installing your config
+(more on that [[#remote-deployment][later]]...)
+
 * Create a configuration
 This repo provides a [[file:../template/][template]] configuration. Get it via
 #+begin_src shell
@@ -75,7 +86,6 @@ other than basic Linux shell utilities (tested on Alpine, so even Busybox works!
 
 Use it like this:
 #+begin_src shell
-  nix shell github:42loco42/aquaris#deploy
   deploy --show-hwconf --key "keys/<machineName>.key" user@host .#machineName
 #+end_src
 
