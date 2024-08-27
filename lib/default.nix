@@ -89,7 +89,7 @@ rec {
       adt = choices: pipe choices [
         (mapAttrsToList (name: _: {
           is.${name} = v: v._tag == name;
-          mk."${name}" = v: recursiveUpdate v { _tag = name; };
+          mk.${name} = v: recursiveUpdate v { _tag = name; };
           type = mkType choices;
         }))
         (builtins.foldl' recursiveUpdate { })

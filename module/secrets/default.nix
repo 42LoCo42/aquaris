@@ -1,12 +1,10 @@
 { self, aquaris, pkgs, lib, config, ... }:
 let
   inherit (lib)
-    concatLines
     filterAttrs
     flip
     getExe
     mapAttrs'
-    mapAttrsToList
     mergeAttrsList
     mkOption
     pipe
