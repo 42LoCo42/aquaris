@@ -41,20 +41,8 @@
   services.zfs.autoSnapshot.enable = true;
 
   home-manager.users.dev = {
-    aquaris = {
-      emacs = {
-        # enable = true;
-        package = pkgs.emacs-gtk;
-        config = ./emacs.org;
-        extraPrograms = with pkgs; [
-          gopls
-          nil
-        ];
-      };
-
-      persist = [
-        "foo/bar/baz"
-      ];
-    };
+    aquaris.persist = [
+      "foo/bar/baz"
+    ];
   };
 }

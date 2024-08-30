@@ -9,7 +9,7 @@ Enable [[https://github.com/sharkdp/bat][bat]] for manpage rendering
 Enable [[https://github.com/direnv/direnv][direnv]] and [[https://github.com/nix-community/nix-direnv][nix-direnv]] integration
 
 ** [[file:../../module/home/emacs/default.nix][emacs]]
-[[https://www.gnu.org/software/emacs/][Emacs]] configuration management with plugins from nixpkgs and init.org support
+Declarative [[https://www.gnu.org/software/emacs/][Emacs]] configuration management
 
 *** Options
 - =enable= (boolean): Enable the Emacs configuration.
@@ -18,15 +18,34 @@ Enable [[https://github.com/direnv/direnv][direnv]] and [[https://github.com/nix
 - =package=: Which Emacs package to use.
   Default: =pkgs.emacs29=
 
-- =extraPrograms= (list of package): Extra programs available to Emacs.
-  Default: empty list
+- =startupTimer= (boolean): Enable the startup timer.
+  Default: true
 
-- =config= (store path): Path to the config file.
-  Requires file extension =.el= or =.org=
+- =usePackage=:
+  - =alwaysDefer= (boolean): Always defer loading of packages.
+    Default: false
 
-- =overrides=: Override function for emacsPackages.
-  See https://mynixos.com/home-manager/option/programs.emacs.overrides.
-  Default: no overrides
+  - =statistics= (boolean): Gather statistics about package loading times.
+    Default: false
+
+  - =verbose= (boolean): Log all loaded packages.
+    Default: false
+
+- =prelude= (string): Config to add before loading packages
+  Default: empty
+
+- =postlude= (string): Config to add after loading packages
+  Default: empty
+
+- =config=: Set of Emacs package configurations.
+  Options: every keyword from [[https://github.com/jwiegley/use-package][use-package]]
+  (except =disabled= and =pin=; =bind*= is set as =bind'=) and:
+  - =package=: Explicit package name or function taking =epkgs=
+    Default: entry name
+
+  - =extraPackages= (list of package):
+    Extra packages required by this Emacs package.
+    They will be added to =home.packages=. Default: empty list
 
 ** [[file:../../module/home/git.nix][git]]
 Enable Git with helpful aliases and features.
