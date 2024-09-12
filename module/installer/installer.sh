@@ -21,6 +21,7 @@ doMount() {
 
 doInstall() {
 	log "Installing machine key"
+	x mkdir -p "$(dirname "$mnt/@secretKey@")"
 	x cp "$machineKey" "$mnt/@secretKey@"
 
 	log "Mounting nom-overlay"
