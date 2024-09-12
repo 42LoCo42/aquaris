@@ -28,6 +28,20 @@ with the =fs= object serving as a holder for partition content types and default
 
     - =content=: Partition content (see [[#partition-content][relevant section]])
 
+- =lvm=: Set of LVM volume groups
+  - =name= (string): Name of the VG.
+    Default: entry name
+
+  - =volumes=: Set of Logical Volumes that belong to this VG.
+    - =name= (string): Name of the LV:
+      Default: entry name
+
+    - =size= (null or string): Size of the LV.
+      null means remaining size (aka =100%FREE=).
+      Default: null
+
+    - =content=: LV content (see [[#partition-content][relevant section]])
+
 - =zpools=: Set of ZFS pools
   - =name= (string): Name of the zpool.
     Default: zpool entry name
@@ -137,6 +151,14 @@ This is not a function. Just use =content = fs.swap;=
       mountpoint = "/";
     };
   }
+#+end_src
+
+*** =lvm=: Add this partition to an LVM volume group
+This passes the set of all LVM VGs to a function
+that should return the desired VG.
+
+#+begin_src nix
+  fs.lvm (x: x.nixos)
 #+end_src
 
 *** =zpool=: Add this partition to a ZFS pool

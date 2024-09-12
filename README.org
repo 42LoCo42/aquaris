@@ -14,8 +14,9 @@ suboptimal integration and some edge-case bugs,
 Aquaris implements a fairly complete filesystem configuration library.
 
 It supports regular filesystems, btrfs subvolumes, swap,
-LUKS-encrypted partitions and even ZFS pools and datasets.
-LVM support is not currently planned, but will be added when it becomes neccessary.
+LUKS-encrypted partitions and even complex filesystems like
+LVM Volume Groups & Logical Volumes
+and ZFS pools and datasets.
 
 With very compact semantics, provided default options
 and deep integration into the rest of Aquaris's modules,

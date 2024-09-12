@@ -7,6 +7,7 @@ let
   fs = aquaris.lib.adt {
     btrfs = import ./btrfs.nix pkgs;
     luks = import ./luks.nix util;
+    lvm = ./lvmMember.nix;
     regular = ./regular.nix;
     swap = ./swap.nix;
     zpool = ./zpoolMember.nix;
@@ -36,6 +37,11 @@ in
       specialArgs = {
         fs = fs.mk // {
           swap = fs.mk.swap { };
+
+          lvm = f: fs.mk.lvm {
+            group = (f cfg.lvm).name;
+          };
+
           zpool = f: fs.mk.zpool {
             pool = (f cfg.zpools).name;
           };
@@ -75,6 +81,11 @@ in
             default = { };
           };
 
+          lvm = mkOption {
+            type = attrsOf (submodule (import ./lvm.nix util));
+            default = { };
+          };
+
           zpools = mkOption {
             type = attrsOf (submodule (import ./zpool.nix util));
             default = { };
@@ -94,6 +105,7 @@ in
               text = ''
                 set -x
                 ${getEntries (x: x._create) cfg.disks}
+                ${getEntries (x: x._create) cfg.lvm}
                 ${getEntries (x: x._create) cfg.zpools}
               '';
             };
@@ -119,7 +131,7 @@ in
   config =
     let
       mounts = pipe cfg [
-        (x: with x; [ disks zpools ])
+        (x: with x; [ disks lvm zpools ])
         (map (x: pipe x [
           builtins.attrValues
           (map (x: x._mounts))
