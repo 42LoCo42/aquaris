@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cfg="path:${NIXOS_CONFIG_DIR-$HOME/config}"
+cfg="$(realpath "${NIXOS_CONFIG_DIR-$HOME/config}")"
 declare new
 
 err() {

@@ -4,7 +4,7 @@ nixpkgs="$(realpath "/etc/nix/channel")"
 for arg in "$@"; do
 	# prepend nixpkgs if the argument is only a package name
 	grep -q '^-\|[#:]' <<<"$arg" || {
-		arg="path:$nixpkgs#$arg"
+		arg="$nixpkgs#$arg"
 		echo "Using $arg"
 	}
 	args+=("$arg")

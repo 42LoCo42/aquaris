@@ -51,7 +51,7 @@ findFlake() {
 
 	aqscfg="$(mktemp)"
 	trap 'rm "$aqscfg"' EXIT
-	nix eval --raw --apply builtins.toJSON "path:$flake#aqscfg" >"$aqscfg"
+	nix eval --raw --apply builtins.toJSON "$flake#aqscfg" >"$aqscfg"
 	echo "Aquaris flake found in $flake" >&2
 
 	if [ -d "$flake/keys" ]; then

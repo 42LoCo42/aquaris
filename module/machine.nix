@@ -96,7 +96,7 @@ in
       etc = {
         "machine-id".text = cfg.id;
         "nix/channel".source = nixpkgs.outPath;
-        "nixos".source = self;
+        "nixos".source = self.outPath;
       };
 
       systemPackages = [
