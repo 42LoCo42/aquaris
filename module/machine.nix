@@ -167,7 +167,8 @@ in
     console.keyMap = mkDefault "de-latin1";
     i18n.extraLocaleSettings.LC_COLLATE = mkDefault "C.UTF-8";
     i18n.extraLocaleSettings.LC_TIME = mkDefault "de_DE.UTF-8";
-    system.stateVersion = "24.05";
+    system.configurationRevision = mkDefault (self.rev or self.dirtyRev or null);
+    system.stateVersion = mkDefault "24.05";
     systemd.extraConfig = mkDefault "DefaultTimeoutStopSec=5s";
     time.timeZone = mkDefault "Europe/Berlin";
     zramSwap.enable = mkDefault true;
