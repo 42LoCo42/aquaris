@@ -45,9 +45,8 @@ rec {
   importDir' = { default ? false, dirs ? true }: dir: pipe dir [
     builtins.readDir
     (filterAttrs (name: type:
-      (type == "regular" && builtins.match ".*\.nix" name != null &&
-      (default || name != "default.nix")) ||
-      (type == "directory" && dirs)))
+      (type == "regular" && builtins.match ".*\.nix" name != null && (default || name != "default.nix")) ||
+      (type == "directory" && dirs && builtins.pathExists "${dir}/${name}/default.nix")))
     builtins.attrNames
     (map (x: "${dir}/${x}"))
   ];
