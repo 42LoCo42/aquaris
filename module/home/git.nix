@@ -41,34 +41,31 @@ in
       };
     };
 
-    programs = {
-      git = {
+    # TODO support both GPG & SSH signing
+    programs.git = {
+      enable = true;
+      lfs.enable = true;
+
+      delta = {
         enable = true;
-        lfs.enable = true;
-
-        delta = {
-          enable = true;
-          options = {
-            paging = "always";
-            side-by-side = true;
-          };
-        };
-
-        userName = user.name;
-        userEmail = user.email;
-
-        signing = {
-          key = user.key;
-          signByDefault = config.programs.git.signing.key != null;
-        };
-
-        extraConfig = {
-          pull.rebase = false;
-          push.autoSetupRemote = true;
+        options = {
+          paging = "always";
+          side-by-side = true;
         };
       };
 
-      gpg.enable = true;
+      userName = user.name;
+      userEmail = user.email;
+
+      signing = {
+        key = user.key;
+        signByDefault = config.programs.git.signing.key != null;
+      };
+
+      extraConfig = {
+        pull.rebase = false;
+        push.autoSetupRemote = true;
+      };
     };
   };
 }

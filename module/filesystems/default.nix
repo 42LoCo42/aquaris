@@ -151,6 +151,7 @@ in
 
       boot = mkMerge [
         (mkIf (config.boot.supportedFilesystems.zfs or false) {
+          # TODO latestCompatibleLinuxPackages is deprecated!
           kernelPackages = mkDefault config.boot.zfs.package.latestCompatibleLinuxPackages;
         })
         { initrd.luks.devices = mounts.luks or { }; }
