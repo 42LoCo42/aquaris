@@ -25,6 +25,10 @@
       } // import ./packages lib nixpkgs;
 
       example = out self {
+        masterKeys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVieLCkWGImVI9c7D0Z0qRxBAKf0eaQWUfMn0uyM/Ql"
+        ];
+
         # shared config passed as aquaris.cfg to every machine
         users = {
           dev = {

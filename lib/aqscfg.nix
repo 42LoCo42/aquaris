@@ -1,4 +1,4 @@
-{ nixpkgs, nixosConfigurations }:
+{ nixpkgs, nixosConfigurations, keys }:
 let
   inherit (nixpkgs.lib) pipe zipAttrs;
 
@@ -21,4 +21,4 @@ let
     zipAttrs
   ];
 in
-{ inherit toplevel machine user; }
+{ inherit toplevel machine user keys; }

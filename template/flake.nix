@@ -16,6 +16,11 @@
   outputs = { aquaris, self, ... }: aquaris self {
     # freeform global config, available as aquaris.cfg!
 
+    masterKeys = [
+      # put your local SSH public keys here!
+      # machine keys (secret/keys/*.age) will be encrypted for them
+    ];
+
     users = {
       example = {
         description = "Example User";

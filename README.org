@@ -25,8 +25,9 @@ for [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724
 
 ** Secrets management
 Aquaris includes a powerful secrets management facility (AQS),
-with secrets belonging to one of three categories:
+with secrets belonging to one of four categories:
 - toplevel: included by all NixOS configurations
+- keys: encrypted machine keys for easy storage in the repo
 - user: personal secrets like SSH keys or password hashes,
   readable by all machines the user is part of
 - machine: secrets for machines like API keys or TLS certificates,

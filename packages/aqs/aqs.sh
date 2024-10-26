@@ -33,12 +33,20 @@ help() {
 		    toplevel:    <flake>/secrets/<secretName>.age
 		                 Encrypted for all keys.
 
+		    keys:        <flake>/secrets/keys/<machineName>.age
+		                 Encrypted for all masterKeys set in the Aquaris config.
+
 		    user:        <flake>/secrets/users/<userName>/<secretName>.age
 		                 Encrypted for this user & the machines they are part of.
 
 		    machine:     <flake>/secrets/machines/<machineName>/<secretName.age>
 		                 Encrypted for the machine & its admins.
 	EOF
+}
+
+findIDs() {
+	find -L "$1/keys" "$HOME/.ssh" -type f -exec \
+		grep -El '(BEGIN OPENSSH PRIVATE KEY)|(AGE-SECRET-KEY)' {} \;
 }
 
 findFlake() {
@@ -55,7 +63,7 @@ findFlake() {
 	echo "Aquaris flake found in $flake" >&2
 
 	if [ -d "$flake/keys" ]; then
-		mapfile -t foundIDs < <(find "$flake/keys" -name '*.key')
+		mapfile -t foundIDs < <(findIDs "$flake")
 		echo "Default identities:" >&2
 		printf "  %s\n" "${foundIDs[@]}" >&2
 	fi
@@ -64,6 +72,7 @@ findFlake() {
 getCategory() {
 	secret="$(realpath -m "$1")"
 	secret="${secret#"$flake"}"
+	[[ "$secret" =~ ^/secrets/keys/[^/]+\.age$ ]] && echo "keys" && return
 	[[ "$secret" =~ ^/secrets/users/([^/]+)/.+\.age$ ]] && echo "user.\"${BASH_REMATCH[1]}\"" && return
 	[[ "$secret" =~ ^/secrets/machines/([^/]+)/.+\.age$ ]] && echo "machine.\"${BASH_REMATCH[1]}\"" && return
 	[[ "$secret" =~ ^/secrets/[^/]+\.age$ ]] && echo "toplevel" && return
