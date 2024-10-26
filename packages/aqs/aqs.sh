@@ -83,12 +83,16 @@ getCategory() {
 edit() {
 	category="$(getCategory "$1")"
 
+	# sanity check: do we have recipients?
+	recp="$(jq -r ".${category}[]" <"$aqscfg")"
+	if [ -z "$recp" ]; then die "No recipients!"; fi
+
 	tmp="$(mktemp)"
 	trap 'rm "$tmp"' EXIT
 
 	[ -e "$1" ] && decrypt "$1" "$tmp"
 	"$EDITOR" "$tmp"
-	jq -r ".${category}[]" <"$aqscfg" | age -e -R - -o "$1" "$tmp"
+	age -e -R - -o "$1" "$tmp" <<<"$recp"
 }
 
 decrypt() {
