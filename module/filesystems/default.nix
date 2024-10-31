@@ -162,7 +162,5 @@ in
         })
         { initrd.luks.devices = mounts.luks or { }; }
       ];
-
-      _module.args.foo = fs;
     };
 }
