@@ -41,6 +41,7 @@
       disks."/dev/disk/by-id/virtio-root" = {
         partitions = [
           fs.defaultBoot
+          fs.ignore
           {
             content = fs.luks {
               content = fs.lvm (x: x.nixos);

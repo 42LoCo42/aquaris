@@ -6,6 +6,7 @@ let
 
   fs = aquaris.lib.adt {
     btrfs = import ./btrfs.nix pkgs;
+    ignore = ./ignore.nix;
     luks = import ./luks.nix util;
     lvm = ./lvmMember.nix;
     regular = ./regular.nix;
@@ -36,6 +37,11 @@ in
     type = submoduleWith {
       specialArgs = {
         fs = fs.mk // {
+          ignore = {
+            _create = "";
+            content = fs.mk.ignore { };
+          };
+
           swap = fs.mk.swap { };
 
           lvm = f: fs.mk.lvm {
@@ -156,5 +162,7 @@ in
         })
         { initrd.luks.devices = mounts.luks or { }; }
       ];
+
+      _module.args.foo = fs;
     };
 }

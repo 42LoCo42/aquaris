@@ -49,7 +49,7 @@ in
 
     _create = mkOption {
       type = str;
-      readOnly = true;
+      # readOnly = true;
       default = ''
         wipefs -af "${config.device}"
         ${config.content._create config.device}
