@@ -8,13 +8,7 @@ in
   options.aquaris.zsh = mkEnableOption "ZSH with OMZ and some plugins";
 
   config = mkIf cfg {
-    home.file = {
-      ".profile".text = ''
-        source "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
-      '';
-
-      ".zshenv".enable = false;
-    };
+    home.file.".zshenv".enable = false;
 
     programs.zsh = {
       enable = true;

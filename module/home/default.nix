@@ -28,6 +28,13 @@ in
       sharedModules = aquaris.lib.importDir ./.;
     };
 
+    ##### load HM vars globally #####
+
+    environment.extraInit =
+      let file = ''"/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"''; in ''
+        if [ -f ${file} ]; then source ${file}; fi
+      '';
+
     ##### global settings for zsh submodule #####
 
     programs.zsh = {

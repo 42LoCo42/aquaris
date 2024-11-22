@@ -28,8 +28,12 @@ in
         yay = "sys update build switch";
       };
 
-      sessionVariables.NIXOS_CONFIG_DIR = lib.mkDefault
-        "${osConfig.aquaris.persist.root}/${config.home.homeDirectory}/config";
+      sessionVariables = {
+        GOPATH = "$HOME/.local/share/go";
+
+        NIXOS_CONFIG_DIR = lib.mkDefault
+          "${osConfig.aquaris.persist.root}/${config.home.homeDirectory}/config";
+      };
     };
 
     programs = {
@@ -37,5 +41,7 @@ in
       ripgrep.enable = true;
       zoxide.enable = true;
     };
+
+    xdg.enable = true;
   };
 }
