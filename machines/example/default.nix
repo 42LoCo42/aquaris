@@ -10,17 +10,17 @@
       key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAe61mAVmVqVWc+ZGoJnWDhMMpVXGwVFxeYH+QI0XSoo";
     };
 
-    # persist.enable = true;
+    persist.enable = true;
 
     filesystems = { fs, ... }: {
       # zpools.rpool = fs.defaultPool;
 
       lvm.nixos.volumes = {
-        root = {
+        srv = {
           size = "10G";
           content = fs.regular {
             type = "ext4";
-            mountpoint = "/";
+            mountpoint = "/srv";
           };
         };
 

@@ -47,6 +47,19 @@ Declarative [[https://www.gnu.org/software/emacs/][Emacs]] configuration managem
     Extra packages required by this Emacs package.
     They will be added to =home.packages=. Default: empty list
 
+** [[file:../../module/home/firefox.nix][firefox]]
+Enable Firefox with advanced tricks.
+
+*** Options
+- =enable= (boolean): Enable Firefox.
+  Default: false
+
+- =cleanHome= (boolean): Move =~/.mozilla= to =~/.local/share/mozilla=.
+  Default: true
+
+- =speechSynth= (boolean): Enable speech synthesis support.
+  Default: false
+
 ** [[file:../../module/home/git.nix][git]]
 Enable Git with helpful aliases and features.
 

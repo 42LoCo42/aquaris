@@ -60,7 +60,9 @@ in
       ".cache/nix"
     ] ++ ifEnable config.programs.firefox.enable [
       ".cache/mozilla/firefox"
-      ".mozilla/firefox"
+      (if config.aquaris.firefox.cleanHome
+      then ".local/share/mozilla/firefox"
+      else ".mozilla/firefox")
     ] ++ ifEnable config.programs.gpg.enable [
       { d = ".gnupg"; m = "0700"; }
     ] ++ ifEnable osConfig.services.sshd.enable [
