@@ -8,12 +8,18 @@ in
   options.aquaris.zsh = mkEnableOption "ZSH with OMZ and some plugins";
 
   config = mkIf cfg {
-    home.file.".profile".text = ''
-      source "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
-    '';
+    home.file = {
+      ".profile".text = ''
+        source "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
+      '';
+
+      ".zshenv".enable = false;
+    };
 
     programs.zsh = {
       enable = true;
+      dotDir = ".config/zsh";
+
       autosuggestion.enable = true;
       syntaxHighlighting.enable = true;
 

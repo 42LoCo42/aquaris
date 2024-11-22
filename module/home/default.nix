@@ -33,6 +33,10 @@ in
     programs.zsh = {
       enable = true;
       enableGlobalCompInit = false;
+
+      shellInit = ''
+        export ZDOTDIR="$HOME/.config/zsh"
+      '';
     };
 
     users.users = builtins.mapAttrs
