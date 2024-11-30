@@ -2,11 +2,7 @@
 Use Aquaris to easily manage related machines, their users and secrets!
 
 ** Quickstart
-Check out the [[file:docs/quickstart.org][quickstart]] guide and the provided example & template!
-
-- [[file:template/flake.nix][flake.nix]] - Usage of the Aquaris functor & global config
-- [[file:machines/example/default.nix][example]] - An example machine-specific configuration
-- [[file:template/machines/example/default.nix][template]] - The mostly empty template configuration
+Check out the [[file:docs/quickstart.org][quickstart]] guide and the provided [[file:example][example]] configuration!
 
 ** Declarative filesystem configuration
 Inspired by [[https://github.com/nix-community/disko][disko]], but dissatisfied with its verbosity,
@@ -24,21 +20,12 @@ most disko users should find this library a worthy replacement
 for [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/swap.nix][dozens]] of [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/luks-btrfs-subvolumes.nix][lines]] of [[https://github.com/nix-community/disko/blob/276a0d055a720691912c6a34abb724e395c8e38a/example/zfs.nix][code]]!
 
 ** Secrets management
-Aquaris includes a powerful secrets management facility (AQS),
-with secrets belonging to one of four categories:
-- toplevel: included by all NixOS configurations
-- keys: encrypted machine keys for easy storage in the repo
-- user: personal secrets like SSH keys or password hashes,
-  readable by all machines the user is part of
-- machine: secrets for machines like API keys or TLS certificates,
-  readable only by the respective machine itself
-
-This is inspired by [[https://github.com/ryantm/agenix][agenix]], but without the need to explicitly define
-the list of secrets and their corresponding public keys.
-Secrets are managed via the [[file:docs/aqs.org][aqs]] command exported by this flake.
+Aquaris uses [[https://github.com/42LoCo42/sillysecrets][sillysecrets]] for powerful group-based secret management.
+Every group can become an encryption target (by specifying a public key)
+and can also contain the secrets of other groups
+or grant them access to their own.
 
 ** Documentation
-- [[file:docs/aqs.org][aqs]] (secrets management command)
 - [[file:docs/lib.org][Standard library]]
 - Modules:
   - [[file:docs/module/caches.org][Binary caches]]

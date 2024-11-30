@@ -17,21 +17,16 @@ in
       type = str;
     };
 
+    key = mkOption {
+      description = "Path to the machine key for decrypting secrets";
+      type = path;
+      default = "${root}/etc/machine.key";
+    };
+
     secureboot = mkOption {
       description = "Whether to enable Secure Boot support using lanzaboote";
       type = bool;
       default = true;
-    };
-
-    key = mkOption {
-      description = "Public key for secrets management";
-      type = str;
-    };
-
-    secretKey = mkOption {
-      description = "Path to the secret key for secrets management";
-      type = path;
-      default = "${root}/etc/aqs.key";
     };
 
     keepGenerations = mkOption {
@@ -92,16 +87,10 @@ in
       tmp.useTmpfs = mkDefault true;
     };
 
-    environment = {
-      etc = {
-        "machine-id".text = cfg.id;
-        "nix/channel".source = nixpkgs.outPath;
-        "nixos".source = self.outPath;
-      };
-
-      systemPackages = [
-        aquaris.src.packages.${pkgs.system}.aqs
-      ];
+    environment.etc = {
+      "machine-id".text = cfg.id;
+      "nix/channel".source = nixpkgs.outPath;
+      "nixos".source = self.outPath;
     };
 
     networking = {

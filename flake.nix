@@ -8,10 +8,16 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     obscura.url = "github:42loco42/obscura";
+
+    sillysecrets.url = "github:42loco42/sillysecrets?rev=1.3.0";
+    sillysecrets.inputs.flake-utils.follows = "flake-utils";
+    sillysecrets.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
+      inherit (nixpkgs.lib.fileset) difference toSource unions;
+
       lib = import ./lib inputs;
 
       out = {
@@ -19,31 +25,22 @@
         __functor = _: import ./lib/main.nix { inherit self lib nixpkgs; };
 
         templates.default = {
-          path = ./template;
           description = "Aquaris example config template";
+
+          path = (toSource {
+            root = ./example;
+            fileset = difference ./example (unions [
+              ./example/keys/.gitignore
+              ./example/keys/example.key
+            ]);
+          }).outPath;
         };
       } // import ./packages lib nixpkgs;
 
-      example = out self {
-        masterKeys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVieLCkWGImVI9c7D0Z0qRxBAKf0eaQWUfMn0uyM/Ql"
-        ];
-
-        # shared config passed as aquaris.cfg to every machine
-        users = {
-          dev = {
-            description = "Example user";
-            sshKeys = [
-              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVieLCkWGImVI9c7D0Z0qRxBAKf0eaQWUfMn0uyM/Ql"
-            ];
-
-            git = {
-              name = "John E. Xample"; # if unset, falls back to user description or null
-              email = "dev@example.org";
-              key = "5FD475844A801467A76A2BC1F8BFE9665DC06BBB";
-            };
-          };
-        };
+      # silly hack :3 i'm amazed that this actually works!
+      example = (import ./example/flake.nix).outputs {
+        aquaris = out;
+        self = self // { outPath = ./example; };
       };
     in
     lib.merge [ out example ];

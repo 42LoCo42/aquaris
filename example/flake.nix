@@ -14,22 +14,11 @@
   };
 
   outputs = { aquaris, self, ... }: aquaris self {
-    # freeform global config, available as aquaris.cfg!
-
-    masterKeys = [
-      # put your local SSH public keys here!
-      # machine keys (secret/keys/*.age) will be encrypted for them
-    ];
-
     users = {
-      example = {
-        description = "Example User";
-        sshKeys = [ ]; # authorized to log in
-
-        git = {
-          email = "root@example.org";
-          key = "";
-        };
+      alice = {
+        sshKeys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDdkJo7RMoxUkuQ55YT1q5KANHrR+OJZzeYejpJW4rty"
+        ];
       };
     };
   };

@@ -37,11 +37,6 @@ in
 {
   inherit nixosConfigurations;
 
-  aqscfg = import ./aqscfg.nix {
-    inherit nixpkgs nixosConfigurations;
-    keys = cfg.masterKeys or [ ];
-  };
-
   packages = pipe nixosConfigurations [
     builtins.attrValues
     (map (x:

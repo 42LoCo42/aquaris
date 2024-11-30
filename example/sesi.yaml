@@ -1,0 +1,13 @@
+admin:alice:
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDdkJo7RMoxUkuQ55YT1q5KANHrR+OJZzeYejpJW4rty"
+    contains:
+        - "machine:example"
+machine:example:
+    key: "age1efwn0506y4x4y6yutc5nhzcrpqc24he9t0cvkxl7ukxc78vxhqnshr03gc"
+    contains:
+        - "user:alice"
+    secrets:
+        key: "vp%d6wO#0#D2N>tz/dgCA+v4Gf:YG@axQxRh8d9lDu0L2mR+Z+p&pe>g+Z:MiAd>fmTo8JfirD=pEe&io/DVTia=e(l3DDsm@I10CUq:GlN%&XmP@!&g<I-hz-q-aq=VswmOVV{h.PwJs50NkCx!foeJ$p#B7^dpwhl21f/Zvgt17q+k{ef^m%v:3s-41?p?-{wpfonaoJ:?ThFcI%wO+jvl%9u6y!mn*zza{Aq3{kPflo9wlRHl[m(02tm0IAVv>RK(oG2)VibJ$nm@8:uy=C41CtZsHrsgrfeG=&/v}!Okz8LcAlQKs!njDDgBX>UcqB8%4icX1^wPGO3r=I?7ybF<&sQK/!J{yN]JXR/#H}4el*uQ)f/=Y^VQh!.g9pq:r]3^4A(Eofzkt.4uY^yI!TRNSCOzg<}wB/vpe)5ATcMHwOk%?}iHRMm*K3uOhRs!NQeVSnL{Q@HF:X]/av?cQJ@5hV5UtS(*p6Crh{+WaA{xf%^}v+wk3Q0Ok5wHs(LPTHq4Lvk1iH<N4:r8EbvRJ.Uo#zSglvLi=U9.TldPOT>li/u5cLlnQ.gYUNmZOl>rvNzwX0iu$R:TostWFo9Ahfa9Ga#YE44&R1m$8*wPswEafU%vZ1"
+user:alice:
+    secrets:
+        password: "vp%d6wO#0#D2N>tz/dgCA+v4Gf:YG@aAIQqeOeDFh8N9Gatu$/heCM3no!V1nl6Lhs5-)pogy{RAy@V2d@/raf*XMAl25bEvS$jhCVVF8rc.QNxLx+7peUn8zaVZ5l#1XLw{c^jfL+Shx*<}4x!&v[wmxgKp&PoPyhkTkeJ$pVgbQ{ziuS6aA:*{}vob3FrzmZUm]S}/q8RARheL9<qCoO<vP).3C}g<whBZnPi0%7{sz7Mdpievst1?{^xK=rEAaJP<p<3FbCQ)Gxqfbk$l#LTEqbY>uk)/g}eG^!=o&iA3s2s/mA7S#ICt@J)xIJ1(r83>yA.5c8i7VC7i5augxF}IAsQJ)<V0rK$oQW3Rgb[T]kGhrQ)<6we.Kot9MNt^*^<a-TvUV5F6]ij)k>c=)U2:xnG*JU?m]rKPA+:R]paNB4R&ZZghJziYoHN51+@.YQPaqvBoBQAN0rM:-=hR*4)-)F=r33r."

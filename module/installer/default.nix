@@ -15,7 +15,7 @@ let
       format = getExe config.aquaris.filesystems._create;
       mount = getExe config.aquaris.filesystems._mount;
 
-      inherit (config.aquaris.machine) secretKey;
+      inherit (config.aquaris.machine) key;
 
       keys = config.nix.settings.trusted-public-keys;
       subs = config.nix.settings.substituters;
@@ -30,9 +30,6 @@ in
     '';
     type = package;
     readOnly = true;
-    default = installer.overrideAttrs {
-      inherit self;
-      keypath = config.aquaris.machine.secretKey;
-    };
+    default = installer.overrideAttrs { inherit self; };
   };
 }

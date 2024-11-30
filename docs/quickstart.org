@@ -1,16 +1,14 @@
 * Obtain the tools
-This repo exports two important tools: =aqs= and =deploy=.
-Enter a shell that has them:
+We need
+[[https://github.com/FiloSottile/age][age]] for key generation,
+[[https://github.com/42LoCo42/sillysecrets][sillysecrets]] for secret management
+and optionally the [[file:../packages/deploy/][Aquaris Deployer]] for remote installation.
 #+begin_src shell
-  nix shell \
-      github:42loco42/aquaris#aqs \
-      github:42loco42/aquaris#deploy
+  nix shell nixpkgs#age github:42LoCo42/sillysecrets github:42LoCo42/aquaris#deploy
 #+end_src
-You can skip =deploy= if you don't plan on remotely installing your config
-(more on that [[#remote-deployment][later]]...)
 
 * Create a configuration
-This repo provides a [[file:../template/][template]] configuration. Get it via
+This repo provides an [[file:../example][example]] configuration. Get it via
 #+begin_src shell
   nix flake new -t github:42loco42/aquaris config
   cd config
@@ -18,21 +16,28 @@ This repo provides a [[file:../template/][template]] configuration. Get it via
 
 * Create a machine
 Create the file =machines/<machineName>/default.nix=;
-adapt it from [[file:../template/machines/example/default.nix][the example]].
+adapt it from [[file:../example/machines/example/default.nix][the example]].
 
 Generate the required ID and key:
 #+begin_src shell
-  dbus-uuidgen # for the machine ID
-  ssh-keygen -qN "" -t ed25519 -f "keys/<machineName>.key"
-  cat "keys/<machineName>.key.pub" # for the machine key; third part can be removed
-  rm "keys/<machineName>.key.pub" # this file is now obsolete
+  dbus-uuidgen # machine ID -> put in your machine file
+  age-keygen -o "keys/<machineName>.key" # public key -> copy for later
 #+end_src
 
 Adapt the filesystem configuration and other stuff to your requirements.
 We will generate a hardware configuration later.
 
+* Set up the secrets storage
+Secrets are stored in the =sesi.yaml= file at the toplevel of your config.
+
+I recommend creating separate admin, machine and user groups,
+where admins contain the machines for which they should be able to define secrets
+and machines contain their user accounts (whose groups therefore don't need a key).
+
+Don't forget to remove the example secrets from the file!
+
 * Create a user
-The [[file:../template/flake.nix#L17][global config]] is a good place to put
+The [[file:../example/flake.nix#L17][global config]] is a good place to put
 user accounts shared over multiple machines
 (and was originally /only/ designed for this).
 For one-off accounts, you can skip it and
@@ -42,13 +47,11 @@ In any case, make sure you have at least one admin on your machine.
 I like to set the =admin= option locally, but if you want,
 you can put in in your global user config too.
 
-Finally, set a password for the user:
+Finally, set the user's password:
 #+begin_src shell
   mkpasswd -S "$(mkpasswd)" # twice for verification
   # copy the resulting hash...
-  mkdir "secrets/users/<userName>"
-  aqs "secrets/users/<userName>/passwordHash.age"
-  # ...and paste it in the editor
+  sesi edit user:<userName>.password # and paste it
 #+end_src
 
 * Installation

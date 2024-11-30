@@ -5,7 +5,7 @@ Root-on-tmpfs and persistent files management
 - =enable= (boolean): Enable root-on-tmpfs and persistency options.
   Default: false
 
-- =root= (path): Path to persistent root (used as =${persistentRoot}= in other docs).
+- =root= (path): Path to the persistent root directory.
   Default: =/persist=. This has to be a device mountpoint!
 
 - =dirs=: List of persistent directories. List of paths (used as =d=) or entries:

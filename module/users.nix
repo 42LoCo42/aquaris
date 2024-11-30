@@ -64,7 +64,7 @@ in
       (name: cfg: {
         inherit (cfg) description home;
         extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
-        hashedPasswordFile = config.aquaris.secrets."users/${name}/passwordHash".outPath or null;
+        hashedPasswordFile = config.aquaris.secrets."user/${name}/password".outPath or null;
         isNormalUser = mkDefault true;
         openssh.authorizedKeys.keys = cfg.sshKeys;
       })
