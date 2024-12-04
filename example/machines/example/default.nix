@@ -20,6 +20,5 @@
     };
   };
 
-  boot.initrd.systemd.emergencyAccess = true;
   services.zfs.autoSnapshot.enable = true;
 }

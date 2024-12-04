@@ -89,7 +89,7 @@ in
     aquaris = { inherit secrets; };
 
     # ramfs == tmpfs except it's never swapped to disk
-    fileSystems.${decryptDirMnt}.fsType = "ramfs";
+    # fileSystems.${decryptDirMnt}.fsType = "ramfs";
 
     system.activationScripts = {
       secrets-decrypt = script {
@@ -116,6 +116,8 @@ in
         name = "secrets-chown";
         text = pipe config.aquaris.secrets [
           (mapAttrsToList (_: v: ''
+            chmod 0755 "$(dirname ${v.outPath})"
+
             chown ${v.user}:${v.group} ${v.outPath}
             chmod ${v.mode}            ${v.outPath}
           ''))
