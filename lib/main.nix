@@ -16,6 +16,7 @@ let
         specialArgs = {
           aquaris = {
             inherit cfg lib name;
+            inherit (self) inputs;
             src = self;
           };
           self = src;
