@@ -5,15 +5,19 @@ let
 
   mkKexec = crossSystem:
     let
-      pkgs' = import nixpkgs {
+      pkgsCross = import nixpkgs {
         localSystem = system;
         inherit crossSystem;
       };
 
-      kexec = pkgs'.writeShellApplication {
+      pkgsTarget = import nixpkgs {
+        system = crossSystem;
+      };
+
+      kexec = pkgsCross.writeShellApplication {
         name = "kexec";
 
-        runtimeInputs = with pkgs'; [
+        runtimeInputs = with pkgsTarget; [
           curl
           gnutar
           iproute2
