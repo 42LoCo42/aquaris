@@ -55,7 +55,6 @@ in
   config = mkIf cfg.enable {
     aquaris.persist = {
       dirs = [
-        "/var/lib/nixos"
         "/var/lib/systemd"
         "/var/log"
       ] ++ ifEnable config.boot.lanzaboote.enable [
