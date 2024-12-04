@@ -8,10 +8,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     obscura.url = "github:42loco42/obscura";
-
-    sillysecrets.url = "github:42loco42/sillysecrets?rev=1.3.0";
-    sillysecrets.inputs.flake-utils.follows = "flake-utils";
-    sillysecrets.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:

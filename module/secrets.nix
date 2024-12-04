@@ -25,7 +25,7 @@ let
 
   machine = "machine:${aquaris.name}";
   machineKey = config.aquaris.machine.key;
-  sillysecrets = aquaris.inputs.sillysecrets.packages.${pkgs.system}.default;
+  sillysecrets = aquaris.inputs.obscura.packages.${pkgs.system}.sillysecrets;
 
   secrets = pipe secretsFile [
     (x: (pkgs.runCommand "secrets" {

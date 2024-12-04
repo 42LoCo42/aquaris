@@ -115,32 +115,7 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
-        "obscura": "obscura",
-        "sillysecrets": "sillysecrets"
-      }
-    },
-    "sillysecrets": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1733314675,
-        "narHash": "sha256-KE9D1+F+oTUdGDZM/sBw1BaFg9M+Aq140zypCyzMv0k=",
-        "owner": "42loco42",
-        "repo": "sillysecrets",
-        "rev": "f41630b86abbd9a53828826bcec322290d190b92",
-        "type": "github"
-      },
-      "original": {
-        "owner": "42loco42",
-        "ref": "1.3.0",
-        "repo": "sillysecrets",
-        "type": "github"
+        "obscura": "obscura"
       }
     },
     "systems": {
