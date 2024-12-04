@@ -6,7 +6,7 @@ let
   cfg = config.aquaris.machine;
 
   # pin exactly this version since it's cached in nix-community.cachix.org
-  lanza041 = builtins.getFlake "github:nix-community/lanzaboote/b627ccd97d0159214cee5c7db1412b75e4be6086?narHash=sha256-eSZyrQ9uoPB9iPQ8Y5H7gAmAgAvCw3InStmU3oEjqsE%3D";
+  lanza041 = builtins.getFlake "github:nix-community/lanzaboote/b627ccd97d0159214cee5c7db1412b75e4be6086";
 
   inherit (config.aquaris.persist) root;
 in
@@ -105,11 +105,13 @@ in
     };
 
     nix = {
-      package = pkgs.nixVersions.latest;
+      package = mkDefault pkgs.lix;
 
       settings = {
         auto-optimise-store = true;
         experimental-features = [ "nix-command" "flakes" ];
+        keep-going = true;
+        use-xdg-base-directories = true;
       };
 
       nixPath = [ "nixpkgs=/etc/nix/channel" ];
