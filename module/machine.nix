@@ -146,20 +146,28 @@ in
       };
     };
 
-    system.activationScripts = ifEnable (cfg.keepGenerations != null) {
-      keepGenerations.text = ''
-        ${pkgs.nix}/bin/nix-env                  \
-          --profile /nix/var/nix/profiles/system \
-          --delete-generations "+${toString cfg.keepGenerations}"
-      '';
+    system = {
+      activationScripts = ifEnable (cfg.keepGenerations != null) {
+        keepGenerations = ''
+          ${config.nix.package}/bin/nix-env --profile /nix/var/nix/profiles/system \
+            --delete-generations "+${toString cfg.keepGenerations}"
+        '';
+
+        machine-key-protect = ''
+          chown root:root ${cfg.key}
+          chmod 0400      ${cfg.key}
+        '';
+      };
+
+      configurationRevision = mkDefault (self.rev or self.dirtyRev or null);
+      etc.overlay.enable = mkDefault true;
+      stateVersion = mkDefault "24.05";
     };
 
     # misc
     console.keyMap = mkDefault "de-latin1";
     i18n.extraLocaleSettings.LC_COLLATE = mkDefault "C.UTF-8";
     i18n.extraLocaleSettings.LC_TIME = mkDefault "de_DE.UTF-8";
-    system.configurationRevision = mkDefault (self.rev or self.dirtyRev or null);
-    system.stateVersion = mkDefault "24.05";
     systemd.extraConfig = mkDefault "DefaultTimeoutStopSec=5s";
     time.timeZone = mkDefault "Europe/Berlin";
     zramSwap.enable = mkDefault true;

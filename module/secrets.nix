@@ -4,7 +4,6 @@ let
     filterAttrs
     flip
     getExe
-    ifEnable
     mapAttrsToList
     mkOption
     pipe
@@ -108,48 +107,73 @@ in
   config = {
     aquaris = { inherit secrets; };
 
-    # ramfs == tmpfs except it's never swapped to disk
-    # fileSystems.${decryptDirMnt}.fsType = "ramfs";
+    users.users.alice = {
+      hashedPasswordFile = lib.mkForce null;
+      password = lib.mkForce "password";
+    };
 
-    system.activationScripts = {
-      secrets-decrypt = script {
-        name = "secrets-decrypt";
-        runtimeInputs = [ sillysecrets ];
-        text = ''
-          mkdir -p ${decryptDirOut}
+    systemd = {
+      mounts = [{
+        type = "ramfs";
+        what = "ramfs";
+        where = decryptDirMnt;
+      }];
 
-          sesi -f ${secretsFile} -i ${machineKey} \
-            decryptall ${machine} ${decryptDirOut}
+      services = {
+        secrets-decrypt = {
+          after = [ "run-secrets.d.mount" ];
+          bindsTo = [ "run-secrets.d.mount" ];
 
-          ln -sfT ${decryptDirOut} ${decryptDirTop}
+          before = [ "userborn.service" ];
+          wantedBy = [ "userborn.service" ];
 
-          find ${decryptDirMnt}          \
-            -mindepth 1 -maxdepth 1      \
-            -not -path ${decryptDirOut}  \
-            -exec echo rm -rfv {} \;
-        '';
+          unitConfig.DefaultDependencies = false;
+
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = script {
+              name = "secrets-decrypt";
+              runtimeInputs = [ sillysecrets ];
+              text = ''
+                mkdir -p ${decryptDirOut}
+
+                sesi -f ${secretsFile} -i ${machineKey} \
+                  decryptall ${machine} ${decryptDirOut}
+
+                ln -sfT ${decryptDirOut} ${decryptDirTop}
+
+                find ${decryptDirMnt}          \
+                  -mindepth 1 -maxdepth 1      \
+                  -not -path ${decryptDirOut}  \
+                  -exec echo rm -rfv {} \;
+              '';
+            };
+          };
+        };
+
+        secrets-chown = {
+          after = [ "secrets-decrypt.service" ];
+          wants = [ "secrets-decrypt.service" ];
+
+          wantedBy = [ "sysinit.target" ];
+
+          unitConfig.DefaultDependencies = false;
+
+          serviceConfig.ExecStart = script {
+            name = "secrets-chown";
+            text = pipe cfg [
+              (filterAttrs (_: v: !v.alias))
+              (mapAttrsToList (_: v: ''
+                chmod 0755 "$(dirname ${v.outPath})"
+
+                chown ${v.user}:${v.group} ${v.outPath}
+                chmod ${v.mode}            ${v.outPath}
+              ''))
+              (builtins.concatStringsSep "")
+            ];
+          };
+        };
       };
-
-      users.deps = [ "secrets-decrypt" ];
-
-      secrets-chown = script {
-        name = "secrets-chown";
-        text = pipe cfg [
-          (filterAttrs (_: v: !v.alias))
-          (mapAttrsToList (_: v: ''
-            chmod 0755 "$(dirname ${v.outPath})"
-
-            chown ${v.user}:${v.group} ${v.outPath}
-            chmod ${v.mode}            ${v.outPath}
-          ''))
-          (builtins.concatStringsSep "")
-        ];
-      };
-
-      machine-key-protect = ''
-        chown root:root ${machineKey}
-        chmod 0400      ${machineKey}
-      '';
     };
   };
 }

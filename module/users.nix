@@ -1,6 +1,6 @@
 { config, lib, ... }:
 let
-  inherit (lib) ifEnable mkDefault mkOption;
+  inherit (lib) ifEnable flip mkDefault mkOption;
   inherit (lib.types) attrsOf bool listOf nullOr path str submodule;
   cfg = config.aquaris.users;
 in
@@ -58,16 +58,15 @@ in
   };
 
   config = {
+    services.userborn.enable = mkDefault true;
     users.mutableUsers = false;
 
-    users.users = builtins.mapAttrs
-      (name: cfg: {
-        inherit (cfg) description home;
-        extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
-        hashedPasswordFile = config.aquaris.secrets."user/${name}/password".outPath or null;
-        isNormalUser = mkDefault true;
-        openssh.authorizedKeys.keys = cfg.sshKeys;
-      })
-      cfg;
+    users.users = (flip builtins.mapAttrs cfg) (name: cfg: {
+      inherit (cfg) description home;
+      extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
+      hashedPasswordFile = config.aquaris.secrets."user/${name}/password".outPath or null;
+      isNormalUser = mkDefault true;
+      openssh.authorizedKeys.keys = cfg.sshKeys;
+    });
   };
 }
