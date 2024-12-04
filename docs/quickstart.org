@@ -12,6 +12,7 @@ This repo provides an [[file:../example][example]] configuration. Get it via
 #+begin_src shell
   nix flake new -t github:42loco42/aquaris config
   cd config
+  nix flake update
 #+end_src
 
 * Create a machine
