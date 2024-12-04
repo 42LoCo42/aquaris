@@ -110,6 +110,9 @@ in
     environment.systemPackages = [ sillysecrets ];
 
     boot.initrd.systemd.mounts = [{
+      before = [ "initrd-fs.target" ];
+      requiredBy = [ "initrd-fs.target" ];
+
       type = "ramfs";
       what = "ramfs";
       where = "/sysroot${decryptDirMnt}";
