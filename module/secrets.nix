@@ -1,18 +1,23 @@
 { aquaris, self, pkgs, lib, config, ... }:
 let
   inherit (lib)
+    filterAttrs
     flip
     getExe
+    ifEnable
     mapAttrsToList
     mkOption
     pipe
     ;
   inherit (lib.types)
+    bool
     attrsOf
     path
     str
     submodule
     ;
+
+  cfg = config.aquaris.secrets;
 
   secretsFile = "${self}/sesi.yaml";
   decryptDirTop = "/run/secrets";
@@ -35,14 +40,20 @@ let
 
         originals = (flip map x) (name: {
           inherit name;
-          value.outPath = toPath name;
+          value = {
+            outPath = toPath name;
+            alias = false;
+          };
         });
 
         aliases = (flip map x) (name: {
           name = builtins.replaceStrings
             [ machine ":" "." ] [ "machine" "/" "/" ]
             name;
-          value.outPath = toPath name;
+          value = {
+            outPath = toPath name;
+            alias = true;
+          };
         });
       in
       [ originals aliases ])
@@ -56,7 +67,7 @@ in
 {
   options.aquaris.secrets = mkOption {
     description = "Set of available secrets";
-    type = attrsOf (submodule ({ name, ... }: {
+    type = attrsOf (submodule ({ name, config, ... }: {
       options = {
         outPath = mkOption {
           description = "Path of the decrypted secret file";
@@ -64,22 +75,31 @@ in
           default = "${decryptDirTop}/${name}";
         };
 
+        alias = mkOption {
+          description = "Is this entry an alias?";
+          type = bool;
+          readOnly = true;
+        };
+
         user = mkOption {
           description = "User that owns the decrypted secret file";
           type = str;
-          default = "root";
+          default = if config.alias then "" else "root";
+          readOnly = config.alias;
         };
 
         group = mkOption {
           description = "Group of the decrypted secret file";
           type = str;
-          default = "root";
+          default = if config.alias then "" else "root";
+          readOnly = config.alias;
         };
 
         mode = mkOption {
           description = "Access mode of the decrypted secret file";
           type = str;
-          default = "0400";
+          default = if config.alias then "" else "0400";
+          readOnly = config.alias;
         };
       };
     }));
@@ -114,7 +134,8 @@ in
 
       secrets-chown = script {
         name = "secrets-chown";
-        text = pipe config.aquaris.secrets [
+        text = pipe cfg [
+          (filterAttrs (_: v: !v.alias))
           (mapAttrsToList (_: v: ''
             chmod 0755 "$(dirname ${v.outPath})"
 
