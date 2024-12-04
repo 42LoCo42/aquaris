@@ -40,7 +40,7 @@
       # silly hack :3 i'm amazed that this actually works!
       example = (import ./example/flake.nix).outputs {
         aquaris = out;
-        self = self // { outPath = ./example; };
+        self = self // { cfgDir = ./example; };
       };
     in
     lib.merge [ out example ];

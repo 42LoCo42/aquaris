@@ -34,6 +34,9 @@ doInstall() {
 	x umount "$mnt/proc" || :
 	x mount -m -t proc proc "$mnt/proc"
 
+	log "Copying system configuration"
+	nix copy "@self@" --to "$mnt"
+
 	log "Building system configuration"
 	sys="$(nom build \
 		--extra-experimental-features "nix-command flakes" \

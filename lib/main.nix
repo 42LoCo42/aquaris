@@ -1,6 +1,8 @@
-{ self, lib, nixpkgs }: src: cfg:
+{ self, lib, nixpkgs }: src0: cfg:
 let
   inherit (nixpkgs.lib) nixosSystem pipe;
+
+  src = src0 // { cfgDir = src0.cfgDir or src0.outPath; };
 
   nixosConfigurations =
     let
@@ -22,7 +24,7 @@ let
           self = src;
         };
       };
-      dir = "${src}/machines";
+      dir = "${src.cfgDir}/machines";
     in
     # mkConfig every directory in src/machines/
     pipe dir [

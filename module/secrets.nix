@@ -18,7 +18,7 @@ let
 
   cfg = config.aquaris.secrets;
 
-  secretsFile = "${self}/sesi.yaml";
+  secretsFile = "${self.cfgDir}/sesi.yaml";
   decryptDirTop = "/run/secrets";
   decryptDirMnt = "${decryptDirTop}.d";
   decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" secretsFile}";

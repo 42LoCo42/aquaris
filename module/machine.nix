@@ -2,7 +2,7 @@
 let
   inherit (lib) ifEnable mkDefault mkOption pipe;
   inherit (lib.types) bool int nullOr path str;
-  inherit (self.inputs) nixpkgs;
+  inherit (aquaris.inputs) nixpkgs;
   cfg = config.aquaris.machine;
 
   # pin exactly this version since it's cached in nix-community.cachix.org
