@@ -107,6 +107,8 @@ in
   config = {
     aquaris = { inherit secrets; };
 
+    environment.systemPackages = [ sillysecrets ];
+
     boot.initrd.systemd.mounts = [{
       type = "ramfs";
       what = "ramfs";
