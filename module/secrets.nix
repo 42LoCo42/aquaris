@@ -107,58 +107,58 @@ in
   config = {
     aquaris = { inherit secrets; };
 
-    systemd = {
-      mounts = [{
-        type = "ramfs";
-        what = "ramfs";
-        where = decryptDirMnt;
-      }];
+    boot.initrd.systemd.mounts = [{
+      type = "ramfs";
+      what = "ramfs";
+      where = "/sysroot${decryptDirMnt}";
+    }];
 
-      services = {
-        secrets-decrypt = {
-          after = [ "run-secrets.d.mount" ];
-          bindsTo = [ "run-secrets.d.mount" ];
+    systemd.services = {
+      secrets-decrypt = {
+        before = [ "userborn.service" ];
+        wantedBy = [ "userborn.service" ];
 
-          before = [ "userborn.service" ];
-          wantedBy = [ "userborn.service" ];
+        unitConfig.DefaultDependencies = false;
 
-          unitConfig.DefaultDependencies = false;
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = script {
+            name = "secrets-decrypt";
+            runtimeInputs = [ sillysecrets ];
+            text = ''
+              mkdir -p ${decryptDirOut}
 
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = script {
-              name = "secrets-decrypt";
-              runtimeInputs = [ sillysecrets ];
-              text = ''
-                mkdir -p ${decryptDirOut}
+              sesi -f ${secretsFile} -i ${machineKey} \
+                decryptall ${machine} ${decryptDirOut}
 
-                sesi -f ${secretsFile} -i ${machineKey} \
-                  decryptall ${machine} ${decryptDirOut}
+              ln -sfT ${decryptDirOut} ${decryptDirTop}
 
-                ln -sfT ${decryptDirOut} ${decryptDirTop}
-
-                find ${decryptDirMnt}          \
-                  -mindepth 1 -maxdepth 1      \
-                  -not -path ${decryptDirOut}  \
-                  -exec echo rm -rfv {} \;
-              '';
-            };
+              find ${decryptDirMnt}          \
+                -mindepth 1 -maxdepth 1      \
+                -not -path ${decryptDirOut}  \
+                -exec echo rm -rfv {} \;
+            '';
           };
         };
+      };
 
-        secrets-chown = {
-          after = [ "secrets-decrypt.service" ];
-          wants = [ "secrets-decrypt.service" ];
+      secrets-chown = {
+        after = [ "userborn.service" ];
+        wants = [ "userborn.service" ];
 
-          wantedBy = [ "sysinit.target" ];
+        wantedBy = [ "sysinit.target" ];
 
-          unitConfig.DefaultDependencies = false;
+        unitConfig.DefaultDependencies = false;
 
-          serviceConfig.ExecStart = script {
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = script {
             name = "secrets-chown";
             text = pipe cfg [
               (filterAttrs (_: v: !v.alias))
-              (mapAttrsToList (_: v: ''
+              (mapAttrsToList (n: v: ''
+                echo "${n}: ${v.user}:${v.group} ${v.mode}"
+
                 chmod 0755 "$(dirname ${v.outPath})"
 
                 chown ${v.user}:${v.group} ${v.outPath}
