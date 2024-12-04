@@ -107,11 +107,6 @@ in
   config = {
     aquaris = { inherit secrets; };
 
-    users.users.alice = {
-      hashedPasswordFile = lib.mkForce null;
-      password = lib.mkForce "password";
-    };
-
     systemd = {
       mounts = [{
         type = "ramfs";
