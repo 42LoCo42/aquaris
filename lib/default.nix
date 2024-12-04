@@ -3,6 +3,7 @@ let
   inherit (nixpkgs.lib)
     fileContents
     filterAttrs
+    ifEnable
     mapAttrsToList
     mkOption
     pipe
@@ -39,7 +40,7 @@ rec {
 
   readLines = file: pipe file [
     fileContents
-    (splitString "\n")
+    (x: ifEnable (x != "") (splitString "\n" x))
   ];
 
   importDir' = { default ? false, dirs ? true }: dir: pipe dir [
