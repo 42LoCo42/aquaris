@@ -45,12 +45,17 @@ doInstall() {
 		--store "$mnt" --no-link --print-out-paths \
 		"@self@#nixosConfigurations.@name@.config.system.build.toplevel")"
 
-	log "Installing the system"
-	nixos-install \
-		--no-channel-copy \
-		--no-root-password \
-		--root "$mnt" \
-		--system "$sys"
+	log "Setting the system profile"
+	x nix-env --store "$mnt" --set --profile "$mnt/nix/var/nix/profiles/system" "$sys"
+
+	log "Installing the boot loader"
+	nixos-enter --root "$mnt" -c "$(
+		cat <<-EOF
+			touch /etc/NIXOS
+			mount -m -t tmpfs tmpfs /tmp
+			@installBootLoader@
+		EOF
+	)"
 }
 
 usage() {

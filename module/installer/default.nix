@@ -19,6 +19,8 @@ let
 
       keys = config.nix.settings.trusted-public-keys;
       subs = config.nix.settings.substituters;
+
+      inherit (config.system.build) installBootLoader;
     };
   };
 in
