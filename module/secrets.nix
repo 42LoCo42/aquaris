@@ -98,9 +98,7 @@ in
         text = ''
           mkdir -p ${decryptDirOut}
 
-          sillysecrets         \
-            -f ${secretsFile}  \
-            -i ${machineKey}   \
+          sesi -f ${secretsFile} -i ${machineKey} \
             decryptall ${machine} ${decryptDirOut}
 
           ln -sfT ${decryptDirOut} ${decryptDirTop}
