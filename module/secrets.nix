@@ -9,8 +9,8 @@ let
     pipe
     ;
   inherit (lib.types)
-    bool
     attrsOf
+    nullOr
     path
     str
     submodule
@@ -36,22 +36,21 @@ let
     (x:
       let
         toPath = name: "${decryptDirTop}/${builtins.replaceStrings ["."] ["/"] name}";
+        toAlias = builtins.replaceStrings [ machine ":" "." ] [ "machine" "/" "/" ];
 
         originals = (flip map x) (name: {
           inherit name;
           value = {
             outPath = toPath name;
-            alias = false;
+            alias = null;
           };
         });
 
         aliases = (flip map x) (name: {
-          name = builtins.replaceStrings
-            [ machine ":" "." ] [ "machine" "/" "/" ]
-            name;
+          name = toAlias name;
           value = {
-            outPath = toPath name;
-            alias = true;
+            outPath = toPath (toAlias name);
+            alias = toPath name;
           };
         });
       in
@@ -61,47 +60,56 @@ let
     aquaris.lib.merge
   ];
 
+  onlyNull = {
+    description = "only null";
+    deprecationMessage = null;
+
+    check = x: x == null;
+    merge = _: _: null;
+  };
+
   script = args: getExe (pkgs.writeShellApplication args);
 in
 {
   options.aquaris.secrets = mkOption {
     description = "Set of available secrets";
-    type = attrsOf (submodule ({ name, config, ... }: {
-      options = {
-        outPath = mkOption {
-          description = "Path of the decrypted secret file";
-          type = path;
-          default = "${decryptDirTop}/${name}";
-        };
+    type = attrsOf (submodule ({ name, config, ... }:
+      let isAlias = config.alias != null; in {
+        options = {
+          outPath = mkOption {
+            description = "Path of the decrypted secret file";
+            type = path;
+            default = "${decryptDirTop}/${name}";
+          };
 
-        alias = mkOption {
-          description = "Is this entry an alias?";
-          type = bool;
-          readOnly = true;
-        };
+          alias = mkOption {
+            description = "Is this entry an alias?";
+            type = nullOr path;
+            readOnly = true;
+          };
 
-        user = mkOption {
-          description = "User that owns the decrypted secret file";
-          type = str;
-          default = if config.alias then "" else "root";
-          readOnly = config.alias;
-        };
+          user = mkOption {
+            description = "User that owns the decrypted secret file";
+            type = if isAlias then onlyNull else str;
+            default = if isAlias then null else "root";
+            readOnly = isAlias;
+          };
 
-        group = mkOption {
-          description = "Group of the decrypted secret file";
-          type = str;
-          default = if config.alias then "" else "root";
-          readOnly = config.alias;
-        };
+          group = mkOption {
+            description = "Group of the decrypted secret file";
+            type = if isAlias then onlyNull else str;
+            default = if isAlias then null else "root";
+            readOnly = isAlias;
+          };
 
-        mode = mkOption {
-          description = "Access mode of the decrypted secret file";
-          type = str;
-          default = if config.alias then "" else "0400";
-          readOnly = config.alias;
+          mode = mkOption {
+            description = "Access mode of the decrypted secret file";
+            type = if isAlias then onlyNull else str;
+            default = if isAlias then null else "0400";
+            readOnly = isAlias;
+          };
         };
-      };
-    }));
+      }));
   };
 
   config = {
@@ -141,8 +149,16 @@ in
               find ${decryptDirMnt}          \
                 -mindepth 1 -maxdepth 1      \
                 -not -path ${decryptDirOut}  \
-                -exec echo rm -rfv {} \;
-            '';
+                -exec rm -rfv {} \;
+            '' + pipe cfg [
+              (filterAttrs (_: v: v.alias != null))
+              (mapAttrsToList (n: v: ''
+                echo "${v} -> ${v.alias}"
+                mkdir -p "$(dirname ${v})"
+                ln -sf ${v.alias} ${v}
+              ''))
+              (builtins.concatStringsSep "")
+            ];
           };
         };
       };
@@ -160,7 +176,7 @@ in
           ExecStart = script {
             name = "secrets-chown";
             text = pipe cfg [
-              (filterAttrs (_: v: !v.alias))
+              (filterAttrs (_: v: v.alias == null))
               (mapAttrsToList (n: v: ''
                 echo "${n}: ${v.user}:${v.group} ${v.mode}"
 
