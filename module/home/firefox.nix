@@ -32,7 +32,7 @@ in
     cleanHome = mkOption {
       description = "Move ~/.mozilla to ~/.local/share/mozilla";
       type = bool;
-      default = true;
+      default = false;
     };
 
     speechSynth = mkOption {
@@ -51,6 +51,11 @@ in
     }
 
     (mkIf cfg.cleanHome {
+      assertions = [{
+        assertion = false;
+        message = "home-manager: aquaris.firefox.cleanHome is currently broken!";
+      }];
+
       # TODO also move files of declarative firefox profiles
       home.file.".mozilla/native-messaging-hosts".target =
         ".local/share/mozilla/native-messaging-hosts";
