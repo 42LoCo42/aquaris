@@ -128,8 +128,8 @@ in
 
     systemd.services = {
       secrets-decrypt = {
-        before = [ "userborn.service" ];
-        wantedBy = [ "userborn.service" ];
+        before = [ "sysinit-reactivation.target" "userborn.service" ];
+        wantedBy = [ "sysinit-reactivation.target" "userborn.service" ];
 
         unitConfig.DefaultDependencies = false;
 
