@@ -1,17 +1,43 @@
 { pkgs, lib, config, osConfig, mkEnableOption, ... }:
 let
-  inherit (lib) mkIf;
+  inherit (lib)
+    findFirst
+    mapNullable
+    mkDefault
+    mkIf
+    mkMerge
+    pipe
+    splitString
+    ;
+
   cfg = config.aquaris.git;
   user = osConfig.aquaris.users.${config.home.username}.git;
+
+  ##### ssh key stuff #####
+
+  allowedSigners = pkgs.writeText "allowedSigners" ''
+    ${user.email} namespaces="git" ${user.key}
+  '';
+
+  sshKeyFile = pipe user.key [
+    (splitString " ")
+    builtins.head
+    (type: findFirst (x: x.type == type) null [
+      { type = "ecdsa-sha2-nistp256"; name = "ecdsa"; }
+      { type = "sk-ecdsa-sha2-nistp256@openssh.com"; name = "ecdsa_sk"; }
+      { type = "sk-ssh-ed25519@openssh.com"; name = "ed25519_sk"; }
+      { type = "ssh-ed25519"; name = "ed25519"; }
+      { type = "ssh-rsa"; name = "rsa"; }
+    ])
+    (mapNullable (x: "~/.ssh/id_${x.name}"))
+  ];
 in
 {
   options.aquaris.git = mkEnableOption "Git with helpful aliases and features";
 
   config = mkIf cfg {
     home = {
-      packages = with pkgs; [
-        git-crypt
-      ];
+      packages = with pkgs; [ git-crypt ];
 
       shellAliases = {
         g = "git";
@@ -41,31 +67,40 @@ in
       };
     };
 
-    # TODO support both GPG & SSH signing
     programs.git = {
       enable = true;
-      lfs.enable = true;
+      lfs.enable = mkDefault true;
 
       delta = {
-        enable = true;
+        enable = mkDefault true;
         options = {
-          paging = "always";
-          side-by-side = true;
+          paging = mkDefault "always";
+          side-by-side = mkDefault true;
         };
       };
 
-      userName = user.name;
-      userEmail = user.email;
+      userName = mkDefault user.name;
+      userEmail = mkDefault user.email;
 
-      signing = {
-        key = user.key;
-        signByDefault = config.programs.git.signing.key != null;
+      signing = mkIf (user.key != null) {
+        key = mkDefault (if sshKeyFile != null then sshKeyFile else user.key);
+        signByDefault = mkDefault true;
       };
 
-      extraConfig = {
-        pull.rebase = false;
-        push.autoSetupRemote = true;
-      };
+      extraConfig = mkMerge [
+        {
+          merge.tool = mkDefault "vimdiff";
+          pull.rebase = mkDefault false;
+          push.autoSetupRemote = mkDefault true;
+        }
+
+        (mkIf (user.key != null && sshKeyFile != null) {
+          gpg = {
+            format = mkDefault "ssh";
+            ssh.allowedSignersFile = mkDefault allowedSigners.outPath;
+          };
+        })
+      ];
     };
   };
 }
