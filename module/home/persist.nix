@@ -58,6 +58,8 @@ in
   config = ifEnable osConfig.aquaris.persist.enable {
     aquaris.persist = [
       ".cache/nix"
+    ] ++ ifEnable config.programs.direnv.enable [
+      ".local/share/direnv"
     ] ++ ifEnable config.programs.firefox.enable [
       ".cache/mozilla/firefox"
       (if config.aquaris.firefox.cleanHome
