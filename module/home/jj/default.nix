@@ -19,14 +19,18 @@ in
       settings = mkMerge [
         (mkIf (git.userName != null) { user.name = git.userName; })
         (mkIf (git.userEmail != null) { user.email = git.userEmail; })
-        (mkIf (git.signing.key != null && git.extraConfig.gpg.format == "ssh")
-          {
-            signing = {
-              backend = "ssh";
-              key = git.signing.key;
-              sign-all = true;
-            };
-          })
+
+        ((mkIf (builtins.all (x: x) [
+          (git.signing != null)
+          (git.signing.key != null)
+          (git.extraConfig.gpg.format == "ssh")
+        ])) {
+          signing = {
+            backend = "ssh";
+            key = git.signing.key;
+            sign-all = true;
+          };
+        })
       ];
     };
 
