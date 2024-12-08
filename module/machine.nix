@@ -154,8 +154,8 @@ in
         '';
 
         machine-key-protect = ''
-          chown root:root ${cfg.key}
-          chmod 0400      ${cfg.key}
+          chown 0:0  ${cfg.key}
+          chmod 0400 ${cfg.key}
         '';
       };
 
