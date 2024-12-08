@@ -94,11 +94,12 @@ in
           push.autoSetupRemote = mkDefault true;
         }
 
+        (mkIf (user.key != null) {
+          gpg.format = if sshKeyFile != null then "ssh" else "openpgp";
+        })
+
         (mkIf (user.key != null && sshKeyFile != null) {
-          gpg = {
-            format = mkDefault "ssh";
-            ssh.allowedSignersFile = mkDefault allowedSigners.outPath;
-          };
+          gpg.ssh.allowedSignersFile = mkDefault allowedSigners.outPath;
         })
       ];
     };

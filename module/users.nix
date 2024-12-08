@@ -37,7 +37,7 @@ in
           name = mkOption {
             description = "Full name of this user for Git";
             type = nullOr str;
-            default = if config.description != "" then config.description else null;
+            default = if config.description != "" then config.description else name;
           };
 
           email = mkOption {
