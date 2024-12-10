@@ -83,6 +83,9 @@ Enable neofetch ([[https://github.com/hykilpikonna/hyfetch][hyfetch]] + [[https:
 ** [[file:../../module/home/neovim/default.nix][neovim]]
 Enable [[https://github.com/neovim/neovim][neovim]] with a default configuration
 
+** [[file:../../module/home/nix.nix][nix]]
+Enable some useful aliases for nix
+
 ** [[file:../../module/home/persist.nix][persist]]
 Persistent directories for this user.
 List of strings (used as =d=) or entries:

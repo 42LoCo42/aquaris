@@ -14,7 +14,6 @@ in
         lsof
         man-pages
         man-pages-posix
-        nix-output-monitor
         pciutils
         tree
       ];
