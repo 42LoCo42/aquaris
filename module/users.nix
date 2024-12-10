@@ -58,7 +58,11 @@ in
   };
 
   config = {
-    services.userborn.enable = mkDefault true;
+    services.userborn = {
+      enable = mkDefault true;
+      passwordFilesLocation = mkDefault "${config.aquaris.persist.root}/var/lib/userborn";
+    };
+
     users.mutableUsers = false;
 
     users.users = (flip builtins.mapAttrs cfg) (name: cfg: {
