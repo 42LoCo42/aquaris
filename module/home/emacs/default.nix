@@ -96,9 +96,14 @@ let
       };
 
       _entry = mkOption {
-        type = lib.types.anything;
-        default =
-          let pname = config.package.pname or config.package; in
+        type = functionTo str;
+        default = epkgs:
+          let
+            pname =
+              if isFunction config.package
+              then (config.package epkgs).pname
+              else config.package;
+          in
           pipe config [
             (flip builtins.removeAttrs [
               "_entry"
@@ -130,8 +135,8 @@ let
     (provide 'hm-early-init)
   '';
 
-  init = pipe cfg.config [
-    (mapAttrsToList (_: x: x._entry))
+  init = epkgs: pipe cfg.config [
+    (mapAttrsToList (_: x: x._entry epkgs))
     (builtins.concatStringsSep "")
     (x: ''
       ;;; -*- lexical-binding: t -*-
@@ -260,7 +265,7 @@ in
           (epkgs.trivialBuild {
             pname = "hm-init";
             version = "0.1.0";
-            src = pkgs.writeText "hm-init.el" init;
+            src = pkgs.writeText "hm-init.el" (init epkgs);
             packageRequires = packages;
           })
         ];
