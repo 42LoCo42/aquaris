@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ pkgs, config, lib, ... }:
 let
   inherit (lib) ifEnable flip mkDefault mkOption;
   inherit (lib.types) attrsOf bool listOf nullOr path str submodule;
@@ -62,6 +62,9 @@ in
       enable = mkDefault true;
       passwordFilesLocation = mkDefault "${config.aquaris.persist.root}/var/lib/userborn";
     };
+
+    systemd.services.userborn.serviceConfig.ExecStartPre =
+      "${pkgs.coreutils}/bin/mkdir -p ${config.services.userborn.passwordFilesLocation}";
 
     users.mutableUsers = false;
 
