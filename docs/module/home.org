@@ -66,6 +66,17 @@ Enable Firefox with advanced tricks.
 ** [[file:../../module/home/git.nix][git]]
 Enable Git with helpful aliases and features.
 
+*** Options
+- =enable= (boolean): Enable Git configuration.
+
+- =sshKeyFile=:
+  Function to locate the SSH private key.
+  #+begin_src text
+    { name (string): Default file name of the SSH key (id_<name>)
+    , type (string): Type prefix of the passed public key
+    } -> string: Path to the SSH private key
+  #+end_src
+
 Extra packages: [[https://github.com/AGWA/git-crypt][git-crypt]], [[https://git-lfs.com/][git-lfs]], [[https://github.com/dandavison/delta][delta]]
 
 ** [[file:../../module/home/htop.nix][htop]]

@@ -6,9 +6,12 @@ let
     mkDefault
     mkIf
     mkMerge
+    mkOption
     pipe
     splitString
     ;
+
+  inherit (lib.types) functionTo str;
 
   cfg = config.aquaris.git;
   user = osConfig.aquaris.users.${config.home.username}.git;
@@ -29,13 +32,27 @@ let
       { type = "ssh-ed25519"; name = "ed25519"; }
       { type = "ssh-rsa"; name = "rsa"; }
     ])
-    (mapNullable (x: "~/.ssh/id_${x.name}"))
+    (mapNullable cfg.sshKeyFile)
   ];
 in
 {
-  options.aquaris.git = mkEnableOption "Git with helpful aliases and features";
+  options.aquaris.git = {
+    enable = mkEnableOption "Git with helpful aliases and features";
 
-  config = mkIf cfg {
+    sshKeyFile = mkOption {
+      type = functionTo str;
+      description = ''
+        Function to locate the SSH private key.
+
+        { name (string): Default file name of the SSH key (id_<name>)
+        , type (string): Type prefix of the passed public key
+        } -> string: Path to the SSH private key
+      '';
+      default = x: "~/.ssh/id_${x.name}";
+    };
+  };
+
+  config = mkIf cfg.enable {
     home = {
       packages = with pkgs; [ git-crypt ];
 
