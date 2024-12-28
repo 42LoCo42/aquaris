@@ -67,8 +67,6 @@ in
       else ".mozilla/firefox")
     ] ++ ifEnable config.programs.gpg.enable [
       { d = ".gnupg"; m = "0700"; }
-    ] ++ ifEnable osConfig.services.sshd.enable [
-      { d = ".ssh"; m = "0700"; }
     ] ++ ifEnable config.programs.zoxide.enable [
       ".local/share/zoxide"
     ] ++ ifEnable config.programs.zsh.enable [
