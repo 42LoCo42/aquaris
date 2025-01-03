@@ -22,7 +22,7 @@ adapt it from [[file:../example/machines/example/default.nix][the example]].
 Generate the required ID and key:
 #+begin_src shell
   dbus-uuidgen # machine ID -> put in your machine file
-  age-keygen -o "keys/<machineName>.key" # public key -> copy for later
+  age-keygen -o "keys/<machineName>.key" # prints public key -> copy for later
 #+end_src
 
 Adapt the filesystem configuration and other stuff to your requirements.

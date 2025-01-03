@@ -98,18 +98,21 @@ Enable [[https://github.com/neovim/neovim][neovim]] with a default configuration
 Enable some useful aliases for nix
 
 ** [[file:../../module/home/persist.nix][persist]]
-Persistent directories for this user.
-List of strings (used as =d=) or entries:
-- =d=: The directory to persist
-- =m=: Mode of the persistent directory
+Set of persistent directories for this user.
+Name = Path of directory to be persisted (relative to $HOME).
+
+*** Options:
+- =e= (boolean): Enable this entry
+- =m= (string): Mode of the persistent directory
 
 *** Example
 #+begin_src nix
   {
-    aquaris.persist = [
-      ".cache/nix"
-      { d = ".gnupg"; m = "0700"; }
-    ];
+    aquaris.persist = {
+      ".cache/nix" = { }; # all default
+      ".gnupg" = { m = "0700"; };
+      "foo" = { e = false; }; # disabled
+    };
   }
 #+end_src
 

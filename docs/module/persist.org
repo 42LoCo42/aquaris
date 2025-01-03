@@ -8,22 +8,32 @@ Root-on-tmpfs and persistent files management
 - =root= (path): Path to the persistent root directory.
   Default: =/persist=. This has to be a device mountpoint!
 
-- =dirs=: List of persistent directories. List of paths (used as =d=) or entries:
-  - =d=: The directory to persist
-  - =m=: Mode of the persistent directory. Default =0755=
-  - =u=: User of the persistent directory. Default =root=
-  - =g=: Group of the persistent directory. Default =root=
+- =dirs=: Set of persistent directories. Name = Path of directory to be persisted.
+  - =e= (boolean): Enable this entry.
+  - =m= (string): Mode of the persistent directory. Default =0755=
+  - =u= (string): User of the persistent directory. Default =root=
+  - =g= (string): Group of the persistent directory. Default =root=
 
 ** Example
 #+begin_src nix
   {
     aquaris.persist = {
       enable = true;
-      dirs = [
-        "/var/lib/foo"
-        { d = "/var/lib/bar"; } # identical to just "/var/lib/bar"
-        { d = "/var/lib/baz"; m = "0700"; u = "baz"; g = "baz"; }
-      ];
+      dirs = {
+        # all default
+        "/var/lib/foo" = { };
+
+        "/var/lib/bar" = {
+          m = "0700";
+          u = "bar";
+          g = "users";
+        };
+
+        # disable
+        "/var/lib/baz" = {
+          e = false;
+        };
+      };
     };
   }
 #+end_src
