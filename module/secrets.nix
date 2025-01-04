@@ -36,7 +36,7 @@ let
   toUser = name: pipe name [
     (builtins.match "user:([^.]+).*")
     (mapNullable builtins.head)
-    (x: if x == null then "root" else x)
+    (x: if x == null || name == "user:${x}.password" then "root" else x)
   ];
 
   secrets = pipe secretsFile [
