@@ -82,7 +82,7 @@ Extra packages: [[https://github.com/AGWA/git-crypt][git-crypt]], [[https://git-
 ** [[file:../../module/home/htop.nix][htop]]
 Enable [[https://github.com/htop-dev/htop][htop]] with a nice default configuration
 
-** [[file:~/dev/nix//module/home/jj/default.nix][jj]]
+** [[file:../../module/home/jj/default.nix][jj]]
 Enable [[https://github.com/martinvonz/jj][jujutsu]], a simple Git-compatible VCS
 
 ** [[file:../../module/home/misc.nix][misc]]

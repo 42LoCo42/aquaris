@@ -2,9 +2,11 @@
 let
   inherit (lib)
     filterAttrs
+    mkDefault
     flip
     getExe
     mapAttrsToList
+    mapNullable
     mkOption
     pipe
     ;
@@ -27,6 +29,16 @@ let
   machineKey = config.aquaris.machine.key;
   sillysecrets = aquaris.inputs.obscura.packages.${pkgs.system}.sillysecrets;
 
+  toPath = name: "${decryptDirTop}/${builtins.replaceStrings ["."] ["/"] name}";
+
+  toAlias = builtins.replaceStrings [ machine ":" "." ] [ "machine" "/" "/" ];
+
+  toUser = name: pipe name [
+    (builtins.match "user:([^.]+).*")
+    (mapNullable builtins.head)
+    (x: if x == null then "root" else x)
+  ];
+
   secrets = pipe secretsFile [
     (x: (pkgs.runCommand "secrets" {
       nativeBuildInputs = [ sillysecrets ];
@@ -35,14 +47,12 @@ let
 
     (x:
       let
-        toPath = name: "${decryptDirTop}/${builtins.replaceStrings ["."] ["/"] name}";
-        toAlias = builtins.replaceStrings [ machine ":" "." ] [ "machine" "/" "/" ];
-
         originals = (flip map x) (name: {
           inherit name;
           value = {
             outPath = toPath name;
             alias = null;
+            user = mkDefault (toUser name);
           };
         });
 
@@ -51,6 +61,7 @@ let
           value = {
             outPath = toPath (toAlias name);
             alias = toPath name;
+            user = null;
           };
         });
       in
@@ -91,7 +102,7 @@ in
           user = mkOption {
             description = "User that owns the decrypted secret file";
             type = if isAlias then onlyNull else str;
-            default = if isAlias then null else "root";
+            # default: set in secrets importer
             readOnly = isAlias;
           };
 
@@ -114,6 +125,11 @@ in
 
   config = {
     aquaris = { inherit secrets; };
+
+    security.pam.u2f.settings = {
+      authfile = "${decryptDirTop}/user/%u/u2f-keys";
+      expand = true;
+    };
 
     environment.systemPackages = [ sillysecrets ];
 
