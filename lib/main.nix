@@ -1,6 +1,6 @@
 { self, lib, nixpkgs }: src0: cfg:
 let
-  inherit (nixpkgs.lib) nixosSystem pipe;
+  inherit (nixpkgs.lib) filterAttrs nixosSystem pipe;
 
   src = src0 // { cfgDir = src0.cfgDir or src0.outPath; };
 
@@ -29,6 +29,7 @@ let
     # mkConfig every directory in src/machines/
     pipe dir [
       builtins.readDir
+      (filterAttrs (_: x: x == "directory"))
       builtins.attrNames
       (map (name: {
         inherit name;
