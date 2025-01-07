@@ -9,6 +9,7 @@ in
   config = mkIf cfg {
     home = {
       packages = with pkgs; [
+        deadnix
         nix-output-monitor
         nix-tree
       ];
@@ -17,6 +18,7 @@ in
         n = "nix repl"; # i use this often, so make it short!
         nb = "nom build";
         nch = "nix flake check -L"; # nc is netcat
+        nd = "deadnix";
         ne = "nix eval -L";
         nej = "nix eval -L --raw --apply builtins.toJSON";
         ner = "nix eval -L --raw";
