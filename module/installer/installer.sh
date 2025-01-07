@@ -53,7 +53,7 @@ doInstall() {
 	nixos-enter --root "$mnt" -c "$(
 		cat <<-EOF
 			mount -m -t tmpfs tmpfs /tmp
-			@installBootLoader@
+			@installBootLoader@ "$sys"
 		EOF
 	)"
 }
