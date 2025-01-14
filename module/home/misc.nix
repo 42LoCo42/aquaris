@@ -1,4 +1,4 @@
-{ pkgs, lib, mkEnableOption, config, osConfig, ... }:
+{ pkgs, lib, mkEnableOption, config, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.misc;
@@ -7,6 +7,8 @@ in
   options.aquaris.misc = mkEnableOption "miscellaneous packages and settings";
 
   config = mkIf cfg {
+    aquaris.persist = { "config" = { }; };
+
     home = {
       packages = with pkgs; [
         file
@@ -29,9 +31,7 @@ in
 
       sessionVariables = {
         GOPATH = "$HOME/.local/share/go";
-
-        NIXOS_CONFIG_DIR = lib.mkDefault
-          "${osConfig.aquaris.persist.root}/${config.home.homeDirectory}/config";
+        NIXOS_CONFIG_DIR = lib.mkDefault ''$(realpath "$HOME/config")'';
       };
     };
 
