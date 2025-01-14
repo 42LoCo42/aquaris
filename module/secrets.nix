@@ -167,8 +167,8 @@ in
                 -not -path ${decryptDirOut}  \
                 -exec rm -rfv {} \;
             '' + pipe cfg [
-              (filterAttrs (_: v: v.alias != null))
-              (mapAttrsToList (n: v: ''
+              (filterAttrs (_: v: v.alias != null && v.outPath != v.alias))
+              (mapAttrsToList (_: v: ''
                 echo "${v} -> ${v.alias}"
                 mkdir -p "$(dirname ${v})"
                 ln -sf ${v.alias} ${v}
