@@ -8,7 +8,6 @@ let initial = pkgs.writeText "initial-password" "password"; in {
 
   aquaris.filesystem = { ... }: {
     zpools.rpool.rootOpts = {
-      # TODO figure out how to extend options
       acltype = "posix";
       compression = "zstd";
       dnodesize = "auto";
