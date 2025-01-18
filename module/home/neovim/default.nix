@@ -17,9 +17,6 @@ in
       extraConfig = builtins.readFile ./init.vim;
       extraLuaConfig = builtins.readFile ./nvim.lua;
 
-      # fixes broken scrolling
-      extraWrapperArgs = [ "--set" "TERM" "" ];
-
       plugins = with pkgs.vimPlugins; [
         airline
         ale
