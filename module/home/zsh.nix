@@ -8,7 +8,11 @@ in
   options.aquaris.zsh = mkEnableOption "ZSH with OMZ and some plugins";
 
   config = mkIf cfg {
-    home.file.".zshenv".enable = false;
+    home = {
+      packages = with pkgs; [ fzf jq ];
+
+      file.".zshenv".enable = false;
+    };
 
     programs.zsh = {
       enable = true;
@@ -33,7 +37,15 @@ in
       '';
 
       plugins = with pkgs; [
-        (pkgs.lib.getAttrs [ "name" "src" ] zsh-fzf-history-search)
+        {
+          name = "jq";
+          inherit (jq-zsh-plugin) src;
+        }
+
+        {
+          name = "zsh-fzf-history-search";
+          inherit (zsh-fzf-history-search) src;
+        }
       ];
 
       oh-my-zsh = {

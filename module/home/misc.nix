@@ -12,7 +12,6 @@ in
     home = {
       packages = with pkgs; [
         file
-        jq
         lsof
         man-pages
         man-pages-posix
@@ -36,7 +35,6 @@ in
     };
 
     programs = {
-      fzf.enable = true;
       ripgrep.enable = true;
       zoxide.enable = true;
     };
