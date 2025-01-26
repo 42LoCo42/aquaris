@@ -1,18 +1,16 @@
 { aquaris, self, pkgs, lib, config, ... }:
 let
   inherit (lib)
-    filterAttrs
-    mkDefault
     flip
     getExe
     mapAttrsToList
-    mapNullable
+    mkIf
     mkOption
-    pipe
     ;
   inherit (lib.types)
     attrsOf
-    nullOr
+    bool
+    functionTo
     path
     str
     submodule
@@ -21,117 +19,78 @@ let
   cfg = config.aquaris.secrets;
 
   secretsFile = builtins.path { path = "${self.cfgDir}/sesi.yaml"; };
-  decryptDirTop = "/run/secrets";
+  decryptDirTop = cfg.directory;
   decryptDirMnt = "${decryptDirTop}.d";
   decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" secretsFile}";
 
   machine = "machine:${aquaris.name}";
-  machineKey = config.aquaris.machine.key;
   sillysecrets = aquaris.inputs.obscura.packages.${pkgs.system}.sillysecrets;
 
-  toPath = name: "${decryptDirTop}/${builtins.replaceStrings ["."] ["/"] name}";
-
-  toAlias = builtins.replaceStrings [ machine ":" "." ] [ "machine" "/" "/" ];
-
-  toUser = name: pipe name [
-    (builtins.match "user:([^.]+).*")
-    (mapNullable builtins.head)
-    (x: if x == null || name == "user:${x}.password" then "root" else x)
-  ];
-
-  secrets = pipe secretsFile [
-    (x: (pkgs.runCommand "secrets" {
-      nativeBuildInputs = [ sillysecrets ];
-    }) "sesi -f ${x} list ${machine} > $out")
-    aquaris.lib.readLines
-
-    (x:
-      let
-        originals = (flip map x) (name: {
-          inherit name;
-          value = {
-            outPath = toPath name;
-            alias = null;
-            user = mkDefault (toUser name);
-          };
-        });
-
-        aliases = (flip map x) (name: {
-          name = toAlias name;
-          value = {
-            outPath = toPath (toAlias name);
-            alias = toPath name;
-            user = null;
-          };
-        });
-      in
-      [ originals aliases ])
-
-    (map builtins.listToAttrs)
-    aquaris.lib.merge
-  ];
-
-  onlyNull = {
-    description = "only null";
-    deprecationMessage = null;
-
-    check = x: x == null;
-    merge = _: _: null;
+  name2path.__functor = mkOption {
+    description = "Converts a secret name to its output path";
+    type = functionTo (functionTo path);
+    default = _: name: "${decryptDirTop}/${name}";
   };
-
-  script = args: getExe (pkgs.writeShellApplication args);
 in
 {
-  options.aquaris.secrets = mkOption {
-    description = "Set of available secrets";
-    type = attrsOf (submodule ({ name, config, ... }:
-      let isAlias = config.alias != null; in {
+  options.aquaris.secret = name2path;
+
+  options.aquaris.secrets = name2path // {
+    enable = mkOption {
+      description = "Enable the secrets management module";
+      type = bool;
+      default = true;
+    };
+
+    key = mkOption {
+      description = "Path to the key for decrypting secrets.";
+      type = path;
+      default = "${config.aquaris.persist.root}/var/lib/machine.key";
+    };
+
+    directory = mkOption {
+      description = ''
+        Secrets output directory
+        (actual directory will be <this>.d/<sha56 of sesi.yaml>)
+      '';
+      type = path;
+      default = "/run/secrets";
+    };
+
+    rules = mkOption {
+      description = "Custom access rules for secrets";
+      type = attrsOf (submodule ({
         options = {
-          outPath = mkOption {
-            description = "Path of the decrypted secret file";
-            type = path;
-            default = "${decryptDirTop}/${name}";
-          };
-
-          alias = mkOption {
-            description = "Is this entry an alias?";
-            type = nullOr path;
-            readOnly = true;
-          };
-
           user = mkOption {
-            description = "User that owns the decrypted secret file";
-            type = if isAlias then onlyNull else str;
-            # default: set in secrets importer
-            readOnly = isAlias;
+            description = "User of the secret";
+            type = str;
+            default = "root";
           };
 
           group = mkOption {
-            description = "Group of the decrypted secret file";
-            type = if isAlias then onlyNull else str;
-            default = if isAlias then null else "root";
-            readOnly = isAlias;
+            description = "Group of the secret";
+            type = str;
+            default = "root";
           };
 
           mode = mkOption {
-            description = "Access mode of the decrypted secret file";
-            type = if isAlias then onlyNull else str;
-            default = if isAlias then null else "0400";
-            readOnly = isAlias;
+            description = "Access mode of the secret";
+            type = str;
+            default = "0400";
           };
         };
       }));
+      default = { };
+    };
   };
 
-  config = {
-    aquaris = { inherit secrets; };
+  config = mkIf cfg.enable {
 
-    security.pam.u2f.settings = {
-      authfile = "${decryptDirTop}/user/%u/u2f-keys";
-      expand = true;
-    };
+    ##### management #####
 
     environment.systemPackages = [ sillysecrets ];
+
+    ##### decryption & access control #####
 
     boot.initrd.systemd.mounts = [{
       before = [ "initrd-fs.target" ];
@@ -142,70 +101,96 @@ in
       where = "/sysroot${decryptDirMnt}";
     }];
 
-    systemd.services = {
-      secrets-decrypt = {
-        before = [ "sysinit-reactivation.target" "userborn.service" ];
-        wantedBy = [ "sysinit-reactivation.target" "userborn.service" ];
+    systemd = {
+      services = {
+        secrets-decrypt = {
+          before = [ "sysinit-reactivation.target" "userborn.service" ];
+          wantedBy = [ "sysinit-reactivation.target" "userborn.service" ];
 
-        unitConfig.DefaultDependencies = false;
+          unitConfig.DefaultDependencies = false;
 
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = script {
-            name = "secrets-decrypt";
-            runtimeInputs = [ sillysecrets ];
-            text = ''
-              mkdir -p ${decryptDirOut}
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = getExe (pkgs.writeShellApplication {
+              name = "secrets-decrypt";
+              runtimeInputs = [ sillysecrets ];
+              text = ''
+                rm -rvf "${decryptDirOut}"
 
-              sesi -f ${secretsFile} -i ${machineKey} \
-                decryptall ${machine} ${decryptDirOut}
+                sesi -f "${secretsFile}" -i "${cfg.key}" \
+                  decryptall "${machine}" "${decryptDirOut}"
 
-              ln -sfT ${decryptDirOut} ${decryptDirTop}
+                # activate current decryption directory
+                ln -sfT "${decryptDirOut}" "${decryptDirTop}"
 
-              find ${decryptDirMnt}          \
-                -mindepth 1 -maxdepth 1      \
-                -not -path ${decryptDirOut}  \
-                -exec rm -rfv {} \;
-            '' + pipe cfg [
-              (filterAttrs (_: v: v.alias != null && v.outPath != v.alias))
-              (mapAttrsToList (_: v: ''
-                echo "${v} -> ${v.alias}"
-                mkdir -p "$(dirname ${v})"
-                ln -sf ${v.alias} ${v}
-              ''))
-              (builtins.concatStringsSep "")
-            ];
+                # remove old decryption directories
+                find "${decryptDirMnt}"         \
+                  -mindepth 1 -maxdepth 1       \
+                  -not -path "${decryptDirOut}" \
+                  -exec rm -rfv {} \;
+
+                # create all links
+                find -L "${decryptDirTop}" -type f \
+                | while read -r src; do
+                  dst="''${src//://}"
+                  if [ ! -e "$dst" ]; then
+                    mkdir -p "$(dirname "$dst")"
+                    ln -s "$src" "$dst"
+                  fi
+                done
+              '';
+            });
+          };
+        };
+
+        secrets-access-extra = {
+          after = [ "secrets-decrypt.service" "userborn.service" ];
+          wants = [ "secrets-decrypt.service" "userborn.service" ];
+
+          wantedBy = [ "sysinit.target" ];
+
+          unitConfig.DefaultDependencies = false;
+
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = getExe (pkgs.writeShellApplication {
+              name = "secrets-user-chown";
+              text = ''
+                cd "${decryptDirTop}"
+
+                # chown user secrets
+                find . -type f -path './user:*' \
+                | while read -r i; do
+                  user="$(grep -oP '^\./user:\K[^/]+' <<< "$i")"
+                  if [ "$i" = "./user:$user/password" ]; then
+                    chown root:root "$i"
+                  else
+                    chown "''${user}:root" "$i"
+                  fi
+                done
+
+                # make all directories visible
+                find . -type d -exec chmod 755 {} \;
+              '';
+            });
           };
         };
       };
 
-      secrets-chown = {
-        after = [ "userborn.service" ];
-        wants = [ "userborn.service" ];
-
-        wantedBy = [ "sysinit.target" ];
-
-        unitConfig.DefaultDependencies = false;
-
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = script {
-            name = "secrets-chown";
-            text = pipe cfg [
-              (filterAttrs (_: v: v.alias == null))
-              (mapAttrsToList (n: v: ''
-                echo "${n}: ${v.user}:${v.group} ${v.mode}"
-
-                chmod 0755 "$(dirname ${v.outPath})"
-
-                chown ${v.user}:${v.group} ${v.outPath}
-                chmod ${v.mode}            ${v.outPath}
-              ''))
-              (builtins.concatStringsSep "")
-            ];
-          };
-        };
-      };
+      tmpfiles.rules = (flip mapAttrsToList cfg.rules (name: cfg:
+        "z ${decryptDirTop}/${name} ${cfg.mode} ${cfg.user} ${cfg.group}")) ++
+      [ "z ${cfg.key} 0400 0 0" ];
     };
+
+    ##### default usage #####
+
+    security.pam.u2f.settings = {
+      authfile = cfg "user/%u/u2f-keys";
+      expand = true;
+    };
+
+    users.users = (flip builtins.mapAttrs config.aquaris.users) (name: _: {
+      hashedPasswordFile = cfg "user/${name}/password";
+    });
   };
 }

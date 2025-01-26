@@ -66,14 +66,15 @@ in
     systemd.services.userborn.serviceConfig.ExecStartPre =
       "${pkgs.coreutils}/bin/mkdir -p ${config.services.userborn.passwordFilesLocation}";
 
-    users.mutableUsers = false;
+    users = {
+      mutableUsers = false;
 
-    users.users = (flip builtins.mapAttrs cfg) (name: cfg: {
-      inherit (cfg) description home;
-      extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
-      hashedPasswordFile = config.aquaris.secrets."user/${name}/password".outPath or null;
-      isNormalUser = mkDefault true;
-      openssh.authorizedKeys.keys = cfg.sshKeys;
-    });
+      users = (flip builtins.mapAttrs cfg) (_: cfg: {
+        inherit (cfg) description home;
+        extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
+        isNormalUser = mkDefault true;
+        openssh.authorizedKeys.keys = cfg.sshKeys;
+      });
+    };
   };
 }
