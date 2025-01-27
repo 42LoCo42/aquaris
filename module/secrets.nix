@@ -174,6 +174,9 @@ in
 
                 # make all directories visible
                 find . -type d -exec chmod 755 {} \;
+
+                # load custom access rules
+                systemd-tmpfiles --create
               '';
             });
           };
