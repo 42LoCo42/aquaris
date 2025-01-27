@@ -120,6 +120,9 @@ in
                 sesi -f "${secretsFile}" -i "${cfg.key}" \
                   decryptall "${machine}" "${decryptDirOut}"
 
+                # create the machine alias
+                mv "${decryptDirOut}/${machine}" "${decryptDirOut}/machine"
+
                 # activate current decryption directory
                 ln -sfT "${decryptDirOut}" "${decryptDirTop}"
 
