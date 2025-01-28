@@ -53,7 +53,7 @@ jps() {
 
 # clone from github
 jcg() {
-	repo="git@github.com:$1"
+	repo="$(sed -E 's|^https://github.com/([^/]+/[^/]+).*|git@github.com:\1.git|' <<< "$1")"
 	shift
 	jj git clone --colocate "$repo" "$@"
 }
