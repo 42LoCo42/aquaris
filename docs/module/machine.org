@@ -8,8 +8,5 @@ General machine settings
 - =keepGenerations= (null or int): How many generations to keep
   (null to disable autocleanup). Default: 5
 
-- =key= (path): Path to the machine key for decrypting secrets.
-  Default: =/etc/machine.key= / =/persist/etc/machine.key=
-
 - =secureboot= (boolean): Whether to enable Secure Boot support using [[https://github.com/nix-community/lanzaboote][lanzaboote]].
   Default: true

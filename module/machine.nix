@@ -1,7 +1,7 @@
 { self, aquaris, lib, config, pkgs, ... }:
 let
   inherit (lib) ifEnable mkDefault mkOption pipe;
-  inherit (lib.types) bool int nullOr path str;
+  inherit (lib.types) bool int nullOr str;
   inherit (aquaris.inputs) nixpkgs;
   cfg = config.aquaris.machine;
 
@@ -15,12 +15,6 @@ in
     id = mkOption {
       description = "The machine ID (used by systemd and others)";
       type = str;
-    };
-
-    key = mkOption {
-      description = "Path to the machine key for decrypting secrets";
-      type = path;
-      default = "${root}/etc/machine.key";
     };
 
     secureboot = mkOption {
@@ -151,11 +145,6 @@ in
         keepGenerations = ''
           ${config.nix.package}/bin/nix-env --profile /nix/var/nix/profiles/system \
             --delete-generations "+${toString cfg.keepGenerations}"
-        '';
-
-        machine-key-protect = ''
-          chown 0:0  ${cfg.key}
-          chmod 0400 ${cfg.key}
         '';
       };
 
