@@ -6,7 +6,7 @@ let
   cfg = config.aquaris.machine;
 
   # pin exactly this version since it's cached in nix-community.cachix.org
-  lanza041 = builtins.getFlake "github:nix-community/lanzaboote/b627ccd97d0159214cee5c7db1412b75e4be6086";
+  lanza042 = builtins.getFlake "github:nix-community/lanzaboote/a65905a09e2c43ff63be8c0e86a93712361f871e";
 
   inherit (config.aquaris.persist) root;
 in
@@ -30,7 +30,7 @@ in
     };
   };
 
-  imports = [ "${lanza041}/nix/modules/lanzaboote.nix" ];
+  imports = [ "${lanza042}/nix/modules/lanzaboote.nix" ];
 
   config = {
     boot = {
@@ -55,7 +55,7 @@ in
           name = "lzbt";
 
           runtimeInputs = with pkgs; [
-            lanza041.packages.${pkgs.system}.lzbt
+            lanza042.packages.${pkgs.system}.lzbt
             sbctl
           ];
 
