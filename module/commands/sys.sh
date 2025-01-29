@@ -31,6 +31,7 @@ activate() {
 
 	log "Activating configuration"
 	sudo nix-env --set --profile /nix/var/nix/profiles/system "$new"
+	@keepGenerations@
 	sudo "$new/bin/switch-to-configuration" "$1"
 }
 

@@ -1,6 +1,6 @@
 { self, aquaris, lib, config, pkgs, ... }:
 let
-  inherit (lib) ifEnable mkDefault mkOption pipe;
+  inherit (lib) mkDefault mkOption pipe;
   inherit (lib.types) bool int nullOr str;
   inherit (aquaris.inputs) nixpkgs;
   cfg = config.aquaris.machine;
@@ -141,13 +141,6 @@ in
     };
 
     system = {
-      activationScripts = ifEnable (cfg.keepGenerations != null) {
-        keepGenerations = ''
-          ${config.nix.package}/bin/nix-env --profile /nix/var/nix/profiles/system \
-            --delete-generations "+${toString cfg.keepGenerations}"
-        '';
-      };
-
       configurationRevision = mkDefault (self.rev or self.dirtyRev or null);
       etc.overlay.enable = mkDefault true;
       stateVersion = mkDefault "24.05";

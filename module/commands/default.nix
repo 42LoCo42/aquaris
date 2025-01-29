@@ -1,5 +1,7 @@
-{ pkgs, aquaris, ... }:
+{ pkgs, config, aquaris, ... }:
 let
+  inherit (config.aquaris.machine) keepGenerations;
+
   use = pkgs.writeShellApplication {
     name = "use";
     text = builtins.readFile ./use.sh;
@@ -18,9 +20,12 @@ let
     ];
     text = aquaris.lib.subsT ./sys.sh {
       inherit (aquaris) name;
+      keepGenerations = if keepGenerations == null then "" else ''
+        sudo nix-env \
+          --profile /nix/var/nix/profiles/system \
+          --delete-generations "+${toString keepGenerations}"
+      '';
     };
   };
 in
-{
-  environment.systemPackages = [ sys use _usepkgs ];
-}
+{ environment.systemPackages = [ sys use _usepkgs ]; }
