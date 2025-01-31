@@ -113,8 +113,27 @@ in
             Type = "oneshot";
             ExecStart = getExe (pkgs.writeShellApplication {
               name = "secrets-decrypt";
-              runtimeInputs = [ sillysecrets ];
+              runtimeInputs = with pkgs; [ diffutils sillysecrets ];
               text = ''
+                ##### migrate old keys #####
+
+                new="${cfg.key}"
+                for i in /etc/aqs.key /etc/machine.key; do
+                  old="${config.aquaris.persist.root}/$i"
+                  echo "aquaris: migrate-old-keys: checking $old..."
+                  [ ! -e "$old" ] && continue
+
+                  if [ ! -e "$new" ]; then
+                    cp -v "$old" "$new"
+                  fi
+
+                  if diff "$old" "$new" >/dev/null; then
+                    rm -v "$old"
+                  fi
+                done
+
+                ##### main #####
+
                 rm -rvf "${decryptDirOut}"
 
                 sesi -f "${secretsFile}" -i "${cfg.key}" \
@@ -157,9 +176,12 @@ in
           serviceConfig = {
             Type = "oneshot";
             ExecStart = getExe (pkgs.writeShellApplication {
-              name = "secrets-user-chown";
+              name = "secrets-access-extra";
               text = ''
                 cd "${decryptDirTop}"
+
+                # make all directories visible
+                find . -type d -exec chmod 755 {} \;
 
                 # chown user secrets
                 find . -type f -path './user:*' \
@@ -171,9 +193,6 @@ in
                     chown "''${user}:root" "$i"
                   fi
                 done
-
-                # make all directories visible
-                find . -type d -exec chmod 755 {} \;
 
                 # load custom access rules
                 systemd-tmpfiles --create
