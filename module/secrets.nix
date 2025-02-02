@@ -140,7 +140,10 @@ in
                   decryptall "${machine}" "${decryptDirOut}"
 
                 # create the machine alias
-                mv "${decryptDirOut}/${machine}" "${decryptDirOut}/machine"
+                machinedir="${decryptDirOut}/${machine}"
+                if [ -e "$machinedir" ]; then
+                  mv -v "$machinedir" "${decryptDirOut}/machine"
+                fi
 
                 # activate current decryption directory
                 ln -sfT "${decryptDirOut}" "${decryptDirTop}"
