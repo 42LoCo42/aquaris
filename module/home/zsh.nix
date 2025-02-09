@@ -23,7 +23,15 @@ in
 
       autocd = true;
       defaultKeymap = "emacs";
-      history.path = "${cache}/history";
+
+      history = {
+        append = true;
+        extended = true;
+        ignoreAllDups = true;
+        ignorePatterns = [ "l" "n" ];
+
+        path = "${cache}/history";
+      };
 
       initExtra = ''
         # bindkey "" insert-cycledright
