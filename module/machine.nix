@@ -99,7 +99,7 @@ in
     };
 
     nix = {
-      package = mkDefault pkgs.lix;
+      package = mkDefault self.inputs.obscura.packages.${pkgs.system}.lix-fix-help;
 
       settings = {
         auto-optimise-store = true;
