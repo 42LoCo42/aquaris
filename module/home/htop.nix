@@ -7,10 +7,6 @@ in
   options.aquaris.htop = mkEnableOption "preconfigured htop";
 
   config = mkIf cfg {
-    home.activation.fix-htop = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-      rm -f -v "$HOME/.config/htop/htoprc"
-    '';
-
     programs.htop = {
       enable = true;
       package = aquaris.inputs.obscura.packages.${pkgs.system}.my-htop;
