@@ -48,7 +48,7 @@ jps() {
 	while "$(jst 'self.empty()' -r "$rev")"; do rev="$rev-"; done
 
 	jj bookmark set "$bookmark" -r "$rev"
-	jj git push
+	jj git push --all
 }
 
 # clone from github
