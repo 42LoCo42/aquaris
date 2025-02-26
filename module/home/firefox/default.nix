@@ -1,7 +1,8 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, lib, config, aquaris, ... }:
 let
   inherit (lib)
     concatMapAttrsStringSep
+    filterAttrs
     mkIf
     mkMerge
     mkOption
@@ -12,6 +13,7 @@ let
     attrsOf
     bool
     int
+    lines
     oneOf
     package
     str
@@ -50,10 +52,22 @@ in
             description = "Whether to pin the extension to the navbar";
             default = false;
           };
+
+          private = mkOption {
+            type = bool;
+            description = "Let this extension run in private windows";
+            default = false;
+          };
         };
       }));
       description = "Enabled extensions. Key = Extension ID";
       default = { };
+    };
+
+    extraPrefs = mkOption {
+      type = lines;
+      description = "Extra preference code";
+      default = "";
     };
 
     prefs = mkOption {
@@ -128,6 +142,21 @@ in
   config = mkIf cfg.enable (mkMerge [
     {
       aquaris.firefox = {
+        extraPrefs = mkMerge [
+          ((concatMapAttrsStringSep "" (k: v: ''
+            lockPref(${builtins.toJSON k}, ${builtins.toJSON v});
+          '')) cfg.prefs)
+
+          (pipe cfg.extensions [
+            (filterAttrs (_: x: x.private))
+            builtins.attrNames
+            (x: mkIf (x != [ ]) (pipe x [
+              builtins.toJSON
+              (x: aquaris.lib.subsT ./privext.js { inherit x; })
+            ]))
+          ])
+        ];
+
         prefs = {
           # enable userChrome
           "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
@@ -140,7 +169,7 @@ in
           DisableSetDesktopBackground = true;
           DontCheckDefaultBrowser = true;
 
-          ExtensionSettings = (builtins.mapAttrs (name: cfg: {
+          ExtensionSettings = (builtins.mapAttrs (_: cfg: {
             installation_mode = "force_installed";
             install_url = cfg.url;
             default_area = if cfg.pin then "navbar" else "menupanel";
@@ -167,9 +196,7 @@ in
         enable = true;
 
         package = cfg.package.override {
-          extraPrefs = (concatMapAttrsStringSep "" (k: v: ''
-            lockPref(${builtins.toJSON k}, ${builtins.toJSON v});
-          '')) cfg.prefs;
+          inherit (cfg) extraPrefs;
         };
 
         inherit (cfg) policies;
@@ -223,9 +250,21 @@ in
     (mkIf cfg.settings.harden {
       aquaris.firefox = {
         extensions = {
-          "CanvasBlocker@kkapsner.de" = { }; # https://addons.mozilla.org/en-US/firefox/addon/canvasblocker
-          "uBlock0@raymondhill.net".pin = true; # https://addons.mozilla.org/en-US/firefox/addon/ublock-origin
-          "{b86e4813-687a-43e6-ab65-0bde4ab75758}" = { }; # https://addons.mozilla.org/en-US/firefox/addon/localcdn-fork-of-decentraleyes
+          # https://addons.mozilla.org/en-US/firefox/addon/canvasblocker
+          "CanvasBlocker@kkapsner.de" = {
+            private = true;
+          };
+
+          # https://addons.mozilla.org/en-US/firefox/addon/ublock-origin
+          "uBlock0@raymondhill.net" = {
+            pin = true;
+            private = true;
+          };
+
+          # https://addons.mozilla.org/en-US/firefox/addon/localcdn-fork-of-decentraleyes
+          "{b86e4813-687a-43e6-ab65-0bde4ab75758}" = {
+            private = true;
+          };
         };
 
         prefs = {
