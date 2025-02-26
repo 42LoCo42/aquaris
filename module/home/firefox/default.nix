@@ -404,7 +404,7 @@ in
 
           # Use recommended performance settings
           "browser.preferences.defaultPerformanceSettings.enabled" = true;
-          "layers.acceleration.disabled" = true;
+          "layers.acceleration.disabled" = false;
         };
 
         policies = {
