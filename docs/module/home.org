@@ -50,19 +50,6 @@ Declarative [[https://www.gnu.org/software/emacs/][Emacs]] configuration managem
 ** [[file:../../module/home/eza.nix][eza]]
 Enable eza, a replacement for ls
 
-** [[file:../../module/home/firefox.nix][firefox]]
-Enable Firefox with advanced tricks.
-
-*** Options
-- =enable= (boolean): Enable Firefox.
-  Default: false
-
-- =cleanHome= (boolean): Move =~/.mozilla= to =~/.local/share/mozilla=.
-  Default: true
-
-- =speechSynth= (boolean): Enable speech synthesis support.
-  Default: false
-
 ** [[file:../../module/home/git.nix][git]]
 Enable Git with helpful aliases and features.
 

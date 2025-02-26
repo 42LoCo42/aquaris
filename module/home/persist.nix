@@ -76,10 +76,7 @@ in
 
       (mkIf config.programs.firefox.enable {
         ".cache/mozilla/firefox" = { };
-
-        ${if config.aquaris.firefox.cleanHome
-        then ".local/share/mozilla/firefox"
-        else ".mozilla/firefox"} = { };
+        ".mozilla/firefox" = { };
       })
 
       (mkIf config.programs.gpg.enable {
