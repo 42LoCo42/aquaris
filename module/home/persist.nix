@@ -76,7 +76,10 @@ in
 
       (mkIf config.programs.firefox.enable {
         ".cache/mozilla/firefox" = { };
-        ".mozilla/firefox" = { };
+
+        ${if config.aquaris.firefox.enable
+        then ".mozilla/firefox/default"
+        else ".mozilla/firefox"} = { };
       })
 
       (mkIf config.programs.gpg.enable {

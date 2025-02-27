@@ -50,6 +50,52 @@ Declarative [[https://www.gnu.org/software/emacs/][Emacs]] configuration managem
 ** [[file:../../module/home/eza.nix][eza]]
 Enable eza, a replacement for ls
 
+** [[file:../../module/home/firefox/default.nix][firefox]]
+Enable Firefox with administrative configuration features.
+
+*** Options
+- =enable= (boolean): Enable the module
+
+- =package=: The Firefox package to use.
+
+- =extensions=: Attrset mapping of extension ID to options.
+  You can find the ID by using [[https://github.com/mkaply/queryamoid/releases/download/v0.1/query_amo_addon_id-0.1-fx.xpi][this helper]] on the store page of any extension.
+  Most likely you won't need to specify the download URL too,
+  since the default chosen by this module should work just fine.
+
+  Options:
+  - =url= (string): Where to download the extension =.xpi= from.
+    Default: =https://addons.mozilla.org/firefox/downloads/latest/${name}/latest.xpi=
+  - =pin= (boolean): Whether to pin the extension to the navbar. Default: false
+  - =private= (boolean): Whether to run this extension in private windows. Default: false
+
+- =extraPrefs= (lines): Extra preference code; will be added to global autoconfig file
+
+- =prefs=: Attrset mapping from preference name to value (either boolean, integer or string).
+
+- =policies=: Options & values according to https://mozilla.github.io/policy-templates
+
+- =settings=: Various configuration templates
+  - =bitwarden= (boolean): Use Bitwarden instead of the builtin password manager. Default: true
+  - =harden= (boolean): Configures a bunch of security-related settings. Default: true
+  - =noMozilla= (boolean): Disable Mozilla services & telemetry. Default: true
+  - =qol= (boolean): Enable some quality-of-life things. Default: true
+  - =ui=: Configure visibility of UI elements.
+    All options are booleans and show their respective element(s) if set to =true=.
+    Set =ui.invert = true= to invert this behaviour, i.e. hide on =true=.
+    Available options:
+    - =pagePrev=, =pageNext=: Arrow buttons that move through the current tab's history
+    - =pageReload=: Tab reload & stop buttons
+      (only one of them is visible at any given time; this setting hides them both)
+    - =tabAll=: Little downwards-pointing triangle that shows a list of all tabs
+    - =tabClose=: "×" button on each tab that closes it
+    - =tabNew=: "Plus" button on the right of the tab bar that opens a new, blank tab
+    - =tabPrev=, =tabNext=: Left- and rightwards-pointing triangles
+      that show up when too many tabs are open to let you scroll through the tab bar
+    - =toolBarSpace=: Default spacing elements on the toolbar,
+      surrounding the address input
+    - =windowClose=: "×" button on the very right of the tab bar that closes firefox
+
 ** [[file:../../module/home/git.nix][git]]
 Enable Git with helpful aliases and features.
 

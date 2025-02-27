@@ -55,7 +55,7 @@ in
 
           private = mkOption {
             type = bool;
-            description = "Let this extension run in private windows";
+            description = "Whether to run this extension in private windows";
             default = false;
           };
         };
