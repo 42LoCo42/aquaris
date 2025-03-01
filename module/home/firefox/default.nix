@@ -219,7 +219,11 @@ in
               ]))
               (mkHide (ui.tabAll) (displayNone "#alltabs-button"))
               (mkHide (ui.tabClose) (displayNone ".tab-close-button"))
-              (mkHide (ui.tabNew) (displayNone "#tabs-newtab-button"))
+              (mkHide (ui.tabNew) (mkMerge [
+                # for some reason there are two???
+                (displayNone "#new-tab-button")
+                (displayNone "#tabs-newtab-button")
+              ]))
               (mkHide (ui.tabNext) (displayNone "#scrollbutton-down"))
               (mkHide (ui.tabPrev) (displayNone "#scrollbutton-up"))
               (mkHide (ui.toolBarSpace) (displayNone "toolbarspring"))
