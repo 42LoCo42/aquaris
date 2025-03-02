@@ -1,0 +1,28 @@
+* [[file:../../module/dnscrypt.nix][aquaris.dnscrypt]]
+Configure a local instance of dnscrypt-proxy for secure DNS resolution.
+
+** Options
+- =enable= (bool): Enable the module. Default: false
+
+- =anonDNS=:
+  - =enable= (bool): Enable anonymized DNS. Default: false.
+    To effectively use this, you *must* configure both of the following options!
+
+  - =via= (list of string): List of relays to use for anonymized DNS
+
+  - =ign= (list of string): List of resolvers to *ignore* according to =via=
+
+- =localDoH= (bool): Enable the local DoH server.
+  A certificate will automatically be provisioned & added to Firefox
+  when [[file:home.org#firefox][that module's]] =settings.harden= option is enabled.
+  Default: true
+
+- =rules=:
+  - =blocking= (list of string): List of IPs to block. Default:
+    https://github.com/DNSCrypt/dnscrypt-proxy/wiki/Filters#dns-rebinding-protection
+
+  - =cloaking= (attrs of string): Set of cloaking rules (domain → IP). Default:
+    - ~local.host~ = ~127.0.0.1~
+
+  - =forwarding= (attrs of string): Set of forwarding rules (domain → IP). Default:
+    - ~fritz.box~ = ~192.168.178.1~

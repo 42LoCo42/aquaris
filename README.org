@@ -29,6 +29,7 @@ or grant them access to their own.
 - [[file:docs/lib.org][Standard library]]
 - Modules:
   - [[file:docs/module/caches.org][Binary caches]]
+  - [[file:docs/module/dnscrypt.org][Local dnscrypt proxy]]
   - [[file:docs/module/filesystems.org][Filesystems]]
   - [[file:docs/module/home.org][home-manager settings]]
   - [[file:docs/module/machine.org][General machine settings]]

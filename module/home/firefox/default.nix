@@ -1,4 +1,4 @@
-{ pkgs, lib, config, aquaris, ... }:
+{ pkgs, lib, config, osConfig, aquaris, ... }:
 let
   inherit (lib)
     concatMapAttrsStringSep
@@ -21,6 +21,7 @@ let
     ;
 
   cfg = config.aquaris.firefox;
+  inherit (osConfig.aquaris) dnscrypt;
 in
 {
   options.aquaris.firefox = {
@@ -80,6 +81,7 @@ in
     policies = mkOption {
       type = (pkgs.formats.json { }).type;
       description = "Global Policies (passed to equivalent home-manager option)";
+      default = { };
     };
 
     #####
@@ -288,10 +290,30 @@ in
         };
 
         policies = {
+          Certificates.Install = mkIf dnscrypt.localDoH
+            [ osConfig.services.dnscrypt-proxy2.settings.local_doh.cert_file ];
+
           Cookies = {
             Behavior = "reject-foreign";
             Locked = true;
           };
+
+          DNSOverHTTPS = {
+            Locked = true;
+            Fallback = false;
+
+            ExcludedDomains = pipe dnscrypt.rules [
+              (x: x.cloaking // x.forwarding)
+              builtins.attrNames
+            ];
+          } //
+          (if dnscrypt.enable then
+            (if dnscrypt.localDoH then {
+              # connect to dnscrypt via DoH
+              Enabled = true;
+              ProviderURL = "https://localhost:5353/dns-query";
+            } else { Enabled = false; }) # connect to dnscrypt normally
+          else { Enabled = true; }); # use default DoH provider
 
           EnableTrackingProtection = {
             Value = true;

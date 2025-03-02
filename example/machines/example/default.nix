@@ -18,6 +18,8 @@
         { content = fs.zpool (p: p.rpool); }
       ];
     };
+
+    dnscrypt.enable = true;
   };
 
   services.zfs.autoSnapshot.enable = true;
