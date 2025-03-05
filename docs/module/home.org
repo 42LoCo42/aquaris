@@ -56,7 +56,10 @@ Enable Firefox with administrative configuration features.
 *** Options
 - =enable= (boolean): Enable the module
 
-- =package=: The Firefox package to use.
+- =fork= (null, =firefox= or =librewolf=): Which fork to use
+  (=null= selects vanilla Firefox). Default: =librewolf=
+
+- =package=: The Firefox package to use. Default: =pkgs.${fork}=
 
 - =extensions=: Attrset mapping of extension ID to options.
   You can find the ID by using [[https://github.com/mkaply/queryamoid/releases/download/v0.1/query_amo_addon_id-0.1-fx.xpi][this helper]] on the store page of any extension.

@@ -2,18 +2,23 @@
 let
   inherit (lib)
     concatMapAttrsStringSep
+    defaultTo
     filterAttrs
     mkIf
     mkMerge
     mkOption
     pipe
+    removePrefix
     ;
 
   inherit (lib.types)
     attrsOf
     bool
+    coercedTo
+    enum
     int
     lines
+    nullOr
     oneOf
     package
     str
@@ -22,6 +27,10 @@ let
 
   cfg = config.aquaris.firefox;
   inherit (osConfig.aquaris) dnscrypt;
+
+  forks = enum [ "firefox" "librewolf" ];
+
+  dir = "${config.programs.${cfg.fork}.configPath}/default";
 in
 {
   options.aquaris.firefox = {
@@ -31,10 +40,16 @@ in
       default = false;
     };
 
+    fork = mkOption {
+      type = coercedTo (nullOr forks) (defaultTo "firefox") forks;
+      description = "Which fork to use";
+      default = "librewolf";
+    };
+
     package = mkOption {
       type = package;
       description = "The Firefox package to use";
-      default = pkgs.firefox;
+      default = pkgs.${cfg.fork};
     };
 
     #####
@@ -160,6 +175,33 @@ in
         ];
 
         prefs = {
+          # show search suggestions
+          "browser.search.suggest.enabled" = true;
+          "browser.search.suggest.enabled.private" = false; # except in private windows
+          "browser.urlbar.showSearchSuggestionsFirst" = true;
+          "browser.urlbar.suggest.searches" = true;
+
+          # use default search engine in private windows
+          "browser.search.separatePrivateDefault" = false;
+
+          # keep data on shutdown
+          "privacy.clearOnShutdown_v2.cache" = false;
+          "privacy.clearOnShutdown_v2.cookiesAndStorage" = false;
+          "privacy.sanitize.sanitizeOnShutdown" = false;
+
+          # remember history
+          "browser.formfill.enable" = true;
+          "places.history.enabled" = true;
+          "privacy.history.custom" = false;
+
+          # no "primary" clipboard
+          "clipboard.autocopy" = false;
+          "middlemouse.paste" = false;
+
+          # update extensions automatically
+          "extensions.update.autoUpdateDefault" = true;
+          "extensions.update.enabled" = true;
+
           # enable userChrome
           "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
         };
@@ -194,7 +236,12 @@ in
         };
       };
 
-      programs.firefox = {
+      aquaris.persist = {
+        ${dir} = { };
+        ".cache/${removePrefix "." dir}" = { };
+      };
+
+      programs.${cfg.fork} = {
         enable = true;
 
         package = cfg.package.override {
@@ -287,6 +334,7 @@ in
 
           # Query OCSP responder servers...
           "security.OCSP.enabled" = 1;
+          "security.OCSP.require" = true;
         };
 
         policies = {

@@ -74,14 +74,6 @@ in
         ".local/share/direnv" = { };
       })
 
-      (mkIf config.programs.firefox.enable {
-        ".cache/mozilla/firefox" = { };
-
-        ${if config.aquaris.firefox.enable
-        then ".mozilla/firefox/default"
-        else ".mozilla/firefox"} = { };
-      })
-
       (mkIf config.programs.gpg.enable {
         ".gnupg" = { m = "0700"; };
       })
