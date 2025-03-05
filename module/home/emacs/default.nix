@@ -111,7 +111,10 @@ let
               "extraPackages"
               "package"
             ])
-            (filterAttrs (_: x: x != "" && x != false))
+            (filterAttrs (_: flip pipe [
+              (flip builtins.elem [ false "" ])
+              (x: !x)
+            ]))
             (mapAttrsToList (k: v: ''
               :${builtins.replaceStrings [ "'" ] ["*"] k}
               ${toString' v}
@@ -249,7 +252,7 @@ in
 
           packages = pipe cfg.config [
             builtins.attrValues
-            (map (x: getPkg (x.package)))
+            (map (x: getPkg x.package))
             (builtins.filter (x: x != null))
             (x: x ++ cfg.extraPackages epkgs)
           ];

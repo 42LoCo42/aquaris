@@ -24,7 +24,7 @@ let
   decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" secretsFile}";
 
   machine = "machine:${aquaris.name}";
-  sillysecrets = aquaris.inputs.obscura.packages.${pkgs.system}.sillysecrets;
+  inherit (aquaris.inputs.obscura.packages.${pkgs.system}) sillysecrets;
 
   name2path.__functor = mkOption {
     description = "Converts a secret name to its output path";
@@ -59,7 +59,7 @@ in
 
     rules = mkOption {
       description = "Custom access rules for secrets";
-      type = attrsOf (submodule ({
+      type = attrsOf (submodule {
         options = {
           user = mkOption {
             description = "User of the secret";
@@ -79,7 +79,7 @@ in
             default = "0400";
           };
         };
-      }));
+      });
       default = { };
     };
   };

@@ -219,7 +219,7 @@ in
         anonymized_dns = {
           routes = [{
             server_name = "*";
-            via = cfg.anonDNS.via;
+            inherit (cfg.anonDNS) via;
           }];
 
           skip_incompatible = true;

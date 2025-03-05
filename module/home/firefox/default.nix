@@ -94,7 +94,7 @@ in
 
     # https://mozilla.github.io/policy-templates
     policies = mkOption {
-      type = (pkgs.formats.json { }).type;
+      inherit (pkgs.formats.json { }) type;
       description = "Global Policies (passed to equivalent home-manager option)";
       default = { };
     };
@@ -260,23 +260,23 @@ in
               widthZero = x: "${x} { width: 0 !important; }";
             in
             mkMerge [
-              (mkHide (ui.pageNext) (displayNone "#forward-button"))
-              (mkHide (ui.pagePrev) (displayNone "#back-button"))
-              (mkHide (ui.pageReload) (mkMerge [
+              (mkHide ui.pageNext (displayNone "#forward-button"))
+              (mkHide ui.pagePrev (displayNone "#back-button"))
+              (mkHide ui.pageReload (mkMerge [
                 (displayNone "#reload-button")
                 (displayNone "#stop-button")
               ]))
-              (mkHide (ui.tabAll) (displayNone "#alltabs-button"))
-              (mkHide (ui.tabClose) (displayNone ".tab-close-button"))
-              (mkHide (ui.tabNew) (mkMerge [
+              (mkHide ui.tabAll (displayNone "#alltabs-button"))
+              (mkHide ui.tabClose (displayNone ".tab-close-button"))
+              (mkHide ui.tabNew (mkMerge [
                 # for some reason there are two???
                 (displayNone "#new-tab-button")
                 (displayNone "#tabs-newtab-button")
               ]))
-              (mkHide (ui.tabNext) (displayNone "#scrollbutton-down"))
-              (mkHide (ui.tabPrev) (displayNone "#scrollbutton-up"))
-              (mkHide (ui.toolBarSpace) (displayNone "toolbarspring"))
-              (mkHide (ui.windowClose) (mkMerge [
+              (mkHide ui.tabNext (displayNone "#scrollbutton-down"))
+              (mkHide ui.tabPrev (displayNone "#scrollbutton-up"))
+              (mkHide ui.toolBarSpace (displayNone "toolbarspring"))
+              (mkHide ui.windowClose (mkMerge [
                 (displayNone ".titlebar-buttonbox-container")
                 (widthZero ''.titlebar-spacer[type="post-tabs"]'')
               ]))

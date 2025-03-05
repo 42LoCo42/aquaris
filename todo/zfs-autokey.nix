@@ -6,7 +6,7 @@ let initial = pkgs.writeText "initial-password" "password"; in {
   # where the keys are stored
   fileSystems."/boot".neededForBoot = true;
 
-  aquaris.filesystem = { ... }: {
+  aquaris.filesystem = _: {
     zpools.rpool.rootOpts = {
       acltype = "posix";
       compression = "zstd";

@@ -8,7 +8,7 @@ let
     ;
 
   cfg = config.aquaris.jj;
-  git = config.programs.git;
+  inherit (config.programs) git;
 in
 {
   options.aquaris.jj = mkEnableOption "jujutsu, a simple git-compatible VCS";
@@ -27,7 +27,7 @@ in
         ])) {
           signing = {
             backend = "ssh";
-            key = git.signing.key;
+            inherit (git.signing) key;
             sign-all = true;
           };
         })
