@@ -27,8 +27,8 @@ in
         ])) {
           signing = {
             backend = "ssh";
+            behavior = "own";
             inherit (git.signing) key;
-            sign-all = true;
           };
         })
       ];
