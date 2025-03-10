@@ -123,7 +123,11 @@ in
         };
       };
 
-      networking.networkmanager.dns = "none";
+      networking = {
+        nameservers = [ "127.0.0.1" ];
+        networkmanager.dns = "none";
+        resolvconf.useLocalResolver = true;
+      };
 
       services = {
         resolved.enable = false;
