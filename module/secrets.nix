@@ -1,41 +1,65 @@
 { aquaris, self, pkgs, lib, config, ... }:
 let
   inherit (lib)
+    concatLines
     flip
     getExe
+    hasPrefix
     mapAttrsToList
     mkIf
     mkOption
+    pipe
+    removePrefix
     ;
   inherit (lib.types)
     attrsOf
     bool
     functionTo
+    listOf
     path
     str
     submodule
     ;
 
-  cfg = config.aquaris.secrets;
-
-  secretsFile = builtins.path { path = "${self.cfgDir}/sesi.yaml"; };
-  decryptDirTop = cfg.directory;
-  decryptDirMnt = "${decryptDirTop}.d";
-  decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" secretsFile}";
-
-  machine = "machine:${aquaris.name}";
   inherit (aquaris.inputs.obscura.packages.${pkgs.system}) sillysecrets;
 
-  name2path.__functor = mkOption {
-    description = "Converts a secret name to its output path";
-    type = functionTo (functionTo path);
-    default = _: name: "${decryptDirTop}/${name}";
+  cfg = config.aquaris.secrets;
+
+  storageFile = builtins.path { path = "${self.cfgDir}/sesi.json"; };
+  structureFile = builtins.path { path = "${self.cfgDir}/sesi.yaml"; };
+
+  decryptDirTop = cfg.directory;
+  decryptDirMnt = "${decryptDirTop}.d";
+  decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" storageFile}";
+
+  machineDst = "machine/${aquaris.name}";
+  machineLnk = ":machine";
+
+  name2path = checked: {
+    __functor = mkOption {
+      description = "Converts a secret name to its output path";
+      type = functionTo (functionTo path);
+      readOnly = true;
+      default = _: name:
+        if checked && !(builtins.elem name cfg.all)
+        then abort "`${name}` is not a defined secret!"
+        else "${decryptDirTop}/${name}";
+    };
   };
+
+  ruleCfg = pipe cfg.rules [
+    (mapAttrsToList (name: cfg:
+      "z ${decryptDirTop}/${name} ${cfg.mode} ${cfg.user} ${cfg.group}"))
+    (x: x ++ [ "z ${cfg.key} 0400 0 0" ])
+    concatLines
+    (pkgs.writeText "secrets-access-rules.conf")
+  ];
 in
 {
-  options.aquaris.secret = name2path;
+  options.aquaris.secret = name2path true;
+  options.aquaris.secret' = name2path false;
 
-  options.aquaris.secrets = name2path // {
+  options.aquaris.secrets = {
     enable = mkOption {
       description = "Enable the secrets management module";
       type = bool;
@@ -81,6 +105,25 @@ in
         };
       });
       default = { };
+    };
+
+    all = mkOption {
+      description = ''
+        List of all stored secrets together with the current machine alias.
+        This config may not be able to decrypt all of these secrets!
+      '';
+      type = listOf str;
+      readOnly = true;
+      default = pipe storageFile [
+        builtins.readFile
+        builtins.fromJSON
+        builtins.attrNames
+        (x: pipe x [
+          (builtins.filter (hasPrefix "${machineDst}/"))
+          (map (y: "${machineLnk}${removePrefix machineDst y}"))
+          (y: x ++ y)
+        ])
+      ];
     };
   };
 
@@ -136,33 +179,23 @@ in
 
                 rm -rvf "${decryptDirOut}"
 
-                sesi -f "${secretsFile}" -i "${cfg.key}" \
-                  decryptall "${machine}" "${decryptDirOut}"
+                sesi --debug -k "${cfg.key}" \
+                  -j "${storageFile}" -y "${structureFile}" \
+                  dump "${decryptDirOut}"
 
                 # create the machine alias
-                machinedir="${decryptDirOut}/${machine}"
-                if [ -e "$machinedir" ]; then
-                  mv -v "$machinedir" "${decryptDirOut}/machine"
+                if [ -e "${decryptDirOut}/${machineDst}" ]; then
+                  ln -sfvT "${machineDst}" "${decryptDirOut}/${machineLnk}"
                 fi
 
                 # activate current decryption directory
-                ln -sfT "${decryptDirOut}" "${decryptDirTop}"
+                ln -sfvT "${decryptDirOut}" "${decryptDirTop}"
 
                 # remove old decryption directories
                 find "${decryptDirMnt}"         \
                   -mindepth 1 -maxdepth 1       \
                   -not -path "${decryptDirOut}" \
                   -exec rm -rfv {} \;
-
-                # create all links
-                find -L "${decryptDirTop}" -type f \
-                | while read -r src; do
-                  dst="''${src//://}"
-                  if [ ! -e "$dst" ]; then
-                    mkdir -p "$(dirname "$dst")"
-                    ln -s "$src" "$dst"
-                  fi
-                done
               '';
             });
           };
@@ -183,42 +216,33 @@ in
               text = ''
                 cd "${decryptDirTop}"
 
-                # make all directories visible
-                find . -type d -exec chmod 755 {} \;
-
                 # chown user secrets
-                find . -type f -path './user:*' \
+                find . -type f -path './user/*' \
                 | while read -r i; do
-                  user="$(grep -oP '^\./user:\K[^/]+' <<< "$i")"
-                  if [ "$i" = "./user:$user/password" ]; then
-                    chown root:root "$i"
-                  else
-                    chown "''${user}:root" "$i"
+                  user="$(grep -oP '^\./user/\K[^/]+' <<< "$i")"
+                  if [ "$i" != "./user/$user/password" ]; then
+                    chown -v "''${user}:root" "$i"
                   fi
                 done
 
                 # load custom access rules
-                systemd-tmpfiles --create
+                systemd-tmpfiles --create ${ruleCfg}
               '';
             });
           };
         };
       };
-
-      tmpfiles.rules = (flip mapAttrsToList cfg.rules (name: cfg:
-        "z ${decryptDirTop}/${name} ${cfg.mode} ${cfg.user} ${cfg.group}")) ++
-      [ "z ${cfg.key} 0400 0 0" ];
     };
 
     ##### default usage #####
 
     security.pam.u2f.settings = {
-      authfile = cfg "user/%u/u2f-keys";
+      authfile = config.aquaris.secret' "user/%u/u2f-keys";
       expand = true;
     };
 
     users.users = (flip builtins.mapAttrs config.aquaris.users) (name: _: {
-      hashedPasswordFile = cfg "user/${name}/password";
+      hashedPasswordFile = config.aquaris.secret "user/${name}/password";
     });
   };
 }

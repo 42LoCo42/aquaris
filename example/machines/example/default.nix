@@ -20,6 +20,14 @@
     };
 
     dnscrypt.enable = true;
+
+    secrets.rules = {
+      ":machine/something" = {
+        user = "alice";
+        group = "wheel";
+        mode = "0444";
+      };
+    };
   };
 
   services.zfs.autoSnapshot.enable = true;
