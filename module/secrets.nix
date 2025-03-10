@@ -33,7 +33,7 @@ let
   decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" storageFile}";
 
   machineDst = "machine/${aquaris.name}";
-  machineLnk = ":machine";
+  machineLnk = "@machine";
 
   name2path = checked: {
     __functor = mkOption {
