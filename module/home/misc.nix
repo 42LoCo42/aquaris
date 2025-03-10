@@ -24,7 +24,7 @@ in
         ip = "ip -c";
         mkdir = "mkdir -pv";
         rmdir = "rmdir -pv";
-        switch = "sys rebuild";
+        switch = "sys switch";
         yay = "sys update build switch";
       };
 

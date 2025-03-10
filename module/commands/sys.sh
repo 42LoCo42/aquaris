@@ -41,13 +41,9 @@ for i in "$@"; do
 	update | u) update ;;
 
 	boot) activate boot ;;
+	rebuild | r) activate switch ;; # legacy alias
 	switch | s) activate switch ;;
 	test | t) activate test ;;
-
-	rebuild | r)
-		build
-		activate switch
-		;;
 
 	*)
 		err "[1;31mUnknown action $i![m"
