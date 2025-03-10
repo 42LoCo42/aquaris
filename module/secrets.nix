@@ -29,7 +29,7 @@ let
   structureFile = builtins.path { path = "${self.cfgDir}/sesi.yaml"; };
 
   decryptDirTop = cfg.directory;
-  decryptDirMnt = "${decryptDirTop}.d";
+  decryptDirMnt = "${dirOf decryptDirTop}/.${baseNameOf decryptDirTop}.d";
   decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" storageFile}";
 
   machineDst = "machine/${aquaris.name}";
