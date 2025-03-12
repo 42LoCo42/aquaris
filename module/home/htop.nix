@@ -1,4 +1,4 @@
-{ pkgs, config, lib, aquaris, mkEnableOption, ... }:
+{ config, lib, mkEnableOption, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.htop;
@@ -9,7 +9,6 @@ in
   config = mkIf cfg {
     programs.htop = {
       enable = true;
-      package = aquaris.inputs.obscura.packages.${pkgs.system}.my-htop;
 
       settings = {
         account_guest_in_cpu_meter = 1;
