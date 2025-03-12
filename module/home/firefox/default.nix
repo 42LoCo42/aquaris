@@ -99,6 +99,15 @@ in
       default = { };
     };
 
+    userChrome = mkOption {
+      type = lines;
+      description = ''
+        Contents of userChrome.css.
+        Will be copied into your profile on every launch to support sync tools.
+      '';
+      default = "";
+    };
+
     #####
 
     settings = {
@@ -234,6 +243,37 @@ in
           SearchBar = "unified";
           ShowHomeButton = false;
         };
+
+        userChrome =
+          let
+            inherit (cfg.settings) ui;
+            mkHide = x: mkIf (if ui.invert then x else !x);
+
+            displayNone = x: "${x} { display: none !important; }";
+            widthZero = x: "${x} { width: 0 !important; }";
+          in
+          mkMerge [
+            (mkHide ui.pageNext (displayNone "#forward-button"))
+            (mkHide ui.pagePrev (displayNone "#back-button"))
+            (mkHide ui.pageReload (mkMerge [
+              (displayNone "#reload-button")
+              (displayNone "#stop-button")
+            ]))
+            (mkHide ui.tabAll (displayNone "#alltabs-button"))
+            (mkHide ui.tabClose (displayNone ".tab-close-button"))
+            (mkHide ui.tabNew (mkMerge [
+              # for some reason there are two???
+              (displayNone "#new-tab-button")
+              (displayNone "#tabs-newtab-button")
+            ]))
+            (mkHide ui.tabNext (displayNone "#scrollbutton-down"))
+            (mkHide ui.tabPrev (displayNone "#scrollbutton-up"))
+            (mkHide ui.toolBarSpace (displayNone "toolbarspring"))
+            (mkHide ui.windowClose (mkMerge [
+              (displayNone ".titlebar-buttonbox-container")
+              (widthZero ''.titlebar-spacer[type="post-tabs"]'')
+            ]))
+          ];
       };
 
       aquaris.persist = {
@@ -245,43 +285,34 @@ in
         enable = true;
 
         package = cfg.package.override {
-          inherit (cfg) extraPrefs;
+          extraPrefs = ''
+            ${cfg.extraPrefs}
+            EOF
+            # terminate extraPrefs early; this leaves a hanging EOF
+
+            # extract everything but the first line (exec) from the launcher
+            file="$out/bin/${cfg.package.meta.mainProgram}"
+            head -n-1 "$file" > tmp
+
+            # on launch: copy userChrome.css to the current user's profile
+            cat <<\EOF >> tmp
+            dir="$HOME/${config.programs.${cfg.fork}.configPath}/default/chrome"
+            mkdir -p "$dir"
+            cp ${pkgs.writeText "userChrome.css" cfg.userChrome} "$dir"
+            EOF
+
+            # finalize the launcher
+            tail -n 1 "$file" >> tmp
+            mv tmp "$file"
+
+            # catch the hanging EOF
+            cat << EOF >/dev/null
+          '';
         };
 
         inherit (cfg) policies;
 
-        profiles.default = {
-          userChrome =
-            let
-              inherit (cfg.settings) ui;
-              mkHide = x: mkIf (if ui.invert then x else !x);
-
-              displayNone = x: "${x} { display: none !important; }";
-              widthZero = x: "${x} { width: 0 !important; }";
-            in
-            mkMerge [
-              (mkHide ui.pageNext (displayNone "#forward-button"))
-              (mkHide ui.pagePrev (displayNone "#back-button"))
-              (mkHide ui.pageReload (mkMerge [
-                (displayNone "#reload-button")
-                (displayNone "#stop-button")
-              ]))
-              (mkHide ui.tabAll (displayNone "#alltabs-button"))
-              (mkHide ui.tabClose (displayNone ".tab-close-button"))
-              (mkHide ui.tabNew (mkMerge [
-                # for some reason there are two???
-                (displayNone "#new-tab-button")
-                (displayNone "#tabs-newtab-button")
-              ]))
-              (mkHide ui.tabNext (displayNone "#scrollbutton-down"))
-              (mkHide ui.tabPrev (displayNone "#scrollbutton-up"))
-              (mkHide ui.toolBarSpace (displayNone "toolbarspring"))
-              (mkHide ui.windowClose (mkMerge [
-                (displayNone ".titlebar-buttonbox-container")
-                (widthZero ''.titlebar-spacer[type="post-tabs"]'')
-              ]))
-            ];
-        };
+        profiles.default = { };
       };
     }
 

@@ -78,6 +78,10 @@ Enable Firefox with administrative configuration features.
 
 - =policies=: Options & values according to https://mozilla.github.io/policy-templates
 
+- =userChrome= (lines):
+  Contents of userChrome.css.
+  Will be copied into your profile on every launch to support sync tools.
+
 - =settings=: Various configuration templates
   - =bitwarden= (boolean): Use Bitwarden instead of the builtin password manager. Default: true
   - =harden= (boolean): Configures a bunch of security-related settings. Default: true
