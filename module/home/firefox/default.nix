@@ -296,14 +296,16 @@ in
 
             # on launch: copy userChrome.css to the current user's profile
             cat <<\EOF >> tmp
-            dir="$HOME/${config.programs.${cfg.fork}.configPath}/default/chrome"
-            mkdir -p "$dir"
-            cp ${pkgs.writeText "userChrome.css" cfg.userChrome} "$dir"
+            file="$HOME/${config.programs.${cfg.fork}.configPath}/default/chrome/userChrome.css"
+            mkdir -p "$(dirname "$file")"
+            rm -f "$file"
+            cp ${pkgs.writeText "userChrome.css" cfg.userChrome} "$file"
             EOF
 
             # finalize the launcher
             tail -n 1 "$file" >> tmp
             mv tmp "$file"
+            chmod +x "$file"
 
             # catch the hanging EOF
             cat << EOF >/dev/null
