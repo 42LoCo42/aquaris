@@ -37,10 +37,9 @@ activate() {
 
 for i in "$@"; do
 	case "$i" in
-	build | b) build ;;
 	update | u) update ;;
 
-	boot) activate boot ;;
+	boot | b) activate boot ;;
 	rebuild | r) activate switch ;; # legacy alias
 	switch | s) activate switch ;;
 	test | t) activate test ;;
