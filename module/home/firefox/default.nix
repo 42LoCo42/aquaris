@@ -31,6 +31,10 @@ let
   forks = enum [ "firefox" "librewolf" ];
 
   dir = "${config.programs.${cfg.fork}.configPath}/default";
+
+
+  json = (pkgs.formats.json { }).type;
+  pref = oneOf [ bool int str ];
 in
 {
   options.aquaris.firefox = {
@@ -87,14 +91,19 @@ in
     };
 
     prefs = mkOption {
-      type = attrsOf (oneOf [ bool int str ]);
+      type = attrsOf (nullOr (coercedTo pref (x: { value = x; }) (submodule {
+        options = {
+          value = mkOption { type = json; };
+          locked = mkOption { type = bool; default = true; };
+        };
+      })));
       description = "Preferences to set via global autoconfiguration";
       default = { };
     };
 
     # https://mozilla.github.io/policy-templates
     policies = mkOption {
-      inherit (pkgs.formats.json { }) type;
+      type = json;
       description = "Global Policies (passed to equivalent home-manager option)";
       default = { };
     };
@@ -169,9 +178,11 @@ in
     {
       aquaris.firefox = {
         extraPrefs = mkMerge [
-          ((concatMapAttrsStringSep "" (k: v: ''
-            lockPref(${builtins.toJSON k}, ${builtins.toJSON v});
-          '')) cfg.prefs)
+          ((concatMapAttrsStringSep "\n" (k: v:
+            if v == null then "clearPref(${builtins.toJSON k});" else
+            ((if v.locked then "lockPref" else "defaultPref") +
+              "(${builtins.toJSON k}, ${builtins.toJSON v.value});")
+          )) cfg.prefs)
 
           (pipe cfg.extensions [
             (filterAttrs (_: x: x.private))

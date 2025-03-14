@@ -74,7 +74,15 @@ Enable Firefox with administrative configuration features.
 
 - =extraPrefs= (lines): Extra preference code; will be added to global autoconfig file
 
-- =prefs=: Attrset mapping from preference name to value (either boolean, integer or string).
+- =prefs=: Set of preferences. Values can either be:
+  - null: set to default value (corresponds to =clearPref=)
+  - bool, int or string: Set & lock to this value
+  - An object with these options:
+    - =value=: A JSON value (not just bool, int or string).
+    - =locked= (bool):
+      Whether to lock the pref or just set it as default
+      (corresponds to =defaultPref= if false, =lockPref= if true).
+      Default: true
 
 - =policies=: Options & values according to https://mozilla.github.io/policy-templates
 
