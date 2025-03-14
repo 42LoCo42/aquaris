@@ -93,5 +93,7 @@ in
       builtins.concatLists
       unique
     ];
+
+    home.shellAliases.eph = "sudo find / -xdev -type f | sort | less";
   };
 }
