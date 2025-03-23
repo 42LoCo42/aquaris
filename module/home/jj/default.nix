@@ -23,7 +23,7 @@ in
         ((mkIf (builtins.all (x: x) [
           (git.signing != null)
           (git.signing.key != null)
-          (git.extraConfig.gpg.format == "ssh")
+          (git.signing.format == "ssh")
         ])) {
           signing = {
             backend = "ssh";

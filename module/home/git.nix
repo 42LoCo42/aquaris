@@ -11,36 +11,42 @@ let
     splitString
     ;
 
-  inherit (lib.types) functionTo str;
+  inherit (lib.types)
+    coercedTo
+    functionTo
+    nullOr
+    str
+    ;
 
   cfg = config.aquaris.git;
   user = osConfig.aquaris.users.${config.home.username}.git;
 
-  ##### ssh key stuff #####
-
   allowedSigners = pkgs.writeText "allowedSigners" ''
     ${user.email} namespaces="git" ${user.key}
   '';
-
-  sshKeyFile = pipe user.key [
-    (splitString " ")
-    builtins.head
-    (type: findFirst (x: x.type == type) null [
-      { type = "ecdsa-sha2-nistp256"; name = "ecdsa"; }
-      { type = "sk-ecdsa-sha2-nistp256@openssh.com"; name = "ecdsa_sk"; }
-      { type = "sk-ssh-ed25519@openssh.com"; name = "ed25519_sk"; }
-      { type = "ssh-ed25519"; name = "ed25519"; }
-      { type = "ssh-rsa"; name = "rsa"; }
-    ])
-    (mapNullable cfg.sshKeyFile)
-  ];
 in
 {
   options.aquaris.git = {
     enable = mkEnableOption "Git with helpful aliases and features";
 
     sshKeyFile = mkOption {
-      type = functionTo str;
+      type = coercedTo
+        (functionTo str)
+        (f:
+          if user.key == null then null else
+          pipe user.key [
+            (splitString " ")
+            builtins.head
+            (type: findFirst (x: x.type == type) null [
+              { type = "ecdsa-sha2-nistp256"; name = "ecdsa"; }
+              { type = "sk-ecdsa-sha2-nistp256@openssh.com"; name = "ecdsa_sk"; }
+              { type = "sk-ssh-ed25519@openssh.com"; name = "ed25519_sk"; }
+              { type = "ssh-ed25519"; name = "ed25519"; }
+              { type = "ssh-rsa"; name = "rsa"; }
+            ])
+            (mapNullable f)
+          ])
+        (nullOr str);
       description = ''
         Function to locate the SSH private key.
 
@@ -100,7 +106,8 @@ in
       userEmail = mkDefault user.email;
 
       signing = mkIf (user.key != null) {
-        key = mkDefault (if sshKeyFile != null then sshKeyFile else user.key);
+        format = if cfg.sshKeyFile != null then "ssh" else "openpgp";
+        key = mkDefault (if cfg.sshKeyFile != null then cfg.sshKeyFile else user.key);
         signByDefault = mkDefault true;
       };
 
@@ -111,11 +118,7 @@ in
           push.autoSetupRemote = mkDefault true;
         }
 
-        (mkIf (user.key != null) {
-          gpg.format = if sshKeyFile != null then "ssh" else "openpgp";
-        })
-
-        (mkIf (user.key != null && sshKeyFile != null) {
+        (mkIf (user.key != null && cfg.sshKeyFile != null) {
           gpg.ssh.allowedSignersFile = mkDefault allowedSigners.outPath;
         })
       ];
