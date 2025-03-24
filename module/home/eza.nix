@@ -17,6 +17,7 @@ in
         "--icons"
         "--long"
         "--mounts"
+        "--total-size"
       ];
     };
 
@@ -24,13 +25,12 @@ in
       filenames = {
         # dot stuff in home
         ".cache".icon.glyph = "󰃨";
-        ".ghci".icon.glyph = "";
-        ".icons".icon.glyph = "";
+        ".librewolf".icon.glyph = "󰈹";
         ".local".icon.glyph = "󰆼";
-        ".mozilla".icon.glyph = "";
-        ".nix-defexpr".icon.glyph = "";
-        ".nix-profile".icon.glyph = "";
+        ".mozilla".icon.glyph = "󰈹";
+        ".nv".icon.glyph = "󰢮";
         ".pki".icon.glyph = "󰌾";
+        ".thunderbird".icon.glyph = "";
         ".zsh".icon.glyph = "";
 
         # main dirs in home
