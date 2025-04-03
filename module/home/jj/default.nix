@@ -75,7 +75,7 @@ in
         jsp = "jj split";
         jsq = "jj squash";
         jsqi = "jj squash -i";
-        ju = "jj file untrack";
+        jut = "jj file untrack";
         jun = "jj undo";
       };
     };
