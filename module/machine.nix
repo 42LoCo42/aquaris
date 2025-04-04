@@ -44,12 +44,7 @@ in
 
       lanzaboote = {
         enable = mkDefault cfg.secureboot;
-
-        pkiBundle = pipe pkgs.sbctl.ldflags [
-          (builtins.concatStringsSep " ")
-          (builtins.match ".*DatabasePath=([^ ]+).*")
-          builtins.head
-        ];
+        pkiBundle = mkDefault "/var/lib/sbctl";
 
         package = pkgs.writeShellApplication {
           name = "lzbt";
