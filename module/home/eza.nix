@@ -17,7 +17,7 @@ in
         "--icons"
         "--long"
         "--mounts"
-        "--total-size"
+        # "--total-size" # can sometimes take too long
       ];
     };
 
