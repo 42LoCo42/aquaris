@@ -1,17 +1,12 @@
 call deoplete#enable()
 call deoplete#custom#option('auto_complete_delay', 0)
 
-" fix for airline rendering glitch
-" https://github.com/vim-airline/vim-airline/issues/2704
-let g:airline#extensions#whitespace#symbol = '!'
-
 let g:suda_smart_edit = 1
 
 filetype plugin on
 syntax on
 set termguicolors
 set bg=dark
-set go=a
 set mouse=a
 set nohlsearch
 set ignorecase
