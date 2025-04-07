@@ -1,53 +1,59 @@
 # show template
 jst() {
-	jj log --limit 1 --no-graph --ignore-working-copy -T "$@"
+	r="$1"; t="$2"; shift 2
+
+	jj log \
+		--no-pager \
+		--no-graph \
+		--ignore-working-copy \
+		-r "$r" -T "$t" "$@"
 }
 
-# bookmark find
-jbf() {
-	rev="@"
-	while "$(jst '!self.root()' -r "$rev")"; do
-		bookmarks=()
-
-		while read -r line; do bookmarks+=("$line"); done \
-			< <(jst 'self.bookmarks().map(|x| x.name() ++ "\n").join("")' -r "$rev")
-
-		case "${#bookmarks[@]}" in
-		0) rev="$rev-" ;;
-
-		1)
-			echo "${bookmarks[1]}"
+# find bookmark
+jfb() {
+	jst '..@' 'if(
+		self.local_bookmarks().len() > 0,
+			self.change_id() ++ " " ++
+			self.local_bookmarks().map(|x| x.name()) ++ "\n",
+		"")' \
+	| while read -r rev name rest; do
+		if [ -z "$rest" ]; then
+			echo "$name"
 			return 0
-			;;
+		fi
 
-		*)
-			id="$(jst 'self.change_id().shortest(8) ++ "\n"' -r "$rev" --color always)"
-			echo "[1;31mMore than 1 bookmark at commit[m $id" >&2
-
-			jst 'self.change_id().shortest(8)' -r "$rev" |
-				xargs -I% jj log --ignore-working-copy -r "%-..@" >&2
-
-			return 1
-			;;
-		esac
+		echo -n "[1;31mMore than one bookmark at [m$(
+			jst "$rev" 'self.change_id().shortest(8)' --color always) :: " >&2
+		jst "$rev" 'self.local_bookmarks() ++ "\n"' >&2
+		return 1
 	done
 
 	echo "[1;31mReached root commit without finding a bookmark[m" >&2
 	return 1
 }
 
-# "intelligent" push - sets bookmark-find to first non-empty commit
+# find content
+jfc() {
+	jst '..@' '
+		self.change_id() ++ " " ++
+		self.empty() ++ "\n"' \
+	| while read -r rev empty; do
+		"$empty" && continue
+
+		echo "$rev"
+		return 0
+	done
+
+	echo "[1;31mReached root commit without finding a non-empty commit[m" >&2
+	return 1
+}
+
+# "intelligent" push - finds a bookmark and moves it to the first non-empty commit
 jps() {
-	if [ -n "$1" ]; then
-		bookmark="$1"
-	else
-		bookmark="$(jbf)" || return 1
-	fi
+	if [ -n "$1" ]; then bmk="$1"; else bmk="$(jfb)" || return 1; fi
+	rev="$(jfc)" || return 1
 
-	rev="@"
-	while "$(jst 'self.empty()' -r "$rev")"; do rev="$rev-"; done
-
-	jj bookmark set "$bookmark" -r "$rev"
+	jj bookmark set "$bmk" -r "$rev"
 	jj git push --all
 }
 
