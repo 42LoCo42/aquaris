@@ -121,60 +121,79 @@ in
 
     # support services for PCR policy logic
     {
-      fileSystems."/boot".neededForBoot = true;
+      boot.initrd = {
+        supportedFilesystems = [ config.fileSystems."/boot".fsType ];
 
-      boot.initrd.systemd = {
-        extraBin = {
-          objcopy = "${pkgs.binutils}/bin/objcopy";
-          systemd-pcrextend = "${pkgs.systemd}/lib/systemd/systemd-pcrextend";
-        };
-
-        services = {
-          extract-pcr-sections = {
-            script = ''
-              entry="/sysroot/boot/EFI/Linux/$(
-                cat /sys/firmware/efi/efivars/LoaderEntrySelected-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f \
-                | tail -c+5 | tr -d '\0')"
-
-              objcopy -O binary -j .pcrpkey "$entry" "/run/systemd/tpm2-pcr-public-key.pem"
-              objcopy -O binary -j .pcrsig  "$entry" "/run/systemd/tpm2-pcr-signature.json"
-            '';
-
-            after = [ "sysroot-boot.mount" ];
-            bindsTo = [ "sysroot-boot.mount" ];
-            wantedBy = [ "initrd.target" ];
+        systemd = {
+          extraBin = {
+            objcopy = "${pkgs.binutils}/bin/objcopy";
+            systemd-pcrextend = "${pkgs.systemd}/lib/systemd/systemd-pcrextend";
           };
 
-          systemd-pcrphase-initrd = {
-            unitConfig = {
-              Description = "TPM PCR Barrier (initrd)";
-              Documentation = "man:systemd-pcrphase-initrd.service(8)";
-              DefaultDependencies = "no";
-              Conflicts = [
-                "shutdown.target"
-                "initrd-switch-root.target"
-              ];
-              After = "tpm2.target";
-              Before = [
-                "sysinit.target"
-                "cryptsetup-pre.target"
-                "cryptsetup.target"
-                "shutdown.target"
-                "initrd-switch-root.target"
-                "systemd-sysext.service"
-              ];
-              ConditionPathExists = "/etc/initrd-release";
-              ConditionSecurity = "measured-uki";
+          mounts = [
+            (
+              let boot = config.fileSystems."/boot"; in {
+                what = boot.device;
+                where = "/boot";
+                type = boot.fsType;
+                options = builtins.concatStringsSep "," boot.options;
+              }
+            )
+          ];
+
+          services = {
+            extract-pcr-sections = {
+              script = ''
+                entry="/boot/EFI/Linux/$(
+                  cat /sys/firmware/efi/efivars/LoaderEntrySelected-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f \
+                  | tail -c+5 | tr -d '\0')"
+
+                objcopy -O binary -j .pcrpkey "$entry" "/run/systemd/tpm2-pcr-public-key.pem"
+                objcopy -O binary -j .pcrsig  "$entry" "/run/systemd/tpm2-pcr-signature.json"
+              '';
+
+              unitConfig.DefaultDependencies = "no";
+
+              after = [ "boot.mount" ];
+              bindsTo = [ "boot.mount" ];
+
+              before = [ "cryptsetup.target" ''system-systemd\x2dcryptsetup.slice'' ];
+              requiredBy = [ "cryptsetup.target" ''system-systemd\x2dcryptsetup.slice'' ];
+
+              wantedBy = [ "initrd.target" ];
             };
 
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = "yes";
-              ExecStart = "/bin/systemd-pcrextend --graceful enter-initrd";
-              ExecStop = "/bin/systemd-pcrextend --graceful leave-initrd";
-            };
+            systemd-pcrphase-initrd = {
+              unitConfig = {
+                Description = "TPM PCR Barrier (initrd)";
+                Documentation = "man:systemd-pcrphase-initrd.service(8)";
+                DefaultDependencies = "no";
+                Conflicts = [
+                  "shutdown.target"
+                  "initrd-switch-root.target"
+                ];
+                After = "tpm2.target";
+                Before = [
+                  "sysinit.target"
+                  "cryptsetup-pre.target"
+                  "cryptsetup.target"
+                  "shutdown.target"
+                  "initrd-switch-root.target"
+                  "systemd-sysext.service"
+                ];
+                ConditionPathExists = "/etc/initrd-release";
+                ConditionSecurity = "measured-uki";
+              };
 
-            wantedBy = [ "initrd.target" ];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = "yes";
+                ExecStart = "/bin/systemd-pcrextend --graceful enter-initrd";
+                ExecStop = "/bin/systemd-pcrextend --graceful leave-initrd";
+              };
+
+              wantedBy = [ "initrd.target" ];
+            };
           };
         };
       };
