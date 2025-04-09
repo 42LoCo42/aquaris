@@ -22,13 +22,15 @@
     dnscrypt.enable = true;
 
     secrets.rules = {
-      ":machine/something" = {
+      "@machine/something" = {
         user = "alice";
         group = "wheel";
         mode = "0444";
       };
     };
   };
+
+  boot.kernelParams = [ "foo=bar" ];
 
   services.zfs.autoSnapshot.enable = true;
 

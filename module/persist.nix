@@ -66,10 +66,6 @@ in
           "/var/log" = { };
         }
 
-        (mkIf config.boot.lanzaboote.enable {
-          ${config.boot.lanzaboote.pkiBundle} = { };
-        })
-
         (mkIf config.networking.networkmanager.enable {
           "/etc/NetworkManager/system-connections" = { m = "0700"; };
           "/var/lib/NetworkManager" = { m = "0755"; };

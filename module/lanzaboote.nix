@@ -22,6 +22,13 @@ let
   lanza = builtins.getFlake "github:42LoCo42/lanzaboote/4bcbae99c48270ccd6fe8f09a5aca4b32bb0a76a";
 
   cfg = config.boot.lanzaboote;
+
+  sbctl-conf = pkgs.writeText "sbctl.conf" ''
+    keydir:     ${cfg.pkiBundle}/keys
+    guid:       ${cfg.pkiBundle}/GUID
+    files_db:   ${cfg.pkiBundle}/files.json
+    bundles_db: ${cfg.pkiBundle}/bundles.json
+  '';
 in
 {
   imports = [ "${lanza}/nix/modules/lanzaboote.nix" ];
@@ -74,7 +81,7 @@ in
       boot.lanzaboote = {
         enable = mkDefault true;
         configurationLimit = mkDefault config.aquaris.machine.keepGenerations;
-        pkiBundle = mkDefault "/var/lib/sbctl";
+        pkiBundle = mkDefault "${root}/var/lib/sbctl";
 
         extraArgs = mkMerge [
           (mkIf (cfg.pcrPolicyKey != null) [
@@ -85,7 +92,7 @@ in
         preCommands = mkMerge [
           (mkIf cfg.createKeys ''
             if [ ! -f "${cfg.pkiBundle}/GUID" ]; then
-              ${getExe pkgs.sbctl} create-keys
+              ${getExe pkgs.sbctl} create-keys --config ${sbctl-conf}
             fi
           '')
 
@@ -108,6 +115,8 @@ in
           '';
         };
       };
+
+      environment.etc."sbctl/sbctl.conf".source = sbctl-conf;
     }
 
     # support services for PCR policy logic
