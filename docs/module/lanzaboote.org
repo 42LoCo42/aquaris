@@ -1,6 +1,5 @@
 * [[file:../../module/lanzaboote.nix][boot.lanzaboote]]
-Enable secure boot using Lanzaboote,
-using a [[https://github.com/42LoCo42/lanzaboote/][custom fork]] that supports [[https://www.freedesktop.org/software/systemd/man/latest/systemd-measure.html][signed PCR policies]].
+Enable secure boot using a [[https://github.com/42LoCo42/lanzaboote/][custom fork]] of Lanzaboote that supports [[https://www.freedesktop.org/software/systemd/man/latest/systemd-measure.html][signed PCR policies]].
 
 Activate this module using =aquaris.machine.secureboot= from the [[file:machine.org][machine]] module.
 
