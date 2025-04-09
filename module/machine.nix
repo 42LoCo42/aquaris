@@ -1,58 +1,33 @@
 { self, aquaris, lib, config, pkgs, ... }:
 let
-  inherit (lib) getExe mkDefault mkIf mkOption;
-  inherit (lib.types) bool int lines nullOr str;
+  inherit (lib) mkDefault mkOption;
+  inherit (lib.types) bool int nullOr str;
+
   inherit (aquaris.inputs) nixpkgs;
   cfg = config.aquaris.machine;
-
-  # pin exactly this version since it's cached in nix-community.cachix.org
-  lanza042 = builtins.getFlake "github:nix-community/lanzaboote/a65905a09e2c43ff63be8c0e86a93712361f871e";
 
   inherit (config.aquaris.persist) root;
 in
 {
-  options = {
-    aquaris.machine = {
-      id = mkOption {
-        description = "The machine ID (used by systemd and others)";
-        type = str;
-      };
-
-      secureboot = mkOption {
-        description = "Whether to enable Secure Boot support using lanzaboote";
-        type = bool;
-        default = true;
-      };
-
-      keepGenerations = mkOption {
-        description = "How many generations to keep (null to disable autocleanup)";
-        type = nullOr int;
-        default = 5;
-      };
+  options.aquaris.machine = {
+    id = mkOption {
+      description = "The machine ID (used by systemd and others)";
+      type = str;
     };
 
-    boot.lanzaboote = {
-      createKeys = mkOption {
-        description = "Automatically create secure boot keys";
-        type = bool;
-        default = true;
-      };
+    # used in lanzaboote.nix
+    secureboot = mkOption {
+      description = "Whether to enable Secure Boot support using lanzaboote";
+      type = bool;
+      default = true;
+    };
 
-      preCommands = mkOption {
-        description = "Commands to run before lanzaboote entries are installed";
-        type = lines;
-        default = "";
-      };
-
-      postCommands = mkOption {
-        description = "Commands to run after lanzaboote entries have been installed";
-        type = lines;
-        default = "";
-      };
+    keepGenerations = mkOption {
+      description = "How many generations to keep (null to disable autocleanup)";
+      type = nullOr int;
+      default = 5;
     };
   };
-
-  imports = [ "${lanza042}/nix/modules/lanzaboote.nix" ];
 
   config = {
     boot = {
@@ -63,29 +38,6 @@ in
         "vt.default_grn=0x28,0x24,0x97,0x99,0x85,0x62,0x9d,0x99,0x83,0x49,0xbb,0xbd,0xa5,0x86,0xc0,0xdb"
         "vt.default_blu=0x28,0x1d,0x1a,0x21,0x88,0x86,0x6a,0x84,0x74,0x34,0x26,0x2f,0x98,0x9b,0x7c,0xb2"
       ];
-
-      lanzaboote = {
-        enable = mkDefault cfg.secureboot;
-        configurationLimit = cfg.keepGenerations;
-        pkiBundle = mkDefault "/var/lib/sbctl";
-
-        preCommands =
-          let pki = config.boot.lanzaboote.pkiBundle; in
-          mkIf config.boot.lanzaboote.createKeys ''
-            if [ ! -f "${pki}/GUID" ]; then
-              ${getExe pkgs.sbctl} create-keys
-            fi
-          '';
-
-        package = pkgs.writeShellApplication {
-          name = "lzbt";
-          text = ''
-            ${config.boot.lanzaboote.preCommands}
-            ${getExe lanza042.packages.${pkgs.system}.lzbt} "$@"
-            ${config.boot.lanzaboote.postCommands}
-          '';
-        };
-      };
 
       loader = {
         efi.canTouchEfiVariables = mkDefault true;

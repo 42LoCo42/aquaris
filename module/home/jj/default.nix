@@ -70,6 +70,7 @@ in
         jrd = "jj git remote remove"; # "delete"
         jre = "jj restore";
         jrl = "jj git remote list --no-pager";
+        jrr = "jj git remote rename";
         jrs = "jj git remote set-url";
         js = "jj show";
         jsp = "jj split";

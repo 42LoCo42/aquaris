@@ -8,5 +8,5 @@ General machine settings
 - =keepGenerations= (null or int): How many generations to keep
   (null to disable autocleanup). Default: 5
 
-- =secureboot= (boolean): Whether to enable Secure Boot support using [[https://github.com/nix-community/lanzaboote][lanzaboote]].
+- =secureboot= (boolean): Whether to enable Secure Boot support using [[file:lanzaboote.org][lanzaboote]].
   Default: true
