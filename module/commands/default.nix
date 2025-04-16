@@ -14,10 +14,14 @@ let
 
   sys = pkgs.writeShellApplication {
     name = "sys";
+
     runtimeInputs = with pkgs; [
+      diffutils
+      jq
       nix-output-monitor
       nvd
     ];
+
     text = aquaris.lib.subsT ./sys.sh {
       inherit (aquaris) name;
       keepGenerations = if keepGenerations == null then "" else ''

@@ -25,7 +25,7 @@ in
         mkdir = "mkdir -pv";
         rmdir = "rmdir -pv";
         switch = "sys switch";
-        yay = "sys update build switch";
+        yay = "sys update switch";
       };
 
       sessionVariables = {
