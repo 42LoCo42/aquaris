@@ -15,23 +15,27 @@ let
     str
     submodule
     ;
+
+  subsFunc = { text, subs ? { } }:
+    let
+      pairs = mapAttrsToList (k: v: { inherit k v; }) subs;
+      srcs = map (i: "@${i.k}@") pairs;
+      dsts = map (i: toString i.v) pairs;
+    in
+    builtins.replaceStrings srcs dsts text;
 in
 rec {
   inherit (flake-utils.lib) eachDefaultSystem;
 
   merge = builtins.foldl' recursiveUpdate { };
 
-  subsF = { file, func, subs ? { } }:
-    let
-      pairs = mapAttrsToList (k: v: { inherit k v; }) subs;
-      srcs = map (i: "@${i.k}@") pairs;
-      dsts = map (i: toString i.v) pairs;
-    in
-    pipe file [
-      builtins.readFile
-      (builtins.replaceStrings srcs dsts)
-      (func (baseNameOf file))
-    ];
+  subs = subsFunc;
+
+  subsF = { file, func, subs ? { } }: pipe file [
+    builtins.readFile
+    (text: subsFunc { inherit text subs; })
+    (func (baseNameOf file))
+  ];
 
   subsT = file: subs: subsF {
     inherit file subs;

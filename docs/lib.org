@@ -4,7 +4,12 @@ Aquaris standard library for use in modules.
 Functions:
 - =merge=: [[https://noogle.dev/f/lib/recursiveUpdate][recursiveUpdate]] folded over a list of values
 
-- =subsF=: Generalized text substitution function.
+- =subs=: Generalized text substitution function.
+  Takes the following parameters as a set:
+  - =text= (string): Text template to apply substitutions to
+  - =subs= (set of strings): Substitutions that should be applied to the template
+
+- =subsF=: Wrapper for =subs= that reads a file and passes the substituted contents to a function.
   Takes the following parameters as a set:
   - =file= (path): Path to the original file that should be read
   - =subs= (set of strings): Substitutions that should be applied to the file's content
