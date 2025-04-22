@@ -1,6 +1,7 @@
-{ lib, config, mkEnableOption, ... }:
+{ pkgs, lib, config, mkEnableOption, ... }:
 let
   inherit (lib)
+    getExe
     mkAfter
     mkIf
     mkMerge
@@ -17,6 +18,10 @@ in
     programs.jujutsu = {
       enable = true;
       settings = mkMerge [
+        {
+          ui.diff.tool = [ (getExe pkgs.difftastic) "--color=always" "$left" "$right" ];
+        }
+
         (mkIf (git.userName != null) { user.name = git.userName; })
         (mkIf (git.userEmail != null) { user.email = git.userEmail; })
 
