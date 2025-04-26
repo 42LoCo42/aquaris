@@ -44,16 +44,14 @@ let
   machineDst = "machine/${aquaris.name}";
   machineLnk = "@machine";
 
-  name2path = checked: {
-    __functor = mkOption {
-      description = "Converts a secret name to its output path";
-      type = functionTo (functionTo path);
-      readOnly = true;
-      default = _: name:
-        if checked && !(builtins.elem name cfg.all)
-        then abort "`${name}` is not a defined secret!"
-        else "${decryptDirTop}/${name}";
-    };
+  accessor = checked: mkOption {
+    type = functionTo path;
+    readOnly = true;
+    default = if !cfg.enable then _: "/dev/null" else
+    name:
+    if checked && !(builtins.elem name cfg.all)
+    then abort "`${name}` is not a defined secret!"
+    else "${decryptDirTop}/${name}";
   };
 
   ruleCfg = pipe cfg.rules [
@@ -65,84 +63,87 @@ let
   ];
 in
 {
-  options.aquaris.secret = name2path true;
-  options.aquaris.secret' = name2path false;
+  options.aquaris = {
+    secret = accessor true;
+    secret' = accessor false;
 
-  options.aquaris.secrets = {
-    enable = mkOption {
-      description = "Enable the secrets management module";
-      type = bool;
-      default = true;
-    };
+    secrets = {
+      enable = mkOption {
+        description = "Enable the secrets management module";
+        type = bool;
+        default = true;
+      };
 
-    pub = mkOption {
-      description = ''
-        Public key of this machine.
-        If unspecified, will be read using IFD from the structure file.
-      '';
-      type = str;
-      default = structure.machine.${aquaris.name}.":key";
-    };
+      pub = mkOption {
+        description = ''
+          Public key of this machine.
+          If unspecified, will be read using IFD from the structure file.
+        '';
+        type = str;
+        default = if !cfg.enable then "" else structure.machine.${aquaris.name}.":key";
+      };
 
-    key = mkOption {
-      description = "Path to the key for decrypting secrets.";
-      type = path;
-      default = "${config.aquaris.persist.root}/var/lib/machine.key";
-    };
+      key = mkOption {
+        description = "Path to the key for decrypting secrets.";
+        type = path;
+        default = "${config.aquaris.persist.root}/var/lib/machine.key";
+      };
 
-    directory = mkOption {
-      description = ''
-        Secrets output directory
-        (actual directory will be <this>.d/<sha56 of sesi.yaml>)
-      '';
-      type = path;
-      default = "/run/secrets";
-    };
+      directory = mkOption {
+        description = ''
+          Secrets output directory
+          (actual directory will be <this>.d/<sha56 of sesi.yaml>)
+        '';
+        type = path;
+        default = "/run/secrets";
+      };
 
-    rules = mkOption {
-      description = "Custom access rules for secrets";
-      type = attrsOf (submodule {
-        options = {
-          user = mkOption {
-            description = "User of the secret";
-            type = str;
-            default = "root";
+      rules = mkOption {
+        description = "Custom access rules for secrets";
+        type = attrsOf (submodule {
+          options = {
+            user = mkOption {
+              description = "User of the secret";
+              type = str;
+              default = "root";
+            };
+
+            group = mkOption {
+              description = "Group of the secret";
+              type = str;
+              default = "root";
+            };
+
+            mode = mkOption {
+              description = "Access mode of the secret";
+              type = str;
+              default = "0400";
+            };
           };
+        });
+        default = { };
+      };
 
-          group = mkOption {
-            description = "Group of the secret";
-            type = str;
-            default = "root";
-          };
-
-          mode = mkOption {
-            description = "Access mode of the secret";
-            type = str;
-            default = "0400";
-          };
-        };
-      });
-      default = { };
-    };
-
-    all = mkOption {
-      description = ''
-        List of all secrets available for this machine,
-        including those aliased with `@machine`.
-      '';
-      type = listOf str;
-      readOnly = true;
-      default = pipe storageFile [
-        builtins.readFile
-        builtins.fromJSON
-        (filterAttrs (_: x: builtins.hasAttr cfg.pub x.rcp))
-        builtins.attrNames
-        (x: pipe x [
-          (builtins.filter (hasPrefix "${machineDst}/"))
-          (map (y: "${machineLnk}${removePrefix machineDst y}"))
-          (y: x ++ y)
-        ])
-      ];
+      all = mkOption {
+        description = ''
+          List of all secrets available for this machine,
+          including those aliased with `@machine`.
+        '';
+        type = listOf str;
+        readOnly = true;
+        default = if !cfg.enable then [ ] else
+        pipe storageFile [
+          builtins.readFile
+          builtins.fromJSON
+          (filterAttrs (_: x: builtins.hasAttr cfg.pub x.rcp))
+          builtins.attrNames
+          (x: pipe x [
+            (builtins.filter (hasPrefix "${machineDst}/"))
+            (map (y: "${machineLnk}${removePrefix machineDst y}"))
+            (y: x ++ y)
+          ])
+        ];
+      };
     };
   };
 
