@@ -4,6 +4,8 @@ let
     concatMapAttrsStringSep
     defaultTo
     filterAttrs
+    getExe
+    getExe'
     mkIf
     mkMerge
     mkOption
@@ -21,6 +23,7 @@ let
     nullOr
     oneOf
     package
+    port
     str
     submodule
     ;
@@ -31,7 +34,6 @@ let
   forks = enum [ "firefox" "librewolf" ];
 
   dir = "${config.programs.${cfg.fork}.configPath}/default";
-
 
   json = (pkgs.formats.json { }).type;
   pref = oneOf [ bool int str ];
@@ -118,6 +120,32 @@ in
     };
 
     #####
+
+    captivePortal = {
+      enable = mkOption {
+        type = bool;
+        description = "Support secure captive portal logins using https://github.com/FiloSottile/captive-browser";
+        default = true;
+      };
+
+      url = mkOption {
+        type = str;
+        description = "This URL will be opened in a private window to test connectivity";
+        default = "http://neverssl.com";
+      };
+
+      getDNS = mkOption {
+        type = str;
+        description = "Command that returns the fallback DNS IP";
+        default = "${getExe' pkgs.networkmanager "nmcli"} device show | grep IP4.DNS";
+      };
+
+      port = mkOption {
+        type = port;
+        description = "Port of the SOCKS5 proxy";
+        default = 1666;
+      };
+    };
 
     settings = {
       bitwarden = mkOption {
@@ -340,6 +368,38 @@ in
           DisableMasterPasswordCreation = true;
           OfferToSaveLogins = false;
           PasswordManagerEnabled = false;
+        };
+      };
+    })
+
+    (mkIf cfg.captivePortal.enable {
+      aquaris.firefox = {
+        extraPrefs = ''
+          if (getenv("CAPTIVE_PORTAL") === "1") {
+            lockPref("network.proxy.type", 1);
+            lockPref("network.proxy.socks", "127.0.0.1");
+            lockPref("network.proxy.socks_port", ${toString cfg.captivePortal.port});
+            lockPref("network.proxy.socks5_remote_dns", true);
+          }
+        '';
+
+        policies.HttpAllowlist = [ cfg.captivePortal.url ];
+      };
+
+      home.packages = with pkgs; [ captive-browser ];
+
+      xdg = {
+        configFile."captive-browser.toml".text = ''
+          browser = "env CAPTIVE_PORTAL=1 ${getExe config.programs.${cfg.fork}.finalPackage} --private-window ${cfg.captivePortal.url}"
+          dhcp-dns = "${cfg.captivePortal.getDNS}"
+          socks5-addr = "127.0.0.1:${toString cfg.captivePortal.port}"
+        '';
+
+        desktopEntries.captive-portal = {
+          name = "Captive Portal Login";
+          icon = cfg.fork;
+          exec = getExe' pkgs.captive-browser "captive-browser";
+          terminal = true;
         };
       };
     })

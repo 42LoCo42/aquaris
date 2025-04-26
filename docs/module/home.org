@@ -90,6 +90,13 @@ Enable Firefox with administrative configuration features.
   Contents of userChrome.css.
   Will be copied into your profile on every launch to support sync tools.
 
+- =captivePortal=: Support secure captive portal logins using [[https://github.com/FiloSottile/captive-browser][captive-browser]]. Options:
+  - =enable= (bool): Enable this submodule (duh). Default: true
+  - =url= (string): This URL will be opened in a private window to test connectivity. Default: http://neverssl.com
+  - =getDNS= (string): Command that returns the fallback DNS IP.
+    Default: =nmcli device show | grep IP4.DNS=
+  - =port=: Port of the SOCKS5 proxy. Default: 1666
+
 - =settings=: Various configuration templates
   - =bitwarden= (boolean): Use Bitwarden instead of the builtin password manager. Default: true
   - =harden= (boolean): Configures a bunch of security-related settings. Default: true
