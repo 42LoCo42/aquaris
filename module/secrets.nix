@@ -2,6 +2,7 @@
 let
   inherit (lib)
     concatLines
+    filterAttrs
     flip
     getExe
     hasPrefix
@@ -27,6 +28,14 @@ let
 
   storageFile = builtins.path { path = "${self.cfgDir}/sesi.json"; };
   structureFile = builtins.path { path = "${self.cfgDir}/sesi.yaml"; };
+
+  structure = pipe structureFile [
+    (x: (pkgs.runCommand "structure" {
+      nativeBuildInputs = with pkgs; [ yq ];
+    }) "yq < ${x} > $out")
+    builtins.readFile
+    builtins.fromJSON
+  ];
 
   decryptDirTop = cfg.directory;
   decryptDirMnt = "${dirOf decryptDirTop}/.${baseNameOf decryptDirTop}.d";
@@ -64,6 +73,15 @@ in
       description = "Enable the secrets management module";
       type = bool;
       default = true;
+    };
+
+    pub = mkOption {
+      description = ''
+        Public key of this machine.
+        If unspecified, will be read using IFD from the structure file.
+      '';
+      type = str;
+      default = structure.machine.${aquaris.name}.":key";
     };
 
     key = mkOption {
@@ -109,14 +127,15 @@ in
 
     all = mkOption {
       description = ''
-        List of all stored secrets together with the current machine alias.
-        This config may not be able to decrypt all of these secrets!
+        List of all secrets available for this machine,
+        including those aliased with `@machine`.
       '';
       type = listOf str;
       readOnly = true;
       default = pipe storageFile [
         builtins.readFile
         builtins.fromJSON
+        (filterAttrs (_: x: builtins.hasAttr cfg.pub x.rcp))
         builtins.attrNames
         (x: pipe x [
           (builtins.filter (hasPrefix "${machineDst}/"))

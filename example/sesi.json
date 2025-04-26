@@ -1,4 +1,10 @@
 {
+	"admin/alice/foo": {
+		"enc": "FwMGG3CN1G0QoGdabtw4hY18_OqC57ZHFAW9c0H_O2m_VQYwDKBBdfaMFbY",
+		"rcp": {
+			"k2QPmktD7CmwJTXtvGfYxTfmoT_2dgrWb4oLykzBf0s": "sIXQRyDnW3Qi2IoKLu5bvY8ePN3gMN-nYmGH4ojlX3m2fxEgXlKojHD5Q5-Z7y4ukn5LZkhmFz2ZNhXrGIo491PqPBg_ce3b8mSH_MKllI8"
+		}
+	},
 	"machine/example/key": {
 		"enc": "83hQaqabMd95_KehKRZqTY_1r90n8PRSwB9xjhIcVzQLyW1g_IntGWCtGDh7zqUevUPS3LTWFHzVfjKwRDPGALemCCREy8PyBR15b7xElERzolKNVRvUeb8IZMnU8ZXnGMBBTSN6pQdf6GlZGaHjE6QCgrkIzKnE3YgOsgbDPJecKYGei_L2fNlOK1h1Yw9fe5SBH4phrhsNX6s3YwyBl4dqTbAqcrMy322mgevfy-qo5Rk_YPeh4PEJr9xvX9PWm35nPkXEoPpjaebbEOp9bbRbBAj8LFlWFZW7YFtqNqUFqYgUVA",
 		"rcp": {

@@ -4,6 +4,8 @@ admin:
     :import:
       - machine/example
 
+    foo:
+
 machine:
   example:
     :key: NdumEsBB6oEsvb3vSKlgTpxSf4EpDYbjreQDX9VrokA
