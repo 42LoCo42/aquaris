@@ -390,7 +390,11 @@ in
 
       xdg = {
         configFile."captive-browser.toml".text = ''
-          browser = "env CAPTIVE_PORTAL=1 ${getExe config.programs.${cfg.fork}.finalPackage} --private-window ${cfg.captivePortal.url}"
+          browser = "${builtins.concatStringsSep " " [
+            "env CAPTIVE_PORTAL=1"
+            (getExe config.programs.${cfg.fork}.finalPackage)
+            "--private-window ${cfg.captivePortal.url}"
+          ]}"
           dhcp-dns = "${cfg.captivePortal.getDNS}"
           socks5-addr = "127.0.0.1:${toString cfg.captivePortal.port}"
         '';

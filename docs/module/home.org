@@ -65,7 +65,6 @@ Enable Firefox with administrative configuration features.
   You can find the ID by using [[https://github.com/mkaply/queryamoid/releases/download/v0.1/query_amo_addon_id-0.1-fx.xpi][this helper]] on the store page of any extension.
   Most likely you won't need to specify the download URL too,
   since the default chosen by this module should work just fine.
-
   Options:
   - =url= (string): Where to download the extension =.xpi= from.
     Default: =https://addons.mozilla.org/firefox/downloads/latest/${name}/latest.xpi=
