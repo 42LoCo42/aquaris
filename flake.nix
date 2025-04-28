@@ -12,8 +12,6 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
-      inherit (nixpkgs.lib.fileset) difference toSource unions;
-
       lib = import ./lib inputs;
 
       out = {
@@ -22,14 +20,7 @@
 
         templates.default = {
           description = "Aquaris example config template";
-
-          path = (toSource {
-            root = ./example;
-            fileset = difference ./example (unions [
-              ./example/keys/.gitignore
-              ./example/keys/example.key
-            ]);
-          }).outPath;
+          path = ./example;
         };
       } // import ./packages lib nixpkgs;
 

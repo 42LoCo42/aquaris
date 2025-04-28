@@ -8,7 +8,7 @@ admin:
 
 machine:
   example:
-    :key: NdumEsBB6oEsvb3vSKlgTpxSf4EpDYbjreQDX9VrokA
+    :key: nvebU7_nZJL-LZsV_rzNwPNpsoIKdJv_RzhZCuWtn14
     :import:
       - user/alice
 

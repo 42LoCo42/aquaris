@@ -1,10 +1,8 @@
 * Obtain the tools
-We need
-[[https://github.com/FiloSottile/age][age]] for key generation,
-[[https://github.com/42LoCo42/sillysecrets][sillysecrets]] for secret management
+We need [[https://github.com/42LoCo42/sillysecrets][sillysecrets]] for secret management
 and optionally the [[file:../packages/deploy/][Aquaris Deployer]] for remote installation.
 #+begin_src shell
-  nix shell nixpkgs#age github:42LoCo42/sillysecrets github:42LoCo42/aquaris#deploy
+  nix shell github:42LoCo42/sillysecrets github:42LoCo42/aquaris#deploy
 #+end_src
 
 * Create a configuration
@@ -22,7 +20,7 @@ adapt it from [[file:../example/machines/example/default.nix][the example]].
 Generate the required ID and key:
 #+begin_src shell
   dbus-uuidgen # machine ID -> put in your machine file
-  age-keygen -o "keys/<machineName>.key" # prints public key -> copy for later
+  sesi keygen "keys/<machineName>.key" # prints public key -> copy for later
 #+end_src
 
 Adapt the filesystem configuration and other stuff to your requirements.
@@ -34,11 +32,15 @@ Secrets are stored in the =sesi.yaml= file at the toplevel of your config.
 I recommend creating separate admin, machine and user groups,
 where admins contain the machines for which they should be able to define secrets
 and machines contain their user accounts (whose groups therefore don't need a key).
+As for public keys:
+- admins could use their respective SSH keys, since sillysecrets loads them automatically:
+  =sesi public ~/.ssh/id_ed25519=
+- machines use the public keys printed by =sesi keygen= in the "[[#create-a-machine][Create a machine]]" step
 
 Don't forget to remove the example secrets from the file!
 
 * Create a user
-The [[file:../example/flake.nix#L17][global config]] is a good place to put
+The [[file:../example/flake.nix#L23][global config]] is a good place to put
 user accounts shared over multiple machines
 (and was originally /only/ designed for this).
 For one-off accounts, you can skip it and
@@ -48,11 +50,18 @@ In any case, make sure you have at least one admin on your machine.
 I like to set the =admin= option locally, but if you want,
 you can put in in your global user config too.
 
-Finally, set the user's password:
+Create an entry for the user's password in your secrets storage:
+#+begin_src yaml
+  user:
+    <userName>:
+      password:
+#+end_src
+
+Finally, set the password:
 #+begin_src shell
   mkpasswd -S "$(mkpasswd)" # twice for verification
   # copy the resulting hash...
-  sesi edit user:<userName>.password # and paste it
+  sesi edit user/<userName>/password # and paste it
 #+end_src
 
 * Installation
@@ -72,7 +81,7 @@ make sure to also copy =keys/<machineName>.key= somewhere!
 
 Run the installer:
 #+begin_src shell
-  nix run .#machineName -f -m -i # format, mount, install
+  nix run ".#machineName" -- -f -m -i # format, mount, install
 #+end_src
 You can pass the option =-k <path>= to specify where the machine key is.
 By default, =keys/<machineName>.key= is used relative to where the installer runs.
@@ -107,7 +116,7 @@ After booting into the kexec environment,
 =--show-hwconf= prints the hardware configuration and pauses the deployment,
 allowing you to add it to your local configuration.
 
-You can skip certain steps of the installation process using.
+You can skip certain steps of the installation process using
 =--dont-format=, =--dont-mount= and =--dont-reboot=.
 
 Everything is built on the target in order to support other CPU architectures.
