@@ -33,10 +33,7 @@ in
         path = "${cache}/history";
       };
 
-      initExtra = ''
-        # bindkey "" insert-cycledright
-        # bindkey "" insert-cycledleft
-
+      initContent = ''
         bindkey "[1;3C" forward-word
         bindkey "[1;3D" backward-word
 
