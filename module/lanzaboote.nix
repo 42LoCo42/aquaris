@@ -92,15 +92,18 @@ in
         preCommands = mkMerge [
           ''
             ##### migrate #####
-            old="/etc/secureboot"
             new="${cfg.pkiBundle}"
-            if [ -e "$old" ]; then
-              echo "old secureboot keys exist at $old!" >&2
-              if [ ! -e "$new" ]; then
-                echo "migrating old keys from $old to $new..." >&2
-                mv -v "$old" "$new"
+            for old in {,${root}}/etc/secureboot; do
+              if [ -e "$old" ]; then
+                echo "old secureboot keys exist at $old!" >&2
+                if [ ! -e "$new" ]; then
+                  echo "migrating old keys from $old to $new..." >&2
+                  mv -v "$old" "$new"
+                else
+                  echo "not migrating $old, since keys already exist at $new" >&2
+                fi
               fi
-            fi
+            done
           ''
 
           (mkIf cfg.createKeys ''
