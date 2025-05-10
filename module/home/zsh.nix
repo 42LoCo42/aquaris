@@ -33,7 +33,8 @@ in
         path = "${cache}/history";
       };
 
-      initContent = ''
+      ${if builtins.hasAttr "initContent" config.programs.zsh
+      then "initContent" else "initExtra"} = ''
         bindkey "[1;3C" forward-word
         bindkey "[1;3D" backward-word
 
