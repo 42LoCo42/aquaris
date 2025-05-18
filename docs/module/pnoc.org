@@ -1,0 +1,61 @@
+* [[file:~/dev/nix/aquaris/module/pnoc.nix][virtualisation.pnoc.<name>]]
+Pure NixOS containers - Podman, but without container images!
+
+Instead, all required store paths are just bind-mounted into the container.
+Every container is also run as a user and group with the same name as that container
+in order to increase safety (no =root= access)
+and ensure that container processes *only* have access to configured volumes
+instead of the whole filesystem (no accidental data storage in =/=).
+
+** Options
+- =cmd= (list of string): The command to be executed inside the container.
+
+- =environment= (set of string): Environment variables.
+  Default: =SSL_CERT_FILE= is set such that TLS connections can be established.
+
+- =environmentFiles= (list of path): Files from which extra environment variables
+  (typically secret ones) should be loaded from.
+
+- =extraOptions= (list of string): Extra options to be passed to =podman run=.
+  Note that these get shell-escaped by the underlying =virtualisation.oci-containers= module.
+
+- =ports= (list of string): Port mappings of the container, in standard Podman syntax.
+
+- =volumes= (list of string): Volumes of the container, in standard Podman syntax.
+
+- =workdir= (null or string): Initial working directory of the spawned command.
+
+** Special options
+
+- =extraOptionsRaw= (list of string): Like =extraOptions=, but *without* escaping.
+
+- =secrets= (list of string): List of =<host path>:<container path>= of secrets to mount.
+  Files on the host do *not* need to be owned by the container user;
+  instead temporary copies are created & chown'ed to the container user automatically
+  using the systemd [[https://systemd.io/CREDENTIALS/][credentials]] mechanism.
+
+  Note that at least the container path must be absolute, i.e. begin with =/=.
+  If the *host* path is *not* absolute, it is used as the name of a
+  [[file:secrets.org][global secret]] and the corresponding path (usually =/run/secrets/<name>=) is resolved.
+
+** Example
+#+begin_src nix
+  { pkgs, lib, config, ... }: {
+    virtualisation.pnoc.attic = {
+      cmd = [ (lib.getExe pkgs.attic-server) ];
+
+      environmentFiles = [ (config.aquaris.secret "@machine/attic") ];
+
+      volumes = [
+        "attic:/data"
+        "${./config.toml}:/.config/attic/server.toml:ro"
+      ];
+    };
+  }
+#+end_src
+
+Or check out [[https://github.com/42LoCo42/.dotfiles][my dotfiles]],
+specifically the service configuration directories
+for my [[https://github.com/42LoCo42/.dotfiles/tree/nixos/machines/bunny/services][main]] and [[https://github.com/42LoCo42/.dotfiles/tree/nixos/machines/laniakea/services][home]] server!
+Many of these services are managed with PNOC
+and you can find a bunch of different usage examples there.

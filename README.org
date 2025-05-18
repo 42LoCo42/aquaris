@@ -35,6 +35,7 @@ or grant them access to their own.
   - [[file:docs/module/lanzaboote.org][Secure Boot using Lanzaboote]]
   - [[file:docs/module/machine.org][General machine settings]]
   - [[file:docs/module/persist.org][root-on-tmpfs and persistency]]
+  - [[file:docs/module/pnoc.org][Container management]]
   - [[file:docs/module/secrets.org][Secrets management]]
   - [[file:docs/module/users.org][User management]]
 
