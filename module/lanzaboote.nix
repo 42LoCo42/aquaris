@@ -19,7 +19,10 @@ let
   inherit (config.aquaris.persist) root;
 
   # cached in obscura
-  lanza = builtins.getFlake "github:42LoCo42/lanzaboote/4bcbae99c48270ccd6fe8f09a5aca4b32bb0a76a";
+  lanza = import (builtins.fetchTarball {
+    url = "https://github.com/42LoCo42/lanzaboote/tarball/4bcbae99c48270ccd6fe8f09a5aca4b32bb0a76a";
+    sha256 = "0yf8sjaq0ra8083rywwmak3prvbfwya9lhlqi3bgw000xhpi86h6";
+  });
 
   cfg = config.boot.lanzaboote;
 
