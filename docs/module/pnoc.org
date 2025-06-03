@@ -1,4 +1,4 @@
-* [[file:~/dev/nix/aquaris/module/pnoc.nix][virtualisation.pnoc.<name>]]
+* [[file:../..//module/pnoc.nix][virtualisation.pnoc.<name>]]
 Pure NixOS containers - Podman, but without container images!
 
 Instead, all required store paths are just bind-mounted into the container.
