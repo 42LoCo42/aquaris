@@ -22,9 +22,11 @@ build() {
 
 	log "Checking binary cache configuration"
 	active="$(grep -oP 'substituters = \K.*' /etc/nix/nix.conf | tr ' ' '\n' | sort)"
-	wanted="$(nix eval --raw --apply builtins.toJSON \
-		"$cfg#nixosConfigurations.@name@.config.nix.settings.substituters" |
-		jq -r '.[]' | sort)"
+
+	config="$(nix eval "$cfg#nixosConfigurations.@name@.config.nix.settings" --raw \
+		--apply 'x: builtins.toJSON { inherit (x) substituters trusted-public-keys; }')"
+
+	wanted="$(jq -r '.substituters[]' <<<"$config" | sort)"
 
 	if [ "$active" != "$wanted" ]; then
 		warn "Binary cache configuration has changed"
@@ -34,9 +36,7 @@ build() {
 			<(echo "$active") <(echo "$wanted") |
 			tail -n+4 | sed 's|^|  |' || :
 
-		pubkeys="$(nix eval --raw --apply builtins.toJSON \
-			"$cfg#nixosConfigurations.@name@.config.nix.settings.trusted-public-keys" |
-			jq -r 'join(" ")')"
+		pubkeys="$(jq -r '."trusted-public-keys" | join(" ")' <<<"$config")"
 
 		warn "Executing build as root"
 		sudo="sudo"
