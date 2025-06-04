@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-[ -n "${IN_NIX_SHELL+x}" ] && exit
-
 IFS=: read -ra path <<<"$PATH"
 
 getExtraPkgNames() {
