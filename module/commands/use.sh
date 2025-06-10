@@ -10,5 +10,9 @@ for arg in "$@"; do
 	args+=("$arg")
 done
 
-export IN_USE_SHELL=1
+if [ -z "${IN_USE_SHELL+x}" ]; then
+	export IN_USE_SHELL=1
+	export PATH="/USE_SHELL_DELIM:$PATH"
+fi
+
 exec nix shell -L "${args[@]}"
