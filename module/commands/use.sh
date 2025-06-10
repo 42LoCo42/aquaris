@@ -14,6 +14,7 @@ done
 
 # 2. resolve package outputs
 resolve() {
+	set -eEuo pipefail
 	# shellcheck disable=SC2016
 	# --apply is not a shell expression
 	nix eval --quiet --raw "$1" \
@@ -21,11 +22,21 @@ resolve() {
 		jq -r '.[]'
 }
 export -f resolve
-readarray -t outputs < \
-	<(parallel --will-cite resolve ::: "${packages[@]}")
+
+status="$(mktemp)"
+readarray -t outputs < <(parallel --will-cite \
+	resolve ::: "${packages[@]}" && echo ok >"$status")
+
+if [ -s "$status" ]; then
+	rm -f "$status"
+else
+	rm -f "$status"
+	exit 1
+fi
 
 # 3. realise missing paths
 realise() {
+	set -eEuo pipefail
 	if [ ! -e "$1" ]; then
 		nix-store --realise "$1"
 	fi
