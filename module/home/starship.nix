@@ -11,8 +11,8 @@ in
       enable = true;
       settings = {
         custom.usepkgs = {
-          command = ''echo "[m[1m$USE_SHELL_PKGS[m"'';
-          when = ''[ -n "$USE_SHELL_PKGS" ]'';
+          command = ''echo "[m[1m$AQUARIS_USE_PKGS[m"'';
+          when = ''[ -n "$AQUARIS_USE_PKGS" ]'';
         };
         character = {
           success_symbol = "[λ](bold green)";

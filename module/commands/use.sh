@@ -46,8 +46,8 @@ parallel --will-cite realise ::: "${outputs[@]}"
 
 # 4. export friendly package list
 out="$(for i in "${outputs[@]}"; do tail -c+45 <<<"$i"; done | paste -sd ' ')"
-export USE_SHELL_PKGS="${USE_SHELL_PKGS+$USE_SHELL_PKGS }$out"
+export AQUARIS_USE_PKGS="${AQUARIS_USE_PKGS+$AQUARIS_USE_PKGS }$out"
 
 # 5. launch shell
-export USE_SHELL_SHELL="${USE_SHELL_SHELL-$SHELL}"
-exec nom-shell --command "$USE_SHELL_SHELL" --packages pkg-config "${outputs[@]}"
+export AQUARIS_USE_SHELL="${AQUARIS_USE_SHELL-$SHELL}"
+exec nom-shell --command "$AQUARIS_USE_SHELL" --packages pkg-config "${outputs[@]}"
