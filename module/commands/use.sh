@@ -50,4 +50,4 @@ export USE_SHELL_PKGS="${USE_SHELL_PKGS+$USE_SHELL_PKGS }$out"
 
 # 5. launch shell
 export USE_SHELL_SHELL="${USE_SHELL_SHELL-$SHELL}"
-exec nom-shell --command "$USE_SHELL_SHELL" --packages "${outputs[@]}"
+exec nom-shell --command "$USE_SHELL_SHELL" --packages pkg-config "${outputs[@]}"
