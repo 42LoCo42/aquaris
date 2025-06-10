@@ -19,7 +19,12 @@ in
       enable = true;
       settings = mkMerge [
         {
-          ui.diff.tool = [ (getExe pkgs.difftastic) "--color=always" "$left" "$right" ];
+          ui.diff-formatter = [
+            (getExe pkgs.difftastic)
+            "--color=always"
+            "$left"
+            "$right"
+          ];
         }
 
         (mkIf (git.userName != null) { user.name = git.userName; })
@@ -61,6 +66,10 @@ in
         jdg = "jj diff --git";
         jdi = "jj diff";
         je = "jj edit";
+        jfa = "jj file annotate";
+        jfl = "jj file list";
+        jfs = "jj file show";
+        jfu = "jj file untrack";
         ji = "jj git init --colocate";
         jl = "jj log -r ::";
         jn = "jj new";
@@ -81,8 +90,7 @@ in
         jsp = "jj split";
         jsq = "jj squash";
         jsqi = "jj squash -i";
-        jut = "jj file untrack";
-        jun = "jj undo";
+        ju = "jj undo";
       };
     };
   };
