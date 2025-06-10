@@ -15,4 +15,4 @@ if [ -z "${IN_USE_SHELL+x}" ]; then
 	export PATH="/USE_SHELL_DELIM:$PATH"
 fi
 
-exec nix shell -L "${args[@]}"
+exec nom shell "${args[@]}"

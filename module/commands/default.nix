@@ -5,6 +5,10 @@ let
   use = pkgs.writeShellApplication {
     name = "use";
     text = builtins.readFile ./use.sh;
+
+    runtimeInputs = with pkgs; [
+      nix-output-monitor
+    ];
   };
 
   _usepkgs = pkgs.writeShellApplication {
