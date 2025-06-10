@@ -11,8 +11,8 @@ in
       enable = true;
       settings = {
         custom.usepkgs = {
-          command = "_usepkgs";
-          when = ''[ -n "$IN_USE_SHELL" ]'';
+          command = ''echo "[m[1m$USE_SHELL_PKGS[m"'';
+          when = ''[ -n "$USE_SHELL_PKGS" ]'';
         };
         character = {
           success_symbol = "[λ](bold green)";

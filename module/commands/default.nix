@@ -2,20 +2,6 @@
 let
   inherit (config.aquaris.machine) keepGenerations;
 
-  use = pkgs.writeShellApplication {
-    name = "use";
-    text = builtins.readFile ./use.sh;
-
-    runtimeInputs = with pkgs; [
-      nix-output-monitor
-    ];
-  };
-
-  _usepkgs = pkgs.writeShellApplication {
-    name = "_usepkgs";
-    text = builtins.readFile ./_usepkgs.sh;
-  };
-
   sys = pkgs.writeShellApplication {
     name = "sys";
 
@@ -35,5 +21,16 @@ let
       '';
     };
   };
+
+  use = pkgs.writeShellApplication {
+    name = "use";
+    text = builtins.readFile ./use.sh;
+
+    runtimeInputs = with pkgs; [
+      jq
+      nix-output-monitor
+      parallel
+    ];
+  };
 in
-{ environment.systemPackages = [ sys use _usepkgs ]; }
+{ environment.systemPackages = [ sys use ]; }

@@ -1,18 +1,41 @@
 #!/usr/bin/env bash
-args=()
+set -eEuo pipefail
+
+# 1. prepend nixpkgs to arguments that are only package names
 nixpkgs="$(realpath "/etc/nix/channel")"
-for arg in "$@"; do
-	# prepend nixpkgs if the argument is only a package name
-	grep -q '^-\|[#:]' <<<"$arg" || {
-		arg="$nixpkgs#$arg"
-		echo "Using $arg"
+packages=()
+for i in "$@"; do
+	grep -q '^-\|[#:]' <<<"$i" || {
+		i="$nixpkgs#$i"
+		echo "Using $i"
 	}
-	args+=("$arg")
+	packages+=("$i")
 done
 
-if [ -z "${IN_USE_SHELL+x}" ]; then
-	export IN_USE_SHELL=1
-	export PATH="/USE_SHELL_DELIM:$PATH"
-fi
+# 2. resolve package outputs
+resolve() {
+	# shellcheck disable=SC2016
+	# --apply is not a shell expression
+	nix eval --quiet --raw "$1" \
+		--apply 'x: builtins.toJSON (map (o: x.${o}) x.outputs)' |
+		jq -r '.[]'
+}
+export -f resolve
+readarray -t outputs < \
+	<(parallel --will-cite resolve ::: "${packages[@]}")
 
-exec nom shell "${args[@]}"
+# 3. realise missing paths
+realise() {
+	if [ ! -e "$1" ]; then
+		nix-store --realise "$1"
+	fi
+}
+export -f realise
+parallel --will-cite realise ::: "${outputs[@]}"
+
+# 4. export friendly package list
+out="$(for i in "${outputs[@]}"; do tail -c+45 <<<"$i"; done | paste -sd ' ')"
+export USE_SHELL_PKGS="${USE_SHELL_PKGS+$USE_SHELL_PKGS }$out"
+
+# 5. launch shell
+exec nom-shell --command "$SHELL" --packages "${outputs[@]}"
