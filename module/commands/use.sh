@@ -5,10 +5,8 @@ set -eEuo pipefail
 nixpkgs="$(realpath "/etc/nix/channel")"
 packages=()
 for i in "$@"; do
-	grep -q '^-\|[#:]' <<<"$i" || {
-		i="$nixpkgs#$i"
-		echo "Using $i"
-	}
+	grep -q '^-\|[#:]' <<<"$i" || i="$nixpkgs#$i"
+	echo "Using $i"
 	packages+=("$i")
 done
 
