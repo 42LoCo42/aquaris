@@ -38,4 +38,5 @@ out="$(for i in "${outputs[@]}"; do tail -c+45 <<<"$i"; done | paste -sd ' ')"
 export USE_SHELL_PKGS="${USE_SHELL_PKGS+$USE_SHELL_PKGS }$out"
 
 # 5. launch shell
-exec nom-shell --command "$SHELL" --packages "${outputs[@]}"
+export USE_SHELL_SHELL="${USE_SHELL_SHELL-$SHELL}"
+exec nom-shell --command "$USE_SHELL_SHELL" --packages "${outputs[@]}"
