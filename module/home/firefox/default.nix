@@ -6,6 +6,7 @@ let
     filterAttrs
     getExe
     getExe'
+    mkAfter
     mkIf
     mkMerge
     mkOption
@@ -33,7 +34,7 @@ let
 
   forks = enum [ "firefox" "librewolf" ];
 
-  dir = "${config.programs.${cfg.fork}.configPath}/default";
+  dir = "${config.programs.${cfg.fork}.profilesPath}/default";
 
   json = (pkgs.formats.json { }).type;
   pref = oneOf [ bool int str ];
@@ -59,6 +60,18 @@ in
     };
 
     #####
+
+    preRun = mkOption {
+      type = lines;
+      description = "Shell commands to run before Firefox starts";
+      default = "";
+    };
+
+    postRun = mkOption {
+      type = lines;
+      description = "Shell commands to run after Firefox has stopped";
+      default = "";
+    };
 
     extensions = mkOption {
       type = attrsOf (submodule ({ name, ... }: {
@@ -205,6 +218,14 @@ in
   config = mkIf cfg.enable (mkMerge [
     {
       aquaris.firefox = {
+        # copy userChrome.css to the current user's profile
+        preRun = mkAfter ''
+          file="$FIREFOX_PROFILE_DIR/chrome/userChrome.css"
+          mkdir -p "$(dirname "$file")"
+          rm -f "$file"
+          cp ${pkgs.writeText "userChrome.css" cfg.userChrome} "$file"
+        '';
+
         extraPrefs = mkMerge [
           ((concatMapAttrsStringSep "\n" (k: v:
             if v == null then "clearPref(${builtins.toJSON k});" else
@@ -333,16 +354,20 @@ in
             file="$out/bin/${cfg.package.meta.mainProgram}"
             head -n-1 "$file" > tmp
 
-            # on launch: copy userChrome.css to the current user's profile
+            # build the launcher
+
             cat <<\EOF >> tmp
-            file="$HOME/${config.programs.${cfg.fork}.configPath}/default/chrome/userChrome.css"
-            mkdir -p "$(dirname "$file")"
-            rm -f "$file"
-            cp ${pkgs.writeText "userChrome.css" cfg.userChrome} "$file"
+            export FIREFOX_PROFILE_DIR="$HOME/${dir}/"
+            ${cfg.preRun}
             EOF
 
-            # finalize the launcher
-            tail -n 1 "$file" >> tmp
+            # this is exec; wrap it in a subshell to allow postRun to happen
+            echo "($(tail -n 1 "$file"))" >> tmp
+
+            cat <<\EOF >> tmp
+            ${cfg.postRun}
+            EOF
+
             mv tmp "$file"
             chmod +x "$file"
 

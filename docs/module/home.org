@@ -61,6 +61,12 @@ Enable Firefox with administrative configuration features.
 
 - =package=: The Firefox package to use. Default: =pkgs.${fork}=
 
+- =preRun= (lines): Shell commands to run before Firefox starts.
+  Default: userChrome.css setup logic (see below)
+
+- =postRun= (lines): Shell commands to run after Firefox has stopped.
+  Default: empty
+
 - =extensions=: Attrset mapping of extension ID to options.
   You can find the ID by using [[https://github.com/mkaply/queryamoid/releases/download/v0.1/query_amo_addon_id-0.1-fx.xpi][this helper]] on the store page of any extension.
   Most likely you won't need to specify the download URL too,
