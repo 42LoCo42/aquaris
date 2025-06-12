@@ -1,4 +1,4 @@
-{ pkgs, lib, config, ... }:
+{ self, pkgs, lib, config, ... }:
 let
   inherit (lib)
     getExe
@@ -18,12 +18,6 @@ let
 
   inherit (config.aquaris.persist) root;
 
-  # cached in obscura
-  lanza = import (builtins.fetchTarball {
-    url = "https://github.com/42LoCo42/lanzaboote/tarball/4bcbae99c48270ccd6fe8f09a5aca4b32bb0a76a";
-    sha256 = "0yf8sjaq0ra8083rywwmak3prvbfwya9lhlqi3bgw000xhpi86h6";
-  });
-
   cfg = config.boot.lanzaboote;
 
   sbctl-conf = pkgs.writeText "sbctl.conf" ''
@@ -34,7 +28,7 @@ let
   '';
 in
 {
-  imports = [ "${lanza}/nix/modules/lanzaboote.nix" ];
+  imports = [ self.inputs.obscura.nixosModules.lanzaboote ];
 
   options.boot.lanzaboote = {
     createKeys = mkOption {
@@ -128,7 +122,7 @@ in
           text = ''
             shift # get rid of "install" positional argument
             ${cfg.preCommands}
-            ${getExe lanza.packages.${pkgs.system}.lzbt} \
+            ${getExe self.inputs.obscura.packages.${pkgs.system}.lanzaboote} \
               install ${toString cfg.extraArgs} "$@"
             ${cfg.postCommands}
           '';
