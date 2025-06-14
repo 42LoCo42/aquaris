@@ -1,6 +1,7 @@
 { config, lib, osConfig, ... }:
 let
   inherit (lib)
+    escapeShellArg
     filterAttrs
     mapAttrsToList
     mkIf
@@ -20,7 +21,7 @@ let
     if file == "/" || file == "." then [ ]
     else allParents (dirOf file) ++ [ file ];
 
-  mkIn = pfx: map (x: "d ${pfx}/${x} 0755 - - - -");
+  mkIn = pfx: map (x: "d ${escapeShellArg "${pfx}/${x}"} 0755 - - - -");
 
   mkEntry = d: x:
     let
@@ -36,8 +37,8 @@ let
       ];
 
       final = let hd = "${home}/${d}"; in [
-        "z ${root}/${hd} ${x.m} - - - - "
-        "L+ ${hd} - - - - ${root}/${hd}"
+        "z  ${escapeShellArg "${root}/${hd}"} ${x.m} - - - -            "
+        "L+ ${escapeShellArg hd}              -      - - - ${root}/${hd}"
       ];
     in
     persistDirs ++ targetDirs ++ final;

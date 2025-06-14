@@ -1,6 +1,14 @@
 { config, lib, ... }:
 let
-  inherit (lib) filterAttrs mapAttrsToList mkIf mkMerge mkOption pipe;
+  inherit (lib)
+    escapeShellArg
+    filterAttrs
+    mapAttrsToList
+    mkIf
+    mkMerge
+    mkOption
+    pipe
+    ;
   inherit (lib.types) attrsOf bool path str submodule;
 
   cfg = config.aquaris.persist;
@@ -117,12 +125,12 @@ in
     systemd.tmpfiles.rules =
       let
         system = mapAttrsToList
-          (d: x: "d ${cfg.root}/${d} ${x.m} ${x.u} ${x.g} - -")
+          (d: x: "d ${escapeShellArg "${cfg.root}/${d}"} ${x.m} ${x.u} ${x.g} - -")
           cfg.dirs';
 
         homes = pipe config.aquaris.users [
           (mapAttrsToList (n: _: config.users.users.${n}))
-          (map (x: "d ${cfg.root}/${x.home} 0700 ${x.name} ${x.group} - -"))
+          (map (x: "d ${escapeShellArg "${cfg.root}/${x.home}"} 0700 ${x.name} ${x.group} - -"))
         ];
       in
       system ++ homes;

@@ -28,6 +28,8 @@
         mode = "0444";
       };
     };
+
+    persist.dirs."/foo bar/baz qux" = { };
   };
 
   boot.kernelParams = [ "foo=bar" ];
@@ -38,5 +40,7 @@
     aquaris.firefox = {
       enable = true;
     };
+
+    aquaris.persist."foo bar/baz qux" = { };
   }];
 }
