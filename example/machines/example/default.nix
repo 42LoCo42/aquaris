@@ -29,7 +29,7 @@
       };
     };
 
-    persist.dirs."/foo bar/baz qux" = { };
+    persist.dirs."/abc def/ghi jkl" = { };
   };
 
   boot.kernelParams = [ "foo=bar" ];
@@ -37,10 +37,15 @@
   services.zfs.autoSnapshot.enable = true;
 
   home-manager.sharedModules = [{
-    aquaris.firefox = {
-      enable = true;
-    };
+    aquaris = {
+      firefox = {
+        enable = true;
+      };
 
-    aquaris.persist."foo bar/baz qux" = { };
+      persist = {
+        ".cache/nix" = { e = false; };
+        "foo bar/baz qux" = { m = "0700"; };
+      };
+    };
   }];
 }

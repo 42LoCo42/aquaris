@@ -1,13 +1,15 @@
 { config, lib, ... }:
 let
   inherit (lib)
-    escapeShellArg
     filterAttrs
+    flatten
+    mapAttrs'
     mapAttrsToList
     mkIf
     mkMerge
     mkOption
     pipe
+    recursiveUpdate
     ;
   inherit (lib.types) attrsOf bool path str submodule;
 
@@ -59,11 +61,6 @@ in
       description = "List of persistent directories";
       type = attrsOf entry;
     };
-
-    dirs' = mkOption {
-      description = "List of ENABLED persistent directories";
-      type = attrsOf entry;
-    };
   };
 
   config = mkIf cfg.enable {
@@ -99,11 +96,10 @@ in
           "/var/lib/containers" = { };
         })
       ];
-
-      dirs' = filterAttrs (_: x: x.e) cfg.dirs;
     };
 
-    fileSystems = pipe cfg.dirs' [
+    fileSystems = pipe cfg.dirs [
+      (filterAttrs (_: x: x.e))
       (builtins.mapAttrs (d: x: {
         device = "${cfg.root}/${d}";
         options = [
@@ -122,17 +118,59 @@ in
       })
     ];
 
-    systemd.tmpfiles.rules =
-      let
-        system = mapAttrsToList
-          (d: x: "d ${escapeShellArg "${cfg.root}/${d}"} ${x.m} ${x.u} ${x.g} - -")
-          cfg.dirs';
+    systemd.tmpfiles.settings = pipe config.aquaris.users [
+      (mapAttrs' (n: _:
+        let
+          user = config.users.users.${n};
+          root = "${cfg.root}/${user.home}";
 
-        homes = pipe config.aquaris.users [
-          (mapAttrsToList (n: _: config.users.users.${n}))
-          (map (x: "d ${escapeShellArg "${cfg.root}/${x.home}"} 0700 ${x.name} ${x.group} - -"))
+          ug = x: x // {
+            user = user.name;
+            inherit (user) group;
+          };
+
+          mkEntry = d: x:
+            let
+              mkParents = file:
+                if file == "/" || file == "." then [ ]
+                else mkParents (dirOf file) ++ [ file ];
+
+              parents = mkParents (dirOf d);
+
+              mkIn = pfx: (map (x: {
+                "${pfx}/${x}".d = ug { mode = "0755"; };
+              })) parents;
+            in
+            (mkIn root) ++ (mkIn user.home) ++ [{
+              "${root}/${d}".d = ug { mode = x.m; };
+              "${user.home}/${d}"."L+".argument = "${root}/${d}";
+            }];
+        in
+        {
+          name = "aquaris-persist-user-${n}";
+          value = pipe config.home-manager.users.${n}.aquaris.persist [
+            (filterAttrs (_: x: x.e))
+            (mapAttrsToList mkEntry)
+            (x: x ++ [{
+              ${root}.d = ug { mode = "0700"; };
+            }])
+            flatten
+            (builtins.foldl' recursiveUpdate { })
+          ];
+        }))
+      (x: x // {
+        aquaris-persist-system = pipe cfg.dirs [
+          (filterAttrs (_: x: x.e))
+          (mapAttrs' (d: x: {
+            name = "${cfg.root}/${d}";
+            value.d = {
+              mode = x.m;
+              user = x.u;
+              group = x.g;
+            };
+          }))
         ];
-      in
-      system ++ homes;
+      })
+    ];
   };
 }
