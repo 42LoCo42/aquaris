@@ -1,51 +1,31 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 
-# 1. prepend nixpkgs to arguments that are only package names
+# prepend nixpkgs to arguments that are only package names
 nixpkgs="$(realpath "/etc/nix/channel")"
 packages=()
+run=nix
 for i in "$@"; do
-	grep -q '^-\|[#:]' <<<"$i" || i="$nixpkgs#$i"
+	if grep -q '^-' <<<"$i"; then
+		: # do nothing on options
+	elif grep -q '[:#]' <<<"$i"; then
+		# flake type (:) and/or fragment (#) was specified!
+		# this might be a thirdparty (non-nixpkgs) package
+		# we want to see details about potential builds
+		run=nom
+	else
+		# packages from nixpkgs do not require nix-output-monitor
+		# since they should always be available in cached form
+		i="$nixpkgs#$i"
+	fi
+
 	echo "Using $i"
 	packages+=("$i")
 done
 
-# 2. resolve package outputs
-resolve() {
-	set -eEuo pipefail
-	# shellcheck disable=SC2016
-	# --apply is not a shell expression
-	nix eval --quiet --raw "$1" \
-		--apply 'x: builtins.toJSON (map (o: x.${o}) x.outputs)' |
-		jq -r '.[]'
-}
-export -f resolve
-
-status="$(mktemp)"
-readarray -t outputs < <(parallel --will-cite \
-	resolve ::: "${packages[@]}" && echo ok >"$status")
-
-if [ -s "$status" ]; then
-	rm -f "$status"
-else
-	rm -f "$status"
-	exit 1
+# launch shell
+if [ -z "${AQUARIS_USE+x}" ]; then
+	export AQUARIS_USE=1
+	export PATH="/AQUARIS_USE:$PATH"
 fi
-
-# 3. realise missing paths
-realise() {
-	set -eEuo pipefail
-	if [ ! -e "$1" ]; then
-		nix-store --realise "$1"
-	fi
-}
-export -f realise
-parallel --will-cite realise ::: "${outputs[@]}"
-
-# 4. export friendly package list
-out="$(for i in "${outputs[@]}"; do tail -c+45 <<<"$i"; done | paste -sd ' ')"
-export AQUARIS_USE_PKGS="${AQUARIS_USE_PKGS+$AQUARIS_USE_PKGS }$out"
-
-# 5. launch shell
-export AQUARIS_USE_SHELL="${AQUARIS_USE_SHELL-$SHELL}"
-exec nom-shell --command "$AQUARIS_USE_SHELL" --packages pkg-config "${outputs[@]}"
+exec "$run" shell -L "${packages[@]}"
