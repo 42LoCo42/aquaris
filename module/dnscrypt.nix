@@ -154,9 +154,13 @@ in
             require_nofilter = true;
 
             cache = true;
-            cache_size = 100000;
+            cache_size = 1000000;
 
-            bootstrap_resolvers = [ "9.9.9.9:53" ];
+            bootstrap_resolvers = [
+              "9.9.9.9:53"
+              "149.112.112.112:53"
+              "1.1.1.1:53"
+            ];
 
             sources = {
               public-resolvers = {
