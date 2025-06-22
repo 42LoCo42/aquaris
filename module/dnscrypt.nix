@@ -175,9 +175,12 @@ in
 
               quad9-resolvers = {
                 cache_file = "/var/cache/dnscrypt-proxy/quad9-resolvers.md";
-                minisign_key = "RWQBphd2+f6eiAqBsvDZEBXBGHQBJfeG6G+wJPPKxCZMoEQYpmoysKUN";
+                minisign_key = "RWTp2E4t64BrL651lEiDLNon+DqzPG4jhZ97pfdNkcq1VDdocLKvl5FW";
                 prefix = "quad9-";
-                urls = [ "https://www.quad9.net/quad9-resolvers.md" ];
+                urls = [
+                  "https://raw.githubusercontent.com/Quad9DNS/dnscrypt-settings/main/dnscrypt/quad9-resolvers.md"
+                  "https://quad9.net/dnscrypt/quad9-resolvers.md"
+                ];
               };
 
               dnscry-pt-resolvers = {
