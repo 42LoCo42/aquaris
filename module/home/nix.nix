@@ -1,4 +1,4 @@
-{ pkgs, lib, config, mkEnableOption, ... }:
+{ self, pkgs, lib, config, mkEnableOption, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.nix;
@@ -8,11 +8,13 @@ in
 
   config = mkIf cfg {
     home = {
-      packages = with pkgs; [
-        deadnix
-        nix-output-monitor
-        nix-tree
-      ];
+      packages =
+        with pkgs;
+        with self.inputs.obscura.packages.${pkgs.system}; [
+          deadnix
+          nix-output-monitor
+          nix-tree-next
+        ];
 
       shellAliases = {
         n = "nix repl"; # i use this often, so make it short!
