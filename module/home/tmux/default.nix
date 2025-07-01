@@ -22,5 +22,7 @@ in
         split = "${./split.sh}";
       };
     };
+
+    home.shellAliases."t" = "tmux new-session -A -E -s 0";
   };
 }
