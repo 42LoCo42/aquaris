@@ -35,6 +35,11 @@ in
 
       ${if builtins.hasAttr "initContent" config.programs.zsh
       then "initContent" else "initExtra"} = ''
+        # help for builtins
+        unalias run-help
+        autoload run-help
+        alias help=run-help
+
         bindkey "[1;3C" forward-word
         bindkey "[1;3D" backward-word
 
