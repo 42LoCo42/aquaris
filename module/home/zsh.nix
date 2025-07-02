@@ -45,6 +45,12 @@ in
 
         # https://github.com/zsh-users/zsh-syntax-highlighting/issues/295#issuecomment-214581607
         zstyle ':bracketed-paste-magic' active-widgets '.self-*'
+
+        # fuzzy completion - https://superuser.com/a/815317
+        zstyle ':completion:*' matcher-list ''' \
+          'm:{a-z\-}={A-Z\_}' \
+          'r:[^[:alpha:]]||[[:alpha:]]=** r:|=* m:{a-z\-}={A-Z\_}' \
+          'r:|?=** m:{a-z\-}={A-Z\_}'
       '';
 
       plugins = with pkgs; [
