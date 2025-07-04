@@ -6,7 +6,6 @@ let
     filterAttrs
     getExe
     getExe'
-    mkAfter
     mkIf
     mkMerge
     mkOption
@@ -21,6 +20,7 @@ let
     enum
     int
     lines
+    listOf
     nullOr
     oneOf
     package
@@ -38,6 +38,12 @@ let
 
   json = (pkgs.formats.json { }).type;
   pref = oneOf [ bool int str ];
+
+  mkSanitizePrefs = value: {
+    "privacy.clearOnShutdown_v2.cache" = value;
+    "privacy.clearOnShutdown_v2.cookiesAndStorage" = value;
+    "privacy.sanitize.sanitizeOnShutdown" = value;
+  };
 in
 {
   options.aquaris.firefox = {
@@ -160,6 +166,20 @@ in
       };
     };
 
+    sanitize = {
+      enable = mkOption {
+        type = bool;
+        description = "Delete cache & cookies when Firefox is closed";
+        default = false;
+      };
+
+      exceptions = mkOption {
+        type = listOf str;
+        description = "List of sites whose data will be kept";
+        default = [ ];
+      };
+    };
+
     settings = {
       bitwarden = mkOption {
         type = bool;
@@ -219,7 +239,7 @@ in
     {
       aquaris.firefox = {
         # copy userChrome.css to the current user's profile
-        preRun = mkAfter ''
+        preRun = ''
           file="$FIREFOX_PROFILE_DIR/chrome/userChrome.css"
           mkdir -p "$(dirname "$file")"
           rm -f "$file"
@@ -351,17 +371,17 @@ in
 
             # build the launcher
 
-            cat <<\EOF >> tmp
+            cat <<\AQUARIS_FIREFOX_EOF >> tmp
             export FIREFOX_PROFILE_DIR="$HOME/${dir}/"
             ${cfg.preRun}
-            EOF
+            AQUARIS_FIREFOX_EOF
 
             # this is exec; wrap it in a subshell to allow postRun to happen
             echo "($(tail -n 1 "$file"))" >> tmp
 
-            cat <<\EOF >> tmp
+            cat <<\AQUARIS_FIREFOX_EOF >> tmp
             ${cfg.postRun}
-            EOF
+            AQUARIS_FIREFOX_EOF
 
             mv tmp "$file"
             chmod +x "$file"
@@ -376,21 +396,6 @@ in
         profiles.default = { };
       };
     }
-
-    (mkIf cfg.settings.bitwarden {
-      aquaris.firefox = {
-        extensions = {
-          "{446900e4-71c2-419f-a6a7-df9c091e268b}".pin = true; # https://addons.mozilla.org/en-US/firefox/addon/bitwarden-password-manager
-        };
-
-        policies = {
-          AutofillCreditCardEnabled = false;
-          DisableMasterPasswordCreation = true;
-          OfferToSaveLogins = false;
-          PasswordManagerEnabled = false;
-        };
-      };
-    })
 
     (mkIf cfg.captivePortal.enable {
       aquaris.firefox = {
@@ -424,6 +429,43 @@ in
           icon = cfg.fork;
           exec = getExe' pkgs.captive-browser "captive-browser";
           terminal = true;
+        };
+      };
+    })
+
+    (mkIf cfg.sanitize.enable {
+      aquaris.firefox = {
+        prefs = mkSanitizePrefs true;
+        preRun = pipe cfg.sanitize.exceptions [
+          (map (url: ''
+            insert into moz_perms (origin, type, permission, expireType, expireTime)
+            select '${url}', 'cookie', 1, 0, 0
+            where not exists (select 1 from moz_perms where origin = '${url}');
+          ''))
+          (x: ''
+            ${getExe pkgs.sqlite} "$FIREFOX_PROFILE_DIR/permissions.sqlite" << EOF
+            ${builtins.concatStringsSep "\n" x}
+            EOF
+          '')
+        ];
+      };
+    })
+
+    (mkIf (!cfg.sanitize.enable) {
+      aquaris.firefox.prefs = mkSanitizePrefs false;
+    })
+
+    (mkIf cfg.settings.bitwarden {
+      aquaris.firefox = {
+        extensions = {
+          "{446900e4-71c2-419f-a6a7-df9c091e268b}".pin = true; # https://addons.mozilla.org/en-US/firefox/addon/bitwarden-password-manager
+        };
+
+        policies = {
+          AutofillCreditCardEnabled = false;
+          DisableMasterPasswordCreation = true;
+          OfferToSaveLogins = false;
+          PasswordManagerEnabled = false;
         };
       };
     })

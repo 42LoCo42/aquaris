@@ -40,6 +40,14 @@
     aquaris = {
       firefox = {
         enable = true;
+
+        sanitize = {
+          enable = true;
+          exceptions = [
+            "https://example.org"
+            "https://github.com"
+          ];
+        };
       };
 
       persist = {
