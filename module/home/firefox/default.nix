@@ -253,11 +253,6 @@ in
           # use default search engine in private windows
           "browser.search.separatePrivateDefault" = false;
 
-          # keep data on shutdown
-          "privacy.clearOnShutdown_v2.cache" = false;
-          "privacy.clearOnShutdown_v2.cookiesAndStorage" = false;
-          "privacy.sanitize.sanitizeOnShutdown" = false;
-
           # remember history
           "browser.formfill.enable" = true;
           "places.history.enabled" = true;
