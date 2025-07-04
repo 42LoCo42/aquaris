@@ -202,7 +202,20 @@ in
     virtualisation = {
       podman = {
         package = pkgs.podman // { override = _: pkgs.podman; };
-        defaultNetwork.settings.dns_enabled = true;
+        defaultNetwork.settings = {
+          dns_enabled = true;
+          ipv6_enabled = true;
+          subnets = [
+            {
+              subnet = "10.88.0.0/16";
+              gateway = "10.88.0.1";
+            }
+            {
+              subnet = "fd00::/80";
+              gateway = "fd00::1";
+            }
+          ];
+        };
       };
 
       oci-containers.containers = flip builtins.mapAttrs cfg (name: cfg: {
