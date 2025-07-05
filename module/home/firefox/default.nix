@@ -437,14 +437,12 @@ in
       aquaris.firefox = {
         prefs = mkSanitizePrefs true;
         preRun = pipe cfg.sanitize.exceptions [
-          (map (url: ''
-            insert into moz_perms (origin, type, permission, expireType, expireTime)
-            values ('${url}', 'cookie', 1, 0, 0);
-          ''))
+          (map (url: "('${url}', 'cookie', 1, 0, 0)"))
           (x: ''
             ${getExe pkgs.sqlite} "$FIREFOX_PROFILE_DIR/permissions.sqlite" << EOF
             delete from moz_perms where type = 'cookie';
-            ${builtins.concatStringsSep "\n" x}
+            insert into moz_perms (origin, type, permission, expireType, expireTime) values
+            ${builtins.concatStringsSep ",\n" x};
             EOF
           '')
         ];
