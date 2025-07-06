@@ -374,15 +374,15 @@ in
             cat <<\AQUARIS_FIREFOX_EOF >> tmp
             export FIREFOX_PROFILE_DIR="$HOME/${dir}/"
 
-            # export whether firefox is already running for pre/postRun scripts
-            # 1. if the permissions DB does not exist: before first run -> not running
-            # 2. otherwise, if we can open it: not locked -> not running
-            # 3. otherwise: running
+            # export whether this command has launched firefox
+            # 1. if the permissions DB does not exist: this is the first run
+            # 2. otherwise, if we can open it: no running instance has locked it
+            # 3. otherwise: firefox is already running, we just attach to it
             if [ ! -e "$FIREFOX_PROFILE_DIR/permissions.sqlite" ] ||
               ${getExe pkgs.sqlite} -readonly           \
               "$FIREFOX_PROFILE_DIR/permissions.sqlite" \
-              ".schema" >/dev/null; then RUNNING=0; else RUNNING=1; fi
-            export RUNNING
+              ".schema" >/dev/null; then LAUNCHER=1; else LAUNCHER=0; fi
+            export LAUNCHER
 
             ${cfg.preRun}
             AQUARIS_FIREFOX_EOF
@@ -450,7 +450,7 @@ in
         preRun = pipe cfg.sanitize.exceptions [
           (map (url: "('${url}', 'cookie', 1, 0, 0)"))
           (x: ''
-            if ((RUNNING == 0)); then
+            if ((LAUNCHER)); then
             	${getExe pkgs.sqlite} "$FIREFOX_PROFILE_DIR/permissions.sqlite" <<-EOF
             		delete from moz_perms where type = 'cookie';
             		insert into moz_perms (origin, type, permission, expireType, expireTime) values
