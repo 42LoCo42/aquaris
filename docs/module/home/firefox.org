@@ -52,7 +52,9 @@ Enable Firefox with administrative configuration features.
 
 - =sanitize=: Delete cache & cookies when Firefox is closed. Options:
   - =enable= (bool): Enable this submodule. Default: false
-  - =exceptions= (list of string): List of sites whose data will be kept. Default: empty list
+  - =exceptions= (list of string): List of sites whose data will be kept. Default: empty list.
+    *NOTE*: Exceptions *won't* be applied on the first run of Firefox,
+    since the permissions DB doesn't exist at that point.
 
 - =settings=: Various configuration templates
   - =bitwarden= (boolean): Use Bitwarden instead of the builtin password manager. Default: true

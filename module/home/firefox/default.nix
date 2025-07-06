@@ -450,7 +450,7 @@ in
         preRun = pipe cfg.sanitize.exceptions [
           (map (url: "('${url}', 'cookie', 1, 0, 0)"))
           (x: ''
-            if ((LAUNCHER)); then
+            if ((LAUNCHER)) && [ -e "$FIREFOX_PROFILE_DIR/permissions.sqlite" ]; then
             	${getExe pkgs.sqlite} "$FIREFOX_PROFILE_DIR/permissions.sqlite" <<-EOF
             		delete from moz_perms where type = 'cookie';
             		insert into moz_perms (origin, type, permission, expireType, expireTime) values
