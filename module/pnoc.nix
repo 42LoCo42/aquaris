@@ -130,7 +130,7 @@ let
     };
   };
 
-  deps = name: cfg: pipe { inherit (cfg) cmd environment; } [
+  deps = name: cfg: pipe { inherit (cfg) cmd environment volumes; } [
     builtins.toJSON
     (pkgs.writeText "${name}-info")
     (info: (pkgs.runCommand "${name}-volumes" {
