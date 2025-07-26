@@ -2,7 +2,7 @@
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.zsh;
-  cache = "$HOME/.cache/zsh";
+  cache = ".cache/zsh";
 in
 {
   options.aquaris.zsh = mkEnableOption "ZSH with OMZ and some plugins";
@@ -71,7 +71,7 @@ in
           MAGIC_ENTER_GIT_COMMAND=' git status'
           MAGIC_ENTER_OTHER_COMMAND=' ls -lh'
 
-          ZSH_COMPDUMP="${cache}/completion"
+          ZSH_COMPDUMP="$HOME/${cache}/completion"
         '';
         plugins = [
           "fancy-ctrl-z"
