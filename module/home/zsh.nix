@@ -1,8 +1,8 @@
 { pkgs, config, lib, mkEnableOption, ... }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkAfter mkIf mkMerge versionAtLeast;
   cfg = config.aquaris.zsh;
-  cache = ".cache/zsh";
+  cache = "${config.xdg.cacheHome}/zsh";
 in
 {
   options.aquaris.zsh = mkEnableOption "ZSH with OMZ and some plugins";
@@ -11,12 +11,19 @@ in
     home = {
       packages = with pkgs; [ fzf jq ];
 
-      file.".zshenv".enable = false;
+      file = mkMerge [
+        { ".zshenv".enable = false; }
+        (mkIf (!versionAtLeast config.home.version.release "25.11") {
+          "${config.xdg.configHome}/zsh/.zshenv".text = mkAfter ''
+            export ZDOTDIR="${config.xdg.configHome}/zsh"
+          '';
+        })
+      ];
     };
 
     programs.zsh = {
       enable = true;
-      dotDir = ".config/zsh";
+      dotDir = "${config.xdg.configHome}/zsh";
 
       autosuggestion.enable = true;
       syntaxHighlighting.enable = true;
@@ -71,7 +78,7 @@ in
           MAGIC_ENTER_GIT_COMMAND=' git status'
           MAGIC_ENTER_OTHER_COMMAND=' ls -lh'
 
-          ZSH_COMPDUMP="$HOME/${cache}/completion"
+          ZSH_COMPDUMP="${cache}/completion"
         '';
         plugins = [
           "fancy-ctrl-z"
