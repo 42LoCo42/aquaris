@@ -113,7 +113,7 @@ in
 
         "/" = {
           fsType = "tmpfs";
-          options = [ "mode=755" ];
+          options = [ "nosuid" "mode=755" ];
         };
       })
     ];

@@ -24,7 +24,7 @@ in
     mountOpts = mkOption {
       description = "Options for mount";
       type = listOf str;
-      default = [ "defaults" ];
+      default = [ ];
     };
 
     _create = mkOption {
@@ -48,5 +48,9 @@ in
         };
       };
     };
+  };
+
+  config = {
+    mountOpts = [ "defaults" "nosuid" ];
   };
 }

@@ -162,6 +162,7 @@ in
       type = "ramfs";
       what = "ramfs";
       where = "/sysroot${decryptDirMnt}";
+      options = "nosuid";
     }];
 
     systemd = {

@@ -1,6 +1,6 @@
 pkgs: { lib, config, ... }:
 let
-  inherit (lib) concatLines getExe ifEnable mapAttrs' mapAttrsToList mkOption pipe;
+  inherit (lib) concatLines getExe ifEnable mapAttrs' mapAttrsToList mkOption pipe unique;
   inherit (lib.types) anything attrsOf functionTo listOf nullOr path str submodule;
 
   subvol = {
@@ -13,7 +13,7 @@ let
     mountOpts = mkOption {
       description = "Options for mount";
       type = listOf str;
-      default = [ "defaults" ];
+      default = [ ];
     };
   };
 in
@@ -31,7 +31,7 @@ in
         (including the default one)
       '';
       type = listOf str;
-      default = [ "compress-force=zstd" ];
+      default = [ ];
     };
 
     defaultVol = subvol;
@@ -76,7 +76,11 @@ in
           value = {
             inherit device;
             fsType = "btrfs";
-            options = config.mountOpts ++ cfg.mountOpts ++ [ "subvol=${name}" ];
+            options = unique (
+              config.mountOpts ++
+              cfg.mountOpts ++
+              [ "subvol=${name}" ]
+            );
           };
         }))
         (x: {
@@ -84,11 +88,19 @@ in
             ${config.defaultVol.mountpoint} = {
               inherit device;
               fsType = "btrfs";
-              options = config.mountOpts ++ config.defaultVol.mountOpts;
+              options = unique (config.mountOpts ++ config.defaultVol.mountOpts);
             };
           };
         })
       ];
     };
+  };
+
+  config = {
+    mountOpts = [
+      "defaults"
+      "nosuid"
+      "compress-force=zstd"
+    ];
   };
 }

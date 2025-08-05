@@ -87,7 +87,7 @@ with their respective arguments, except for =swap=.
 - =mountpoint= (path): Mount point of the filesystem
 
 - =mountOpts= (list of strings): Options for mounting the filesystem.
-  Default: =[ "defaults" ]=
+  Default: =[ "defaults" "nosuid" ]=
 
 #+begin_src nix
   fs.regular {
@@ -102,21 +102,21 @@ with their respective arguments, except for =swap=.
 
 - =mountOpts= (list of strings): Default mount options
   for all subvolumes (including the default one).
-  Default: =[ "compres-force=zstd" ]=
+  Default: ~[ "defaults" "nosuid" "compress-force=zstd" ]~
 
 - =defaultVol=: The default subvolume
   - =mountpoint= (null or path): Mountpoint of the default subvolume.
     Default: null
 
   - =mountOpts= (list of strings): Options for mounting the subvolume.
-    Default: =[ "defaults" ]=
+    Default: empty list
 
 - =subvols=: Set of subvolumes
   - =mountpoint= (null or path): Mountpoint of the subvolume.
     Default: null
 
   - =mountOpts= (list of strings): Options for mounting the subvolume.
-    Default: =[ "defaults" ]=
+    Default: empty list
 
 #+begin_src nix
   fs.btrfs {

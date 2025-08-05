@@ -1,7 +1,7 @@
 joinOpts: pool: { lib, name, config, ... }:
 let
   inherit (lib) mkOption;
-  inherit (lib.types) anything attrsOf nullOr path str;
+  inherit (lib.types) anything attrsOf listOf nullOr path str;
 in
 {
   options = {
@@ -17,6 +17,12 @@ in
       default =
         let x = builtins.match "[^/]+(/.*)" name;
         in if x == null then null else builtins.head x;
+    };
+
+    mountOpts = mkOption {
+      description = "Options for mount";
+      type = listOf str;
+      default = [ ];
     };
 
     options = mkOption {
@@ -41,8 +47,15 @@ in
       default.fileSystems.${config.mountpoint} = {
         device = config.name;
         fsType = "zfs";
-        options = [ "zfsutil" ];
+        options = config.mountOpts ++ [ "zfsutil" ];
       };
     };
+  };
+
+  config = {
+    mountOpts = [
+      "defaults"
+      "nosuid"
+    ];
   };
 }
