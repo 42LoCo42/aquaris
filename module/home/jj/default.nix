@@ -19,12 +19,16 @@ in
       enable = true;
       settings = mkMerge [
         {
-          ui.diff-formatter = [
-            (getExe pkgs.difftastic)
-            "--color=always"
-            "$left"
-            "$right"
-          ];
+          ui = {
+            always-allow-large-revsets = true;
+
+            diff-formatter = [
+              (getExe pkgs.difftastic)
+              "--color=always"
+              "$left"
+              "$right"
+            ];
+          };
         }
 
         (mkIf (git.userName != null) { user.name = git.userName; })
