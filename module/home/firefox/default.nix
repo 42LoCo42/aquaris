@@ -540,7 +540,7 @@ in
             (if dnscrypt.localDoH then {
               # connect to dnscrypt via DoH
               Enabled = true;
-              ProviderURL = "https://localhost:5353/dns-query";
+              ProviderURL = "https://localhost:853/dns-query";
             } else { Enabled = false; }) # connect to dnscrypt normally
           else { Enabled = true; }); # use default DoH provider
 

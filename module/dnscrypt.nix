@@ -243,7 +243,7 @@ in
     (mkIf cfg.localDoH {
       services.dnscrypt-proxy2.settings = {
         local_doh = {
-          listen_addresses = [ "127.0.0.1:5353" "[::1]:5353" ];
+          listen_addresses = [ "127.0.0.1:853" "[::1]:853" ];
           path = "/dns-query";
 
           cert_file = doh.crt;
