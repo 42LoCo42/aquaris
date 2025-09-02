@@ -16,6 +16,7 @@ in
         enable = true;
         settings = {
           backend = "fastfetch";
+          pride_month_disable = false;
 
           mode = "rgb";
           light_dark = "dark";

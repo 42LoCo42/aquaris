@@ -91,6 +91,7 @@ in
         jrr = "jj git remote rename";
         jrs = "jj git remote set-url";
         js = "jj show";
+        jsc = "js $(jfc)";
         jsp = "jj split";
         jsq = "jj squash";
         jsqi = "jj squash -i";
