@@ -1,17 +1,21 @@
 { flake-utils, nixpkgs, ... }:
 let
   inherit (nixpkgs.lib)
+    all
     fileContents
     filterAttrs
+    foldl'
+    head
     ifEnable
     mapAttrsToList
+    mergeOneOption
     mkOption
     pipe
     recursiveUpdate
     splitString
+    tail
     ;
   inherit (nixpkgs.lib.types)
-    oneOf
     str
     submodule
     ;
@@ -62,6 +66,23 @@ rec {
 
   adt =
     let
+      either = t1: t2: (nixpkgs.lib.types.either t1 t2) // {
+        # merge logic from last working commit
+        # https://github.com/NixOS/nixpkgs/commit/648dbed1d6903931745babf6bf686b0631970538 working parent
+        # https://github.com/NixOS/nixpkgs/commit/70ab11c2f2ed1c8375da40d891f428139146a05d broken child
+        merge =
+          loc: defs:
+          let
+            defList = map (d: d.value) defs;
+          in
+          if all (x: t1.check x) defList then
+            t1.merge loc defs
+          else if all (x: t2.check x) defList then
+            t2.merge loc defs
+          else
+            mergeOneOption loc defs;
+      };
+
       addTag = val: recursiveUpdate val {
         options._tag = mkOption {
           type = str;
@@ -87,7 +108,7 @@ rec {
           let mod = mkModule val; in
           mod // { check = v: mod.check v && v._tag == name; }
         ))
-        oneOf
+        (x: foldl' either (head x) (tail x))
       ];
 
       adt = choices: pipe choices [
