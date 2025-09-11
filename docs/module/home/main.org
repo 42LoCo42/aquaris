@@ -106,6 +106,13 @@ Name = Path of directory to be persisted (relative to $HOME).
   }
 #+end_src
 
+** [[file:../../../module/home/ssh.nix][ssh]]
+Enable default SSH configuration:
+- keys will be added to =ssh-agent=
+- the agent itself will be forwarded in order to enable remote sudo
+- the known hosts file is stored in a persistent cache location
+- all user secrets below =ssh/= are used as identity files
+
 ** [[file:../../../module/home/starship.nix][starship]]
 Enable the [[https://github.com/starship/starship][starship]] shell prompt
 
