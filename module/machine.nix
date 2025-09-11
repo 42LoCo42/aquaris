@@ -94,6 +94,11 @@ in
       };
     };
 
+    security.sudo-rs = {
+      enable = true;
+      execWheelOnly = true;
+    };
+
     services = {
       journald.extraConfig = mkDefault "SystemMaxUse=100M";
 
