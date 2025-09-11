@@ -190,7 +190,8 @@ that should return the desired pool.
 
   The =persist= and =home= datasets additionally get the flag
   =com.sun:auto-snapshot= set to =true=
-  if =services.zfs.autoSnapshot= is enabled.
+  if =services.zfs.autoSnapshot= is enabled
+  (which is the default if ZFS is used).
 
 ** Example
 #+begin_src nix

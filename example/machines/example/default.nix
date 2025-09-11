@@ -34,8 +34,6 @@
 
   boot.kernelParams = [ "foo=bar" ];
 
-  services.zfs.autoSnapshot.enable = true;
-
   home-manager.sharedModules = [{
     aquaris = {
       firefox = {

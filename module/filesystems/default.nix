@@ -146,20 +146,31 @@ in
         util.merge
       ];
     in
-    {
-      aquaris.filesystems.tools = with pkgs; [
-        cryptsetup
-        e2fsprogs
-      ];
+    mkMerge [
+      {
+        aquaris.filesystems.tools = with pkgs; [
+          cryptsetup
+          e2fsprogs
+        ];
 
-      fileSystems = mounts.fileSystems or { };
-      swapDevices = mounts.swapDevices or [ ];
+        boot.initrd.luks.devices = mounts.luks or { };
+        fileSystems = mounts.fileSystems or { };
+        swapDevices = mounts.swapDevices or [ ];
+      }
 
-      boot = mkMerge [
-        (mkIf (config.boot.supportedFilesystems.zfs or false) {
-          kernelPackages = mkDefault pkgs.linuxPackages;
-        })
-        { initrd.luks.devices = mounts.luks or { }; }
-      ];
-    };
+      (mkIf config.boot.zfs.enabled {
+        services.zfs = {
+          autoScrub.enable = mkDefault true;
+          autoSnapshot.enable = mkDefault true;
+          trim.enable = mkDefault true;
+        };
+
+        environment.systemPackages = [
+          (pkgs.writeShellApplication {
+            name = "zfsnaps";
+            text = builtins.readFile ./zfsnaps.sh;
+          })
+        ];
+      })
+    ];
 }
