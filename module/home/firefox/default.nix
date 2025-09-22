@@ -520,7 +520,7 @@ in
 
         policies = {
           Certificates.Install = mkIf dnscrypt.localDoH
-            [ osConfig.services.dnscrypt-proxy2.settings.local_doh.cert_file ];
+            [ osConfig.services.dnscrypt-proxy.settings.local_doh.cert_file ];
 
           Cookies = {
             Behavior = "reject-foreign";

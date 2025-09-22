@@ -132,7 +132,7 @@ in
       services = {
         resolved.enable = false;
 
-        dnscrypt-proxy2 = {
+        dnscrypt-proxy = {
           enable = true;
           upstreamDefaults = true;
           settings = {
@@ -226,7 +226,7 @@ in
     }
 
     (mkIf cfg.anonDNS.enable {
-      services.dnscrypt-proxy2.settings = {
+      services.dnscrypt-proxy.settings = {
         anonymized_dns = {
           routes = [{
             server_name = "*";
@@ -241,25 +241,25 @@ in
     })
 
     (mkIf cfg.localDoH {
-      services.dnscrypt-proxy2.settings = {
+      services.dnscrypt-proxy.settings = {
         local_doh = {
           listen_addresses = [ "127.0.0.1:853" "[::1]:853" ];
           path = "/dns-query";
 
           cert_file = doh.crt;
-          cert_key_file = "/run/credentials/dnscrypt-proxy2.service/key";
+          cert_key_file = "/run/credentials/dnscrypt-proxy.service/key";
         };
       };
 
       systemd.services = {
-        dnscrypt-proxy2 = {
-          after = [ "dnscrypt-proxy2-doh.service" ];
-          wants = [ "dnscrypt-proxy2-doh.service" ];
+        dnscrypt-proxy = {
+          after = [ "dnscrypt-proxy-doh.service" ];
+          wants = [ "dnscrypt-proxy-doh.service" ];
 
           serviceConfig.LoadCredential = [ "key:${doh.key}" ];
         };
 
-        dnscrypt-proxy2-doh = {
+        dnscrypt-proxy-doh = {
           path = with pkgs; [ openssl ];
 
           script = ''
