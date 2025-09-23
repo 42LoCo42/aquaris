@@ -74,12 +74,11 @@ in
 
       oh-my-zsh = {
         enable = true;
-        extraConfig = ''
-          MAGIC_ENTER_GIT_COMMAND=' git status'
-          MAGIC_ENTER_OTHER_COMMAND=' ls -lh'
 
+        extraConfig = ''
           ZSH_COMPDUMP="${cache}/completion"
         '';
+
         plugins = [
           "fancy-ctrl-z"
           "magic-enter"

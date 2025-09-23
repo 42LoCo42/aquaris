@@ -84,5 +84,6 @@ jsl() {
 	jj log --no-pager
 }
 
-MAGIC_ENTER_GIT_COMMAND='   if jcr; then jsl; else git status; fi'
-MAGIC_ENTER_OTHER_COMMAND=' if jcr; then jsl; else l;          fi'
+MAGIC_ENTER_JJ_COMMAND=' jsl'
+MAGIC_ENTER_GIT_COMMAND=' git status -u'
+MAGIC_ENTER_OTHER_COMMAND=' l'
