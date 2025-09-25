@@ -112,6 +112,7 @@ Enable default SSH configuration:
 - the agent itself will be forwarded in order to enable remote sudo
 - the known hosts file is stored in a persistent cache location
 - all user secrets below =ssh/= are used as identity files
+- the user secret =ssh/main= will also be linked to =~/.ssh/id_main=
 
 ** [[file:../../../module/home/starship.nix][starship]]
 Enable the [[https://github.com/starship/starship][starship]] shell prompt

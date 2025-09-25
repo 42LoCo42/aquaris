@@ -48,6 +48,7 @@ in
     services.ssh-agent.enable = true;
 
     systemd.user.tmpfiles.rules = mkMerge [
+      [ "L+ %h/.ssh/id_main     - - - - ${osConfig.aquaris.secret' "user/${user}/ssh/main"}" ]
       [ "L+ %h/.ssh/known_hosts - - - - ${knownHosts}" ]
     ];
   };
