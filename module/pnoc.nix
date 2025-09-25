@@ -68,6 +68,12 @@ let
 
       ##### special args #####
 
+      ca = mkOption {
+        description = "Path to the TLS certificate bundle";
+        type = path;
+        default = top.config.security.pki.caBundle;
+      };
+
       extraOptionsRaw = mkOption {
         description = "Unescaped arguments to podman";
         type = listOf str;
@@ -107,9 +113,11 @@ let
     };
 
     config = {
-      environment = {
-        SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-      };
+      volumes = [
+        "${config.ca}:/etc/pki/tls/certs/ca-bundle.crt:ro"
+        "${config.ca}:/etc/ssl/certs/ca-bundle.crt:ro"
+        "${config.ca}:/etc/ssl/certs/ca-certificates.crt:ro"
+      ];
 
       extraOptions = [
         "--read-only"

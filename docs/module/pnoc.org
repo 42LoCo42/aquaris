@@ -27,6 +27,13 @@ instead of the whole filesystem (no accidental data storage in =/=).
 
 ** Special options
 
+- =ca= (path): Path to the TLS certificate bundle that should be used in this container.
+  This file is mounted to:
+  - =/etc/pki/tls/certs/ca-bundle.crt=
+  - =/etc/ssl/certs/ca-bundle.crt=
+  - =/etc/ssl/certs/ca-certificates.crt=
+  Default: =config.security.pki.caBundle=
+
 - =extraOptionsRaw= (list of string): Like =extraOptions=, but *without* escaping.
 
 - =secrets= (list of string): List of =<host path>:<container path>= of secrets to mount.
