@@ -8,10 +8,19 @@ and ensure that container processes *only* have access to configured volumes
 instead of the whole filesystem (no accidental data storage in =/=).
 
 ** Options
+*** Entrypoint
 - =cmd= (list of string): The command to be executed inside the container.
 
+- =script= (null or lines): Optional shell script to use as entrypoint.
+  This can be used to launch complex containers that require multiple commands,
+  e.g. databases which need to be initialised before the main daemon can run.
+  NOTE: setting this option *overrides* =cmd=!
+
+- =path=: (list of package): A list of packages available in
+  the =$PATH= of the container and the configured =script=. Default: empty
+
+*** Inherited from =virtualisation.oci-containers.containers=
 - =environment= (set of string): Environment variables.
-  Default: =SSL_CERT_FILE= is set such that TLS connections can be established.
 
 - =environmentFiles= (list of path): Files from which extra environment variables
   (typically secret ones) should be loaded from.
@@ -25,8 +34,7 @@ instead of the whole filesystem (no accidental data storage in =/=).
 
 - =workdir= (null or string): Initial working directory of the spawned command.
 
-** Special options
-
+*** Special options
 - =ca= (path): Path to the TLS certificate bundle that should be used in this container.
   This file is mounted to:
   - =/etc/pki/tls/certs/ca-bundle.crt=

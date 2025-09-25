@@ -2,9 +2,12 @@
 let
   inherit (lib)
     flip
+    getExe
     hasPrefix
+    makeBinPath
     mapAttrs'
     mkBefore
+    mkForce
     mkIf
     mkMerge
     mkOption
@@ -16,8 +19,10 @@ let
   inherit (lib.types)
     attrsOf
     coercedTo
+    lines
     listOf
     nullOr
+    package
     path
     str
     submodule
@@ -34,7 +39,23 @@ let
 
   container = { name, config, ... }: {
     options = {
+      ##### entrypoint #####
+
       cmd = mkOption { type = listOf str; };
+
+      script = mkOption {
+        type = nullOr lines;
+        description = "Optional shell script to use as entrypoint";
+        default = null;
+      };
+
+      path = mkOption {
+        type = listOf package;
+        description = "Packages available to the script";
+        default = [ ];
+      };
+
+      ##### inherited #####
 
       environment = mkOption {
         type = attrsOf str;
@@ -113,6 +134,16 @@ let
     };
 
     config = {
+      cmd = mkIf (config.script != null) (mkForce [
+        (getExe (pkgs.writeShellApplication {
+          name = "${name}-start";
+          runtimeInputs = config.path;
+          text = config.script;
+        }))
+      ]);
+
+      environment.PATH = mkIf (config.path != [ ]) (makeBinPath config.path);
+
       volumes = [
         "${config.ca}:/etc/pki/tls/certs/ca-bundle.crt:ro"
         "${config.ca}:/etc/ssl/certs/ca-bundle.crt:ro"

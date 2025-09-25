@@ -1,4 +1,4 @@
-{ aquaris, ... }: {
+{ pkgs, aquaris, ... }: {
   aquaris = {
     users = aquaris.lib.merge [
       { inherit (aquaris.cfg.users) alice; }
