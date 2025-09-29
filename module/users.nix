@@ -12,7 +12,7 @@ in
         description = mkOption {
           description = "A longer description of the username, e.g. the full name";
           type = str;
-          default = "";
+          default = if name == "root" then "System administrator" else "";
         };
 
         admin = mkOption {
@@ -30,7 +30,7 @@ in
         home = mkOption {
           description = "Path to the user's home directory";
           type = path;
-          default = "/home/${name}";
+          default = if name == "root" then "/root" else "/home/${name}";
         };
 
         git = {
@@ -69,10 +69,10 @@ in
     users = {
       mutableUsers = false;
 
-      users = (flip builtins.mapAttrs cfg) (_: cfg: {
+      users = (flip builtins.mapAttrs cfg) (n: cfg: {
         inherit (cfg) description home;
         extraGroups = ifEnable cfg.admin [ "networkmanager" "wheel" ];
-        isNormalUser = mkDefault true;
+        isNormalUser = mkDefault (n != "root");
         openssh.authorizedKeys.keys = cfg.sshKeys;
       });
     };

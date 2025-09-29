@@ -3,9 +3,9 @@ let
   inherit (lib)
     concatLines
     filterAttrs
-    flip
     getExe
     hasPrefix
+    mapAttrs
     mapAttrsToList
     mkIf
     mkOption
@@ -262,8 +262,11 @@ in
       expand = true;
     };
 
-    users.users = (flip builtins.mapAttrs config.aquaris.users) (name: _: {
-      hashedPasswordFile = config.aquaris.secret "user/${name}/password";
-    });
+    users.users = pipe config.aquaris.users [
+      (filterAttrs (n: _: n != "root"))
+      (mapAttrs (n: _: {
+        hashedPasswordFile = config.aquaris.secret "user/${n}/password";
+      }))
+    ];
   };
 }

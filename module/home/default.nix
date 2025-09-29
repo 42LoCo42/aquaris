@@ -11,11 +11,9 @@ in
       useGlobalPkgs = true;
       useUserPackages = true;
 
-      users = builtins.mapAttrs
-        (_: _: {
-          home = { inherit (config.system) stateVersion; };
-        })
-        config.aquaris.users;
+      users = (builtins.mapAttrs (_: _: {
+        home = { inherit (config.system) stateVersion; };
+      })) config.aquaris.users;
 
       extraSpecialArgs = specialArgs // {
         mkEnableOption = what: mkOption {
