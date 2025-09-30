@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 mnt="${1-/mnt}"
+umount --force --lazy --recursive "$mnt" || :
 zpool import -af
 
 x() {
@@ -30,3 +31,12 @@ while read -r src dst type option_str _; do
 
 	x mount -m "$src" "$mnt/$dst" -t "$type" -o "$option_str"
 done < <(grep -v '^#' <@fstab@ | grep .)
+
+for pfx in "" "/tmp/" "/"; do
+	key="${pfx}machine.key"
+	if [ -f "$key" ]; then
+		echo "Found machine key at $key"
+		x install -Dm400 "$key" "${mnt}/@key@"
+		break
+	fi
+done

@@ -1,6 +1,6 @@
 { pkgs, config, lib, aquaris, ... }:
 let
-  inherit (lib) ifEnable mapAttrs' mkDefault mkIf mkMerge mkOption pipe;
+  inherit (lib) getExe ifEnable mapAttrs' mkDefault mkIf mkMerge mkOption pipe;
   inherit (lib.strings) normalizePath;
   inherit (lib.types) attrsOf listOf package submodule submoduleWith;
 
@@ -30,6 +30,26 @@ let
   options = ifEnable config.services.zfs.autoSnapshot.enable {
     "com.sun:auto-snapshot" = "true";
   };
+
+  mkCreateScript = inputs: getExe (pkgs.writeShellApplication {
+    name = "${aquaris.name}-create${if inputs == [] then "-nodeps" else ""}";
+    runtimeInputs = inputs;
+    text = ''
+      set -x
+      ${getEntries (x: x._create) cfg.disks}
+      ${getEntries (x: x._create) cfg.lvm}
+      ${getEntries (x: x._create) cfg.zpools}
+    '';
+  });
+
+  mkMountScript = inputs: getExe (pkgs.writeShellApplication {
+    name = "${aquaris.name}-mount${if inputs == [] then "-nodeps" else ""}";
+    runtimeInputs = inputs;
+    text = aquaris.lib.subsT ./mount.sh {
+      fstab = config.environment.etc.fstab.source;
+      inherit (config.aquaris.secrets) key;
+    };
+  });
 in
 {
   options.aquaris.filesystems = mkOption {
@@ -101,33 +121,6 @@ in
             description = "Packages available to the generated scripts";
             type = listOf package;
           };
-
-          _create = mkOption {
-            type = package;
-            readOnly = true;
-            default = pkgs.writeShellApplication {
-              name = "${aquaris.name}-create";
-              runtimeInputs = cfg.tools;
-              text = ''
-                set -x
-                ${getEntries (x: x._create) cfg.disks}
-                ${getEntries (x: x._create) cfg.lvm}
-                ${getEntries (x: x._create) cfg.zpools}
-              '';
-            };
-          };
-
-          _mount = mkOption {
-            type = package;
-            readOnly = true;
-            default = pkgs.writeShellApplication {
-              name = "${aquaris.name}-mount";
-              runtimeInputs = cfg.tools;
-              text = aquaris.lib.subsT ./mount.sh {
-                fstab = config.environment.etc.fstab.source;
-              };
-            };
-          };
         };
       }];
     };
@@ -156,6 +149,24 @@ in
         boot.initrd.luks.devices = mounts.luks or { };
         fileSystems = mounts.fileSystems or { };
         swapDevices = mounts.swapDevices or [ ];
+
+        system.build = rec {
+          formatScript = mkCreateScript cfg.tools;
+          mountScript = mkMountScript cfg.tools;
+          diskoScript = pkgs.writeShellScript "${aquaris.name}-disko" ''
+            set -e
+            ${formatScript}
+            ${mountScript}
+          '';
+
+          formatScriptNoDeps = mkCreateScript [ ];
+          mountScriptNoDeps = mkMountScript [ ];
+          diskoScriptNoDeps = pkgs.writeShellScript "${aquaris.name}-disko-nodeps" ''
+            set -e
+            ${formatScriptNoDeps}
+            ${mountScriptNoDeps}
+          '';
+        };
       }
 
       (mkIf config.boot.zfs.enabled {

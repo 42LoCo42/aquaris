@@ -12,8 +12,8 @@ let
       inherit self;
       inherit (aquaris) name;
 
-      format = getExe config.aquaris.filesystems._create;
-      mount = getExe config.aquaris.filesystems._mount;
+      format = config.system.build.formatScript;
+      mount = config.system.build.mountScript;
 
       inherit (config.aquaris.secrets) key;
 

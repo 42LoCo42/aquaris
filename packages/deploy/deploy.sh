@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eEuo pipefail
 
 err() {
 	echo "[1;31m$1![m" >&2
@@ -83,7 +84,7 @@ r() {
 }
 
 log "Authorizing client SSH key"
-ssh-add
+ssh-add || :
 ssh_cmd=ssh-copy-id r
 
 log "Gathering facts"
