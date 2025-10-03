@@ -9,7 +9,6 @@ let
     isFunction
     mapAttrsToList
     mergeOneOption
-    mkDefault
     mkEnableOption
     mkIf
     mkOption
@@ -241,8 +240,8 @@ in
 
   config = mkIf cfg.enable {
     programs.emacs = {
-      enable = mkDefault true;
-      package = mkDefault cfg.package;
+      enable = true;
+      package = cfg.package;
 
       extraPackages = epkgs:
         let
@@ -273,8 +272,8 @@ in
           })
         ];
 
-      overrides = mkDefault (_: epkgs: {
-        straight = epkgs.trivialBuild rec {
+      overrides = _: prev: {
+        straight = prev.trivialBuild rec {
           pname = "straight";
           version = "b3760f5";
 
@@ -288,7 +287,7 @@ in
 
           patches = [ ./straight.patch ];
         };
-      });
+      };
     };
 
     home.packages = pipe cfg.config [
@@ -297,11 +296,11 @@ in
     ];
 
     xdg.configFile = {
-      "emacs/early-init.el".text = mkDefault ''
+      "emacs/early-init.el".text = ''
         (require 'hm-early-init)
       '';
 
-      "emacs/init.el".text = mkDefault ''
+      "emacs/init.el".text = ''
         (require 'hm-init)
       '';
     };
