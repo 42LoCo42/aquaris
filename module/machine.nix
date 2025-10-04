@@ -128,8 +128,19 @@ in
     console.keyMap = mkDefault "de-latin1";
     i18n.extraLocaleSettings.LC_COLLATE = mkDefault "C.UTF-8";
     i18n.extraLocaleSettings.LC_TIME = mkDefault "de_DE.UTF-8";
-    systemd.settings.Manager.DefaultTimeoutStopSec = mkDefault "5s";
     time.timeZone = mkDefault "Europe/Berlin";
     zramSwap.enable = mkDefault true;
+
+    systemd =
+      if builtins.hasAttr "settings" config.systemd
+      then {
+        settings.Manager.DefaultTimeoutStopSec = lib.mkDefault "5s";
+      }
+      else {
+        extraConfig = ''
+          [Manager]
+          DefaultTimeoutStopSec=5s
+        '';
+      };
   };
 }

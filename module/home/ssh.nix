@@ -22,28 +22,34 @@ in
   options.aquaris.ssh = mkEnableOption "SSH configuration";
 
   config = mkIf cfg {
-    programs.ssh = {
-      enable = true;
-      enableDefaultConfig = false;
+    programs.ssh = mkMerge [
+      {
+        enable = true;
+        matchBlocks = {
+          "*" = {
+            forwardAgent = true;
 
-      matchBlocks = {
-        "*" = {
-          addKeysToAgent = "yes";
-          forwardAgent = true;
-          userKnownHostsFile = knownHosts;
+            identityFile = pipe osConfig.aquaris.secrets.all [
+              (filter (hasPrefix "user/${user}/ssh/"))
+              (map osConfig.aquaris.secret)
+            ];
 
-          identityFile = pipe osConfig.aquaris.secrets.all [
-            (filter (hasPrefix "user/${user}/ssh/"))
-            (map osConfig.aquaris.secret)
-          ];
+            extraOptions = {
+              AddKeysToAgent = "yes";
+              UserKnownHostsFile = knownHosts;
+            };
+          };
+
+          github = {
+            hostname = "github.com";
+            user = "git";
+          };
         };
+      }
 
-        github = {
-          hostname = "github.com";
-          user = "git";
-        };
-      };
-    };
+      (if builtins.hasAttr "enableDefaultConfig" config.programs.ssh
+      then { enableDefaultConfig = false; } else { })
+    ];
 
     services.ssh-agent.enable = true;
 
