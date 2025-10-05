@@ -32,19 +32,18 @@ jfb() {
 	return 1
 }
 
-# find content
+# find (valid) commit: has content & description
 jfc() {
 	jst '..@' '
 		self.change_id() ++ " " ++
-		self.empty() ++ "\n"' \
-	| while read -r rev empty; do
-		"$empty" && continue
-
+		self.empty() || self.description().trim().len() <= 0 ++ "\n"' \
+	| while read -r rev skip; do
+		"$skip" && continue
 		echo "$rev"
 		return 0
 	done
 
-	echo "[1;31mReached root commit without finding a non-empty commit[m" >&2
+	echo "[1;31mReached root commit without finding a valid commit[m" >&2
 	return 1
 }
 
