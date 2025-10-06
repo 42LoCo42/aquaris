@@ -1,6 +1,6 @@
 { self, aquaris, lib, config, pkgs, ... }:
 let
-  inherit (lib) mkDefault mkOption;
+  inherit (lib) mkDefault mkMerge mkOption;
   inherit (lib.types) bool int nullOr str;
 
   inherit (aquaris.inputs) nixpkgs;
@@ -63,11 +63,7 @@ in
       hostId = builtins.substring 0 8 cfg.id; # for ZFS
       hostName = aquaris.name;
       useNetworkd = mkDefault true;
-
-      networkmanager = {
-        enable = mkDefault true;
-        plugins = lib.mkOverride 99 [ ];
-      };
+      networkmanager.enable = mkDefault true;
     };
 
     nix = {
@@ -131,8 +127,11 @@ in
     time.timeZone = mkDefault "Europe/Berlin";
     zramSwap.enable = mkDefault true;
 
-    systemd =
-      if builtins.hasAttr "settings" config.systemd
+    systemd = mkMerge [
+      {
+        network.wait-online.anyInterface = true;
+      }
+      (if builtins.hasAttr "settings" config.systemd
       then {
         settings.Manager.DefaultTimeoutStopSec = lib.mkDefault "5s";
       }
@@ -141,6 +140,7 @@ in
           [Manager]
           DefaultTimeoutStopSec=5s
         '';
-      };
+      })
+    ];
   };
 }
