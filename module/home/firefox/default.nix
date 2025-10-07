@@ -642,7 +642,6 @@ in
           "hide-tabs@afnankhan".pin = true; # https://addons.mozilla.org/en-US/firefox/addon/hide-tab
           "idcac-pub@guus.ninja" = { }; # https://addons.mozilla.org/en-US/firefox/addon/istilldontcareaboutcookies
           "sponsorBlocker@ajay.app" = { }; # https://addons.mozilla.org/en-US/firefox/addon/sponsorblock
-          "{0d7cafdd-501c-49ca-8ebb-e3341caaa55e}" = { }; # https://addons.mozilla.org/en-US/firefox/addon/youtube-nonstop
           "{4c421bb7-c1de-4dc6-80c7-ce8625e34d24}" = { }; # https://addons.mozilla.org/en-US/firefox/addon/load-reddit-images-directly
         };
 
