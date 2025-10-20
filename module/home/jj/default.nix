@@ -31,8 +31,8 @@ in
           };
         }
 
-        (mkIf (git.userName != null) { user.name = git.userName; })
-        (mkIf (git.userEmail != null) { user.email = git.userEmail; })
+        (mkIf (builtins.hasAttr "name" git.settings.user) { user.name = git.settings.user.name; })
+        (mkIf (builtins.hasAttr "email" git.settings.user) { user.email = git.settings.user.email; })
 
         ((mkIf (builtins.all (x: x) [
           (git.signing != null)

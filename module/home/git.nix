@@ -20,10 +20,6 @@ let
 
   cfg = config.aquaris.git;
   user = osConfig.aquaris.users.${config.home.username}.git;
-
-  allowedSigners = pkgs.writeText "allowedSigners" ''
-    ${user.email} namespaces="git" ${user.key}
-  '';
 in
 {
   options.aquaris.git = {
@@ -90,9 +86,38 @@ in
       };
     };
 
-    programs.git = {
-      enable = true;
-      lfs.enable = mkDefault true;
+    programs = {
+      git = {
+        enable = true;
+        lfs.enable = mkDefault true;
+
+        signing = mkIf (user.key != null) {
+          format = if cfg.sshKeyFile != null then "ssh" else "openpgp";
+          key = mkDefault (if cfg.sshKeyFile != null then cfg.sshKeyFile else user.key);
+          signByDefault = mkDefault true;
+        };
+
+        settings = mkMerge [
+          {
+            merge.tool = mkDefault "vimdiff";
+            pull.rebase = mkDefault false;
+            push.autoSetupRemote = mkDefault true;
+            user.name = mkDefault user.name;
+          }
+
+          (mkIf (user.email != null) {
+            user.email = mkDefault user.email;
+          })
+
+          (mkIf (user.email != null && user.key != null && cfg.sshKeyFile != null) {
+            gpg.ssh.allowedSignersFile = mkDefault (
+              pkgs.writeText "allowedSigners" ''
+                ${user.email} namespaces="git" ${user.key}
+              ''
+            ).outPath;
+          })
+        ];
+      };
 
       delta = {
         enable = mkDefault true;
@@ -101,27 +126,6 @@ in
           side-by-side = mkDefault true;
         };
       };
-
-      userName = mkDefault user.name;
-      userEmail = mkDefault user.email;
-
-      signing = mkIf (user.key != null) {
-        format = if cfg.sshKeyFile != null then "ssh" else "openpgp";
-        key = mkDefault (if cfg.sshKeyFile != null then cfg.sshKeyFile else user.key);
-        signByDefault = mkDefault true;
-      };
-
-      extraConfig = mkMerge [
-        {
-          merge.tool = mkDefault "vimdiff";
-          pull.rebase = mkDefault false;
-          push.autoSetupRemote = mkDefault true;
-        }
-
-        (mkIf (user.key != null && cfg.sshKeyFile != null) {
-          gpg.ssh.allowedSignersFile = mkDefault allowedSigners.outPath;
-        })
-      ];
     };
   };
 }
