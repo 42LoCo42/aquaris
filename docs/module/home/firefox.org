@@ -45,7 +45,7 @@ Enable Firefox with administrative configuration features.
 
 - =captivePortal=: Support secure captive portal logins using [[https://github.com/FiloSottile/captive-browser][captive-browser]]. Options:
   - =enable= (bool): Enable this submodule. Default: true
-  - =url= (string): This URL will be opened in a private window to test connectivity. Default: http://neverssl.com
+  - =url= (string): This URL will be opened in a private window to test connectivity. Default: http://detectportal.firefox.com/success.txt
   - =getDNS= (string): Command that returns the fallback DNS IP.
     Default: =nmcli device show | grep IP4.DNS=
   - =port=: Port of the SOCKS5 proxy. Default: 1666

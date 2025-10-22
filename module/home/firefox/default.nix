@@ -3,9 +3,11 @@ let
   inherit (lib)
     concatMapAttrsStringSep
     defaultTo
+    elemAt
     filterAttrs
     getExe
     getExe'
+    match
     mkIf
     mkMerge
     mkOption
@@ -150,7 +152,7 @@ in
       url = mkOption {
         type = str;
         description = "This URL will be opened in a private window to test connectivity";
-        default = "http://neverssl.com";
+        default = "http://detectportal.firefox.com/success.txt";
       };
 
       getDNS = mkOption {
@@ -419,7 +421,9 @@ in
           }
         '';
 
-        policies.HttpAllowlist = [ cfg.captivePortal.url ];
+        policies.HttpAllowlist = [
+          (elemAt (match "(https?://[^/]+).*" cfg.captivePortal.url) 0)
+        ];
       };
 
       home.packages = with pkgs; [ captive-browser ];
