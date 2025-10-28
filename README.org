@@ -30,6 +30,7 @@ Want to run services in =virtualisation.oci-containers= for security reasons,
 but all those huge Docker images eat your disk space, require manual updates
 and provide attackers with useful shell utils or, worst of all, root access,
 just because upstream couldn't be bothered to make them work rootless?
+
 Just use Nix packages! Aquaris includes [[file:docs/module/pnoc.org][PNOC]], the module for Pure NixOS Containers,
 which simply bind-mounts service closures from your host's Nix store into empty containers.
 It also runs every container under its own service account
