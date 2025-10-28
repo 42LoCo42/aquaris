@@ -35,9 +35,10 @@ in
         append = true;
         extended = true;
         ignoreAllDups = true;
-        ignorePatterns = [ "l" "n" ];
 
         path = "${cache}/history";
+        save = 2147483647;
+        size = 2147483647;
       };
 
       ${if builtins.hasAttr "initContent" config.programs.zsh
