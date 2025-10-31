@@ -3,6 +3,8 @@ let
   inherit (lib)
     filterAttrs
     flatten
+    foldl'
+    mapAttrs
     mapAttrs'
     mapAttrsToList
     mkIf
@@ -11,6 +13,7 @@ let
     pipe
     recursiveUpdate
     ;
+  inherit (lib.strings) normalizePath;
   inherit (lib.types) attrsOf bool path str submodule;
 
   cfg = config.aquaris.persist;
@@ -100,7 +103,7 @@ in
 
     fileSystems = pipe cfg.dirs [
       (filterAttrs (_: x: x.e))
-      (builtins.mapAttrs (d: x: {
+      (mapAttrs (d: x: {
         device = "${cfg.root}/${d}";
         options = [
           "bind"
@@ -143,7 +146,7 @@ in
             in
             (mkIn root) ++ (mkIn user.home) ++ [{
               "${root}/${d}".d = ug { mode = x.m; };
-              "${user.home}/${d}"."L+".argument = "${root}/${d}";
+              "${user.home}/${d}"."L+".argument = normalizePath "${root}/${d}";
             }];
         in
         {
@@ -155,7 +158,7 @@ in
               ${root}.d = ug { mode = "0700"; };
             }])
             flatten
-            (builtins.foldl' recursiveUpdate { })
+            (foldl' recursiveUpdate { })
           ];
         }))
       (x: x // {
@@ -171,6 +174,10 @@ in
           }))
         ];
       })
+      (mapAttrs (_: mapAttrs' (path: value: {
+        name = normalizePath path;
+        inherit value;
+      })))
     ];
   };
 }
