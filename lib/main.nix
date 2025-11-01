@@ -45,7 +45,7 @@ in
     builtins.attrValues
     (map (x:
       let installer = x.config.aquaris._installer; in
-      { ${x.pkgs.system}.${installer.name} = installer; }))
+      { ${x.pkgs.stdenv.hostPlatform.system}.${installer.name} = installer; }))
     lib.merge
   ];
 }

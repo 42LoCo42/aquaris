@@ -22,7 +22,7 @@ let
     submodule
     ;
 
-  inherit (aquaris.inputs.obscura.packages.${pkgs.system}) sillysecrets;
+  inherit (aquaris.inputs.obscura.packages.${pkgs.stdenv.hostPlatform.system}) sillysecrets;
 
   cfg = config.aquaris.secrets;
 

@@ -1,6 +1,6 @@
 nixpkgs: pkgs: lib:
 let
-  inherit (pkgs) system;
+  inherit (pkgs.stdenv.hostPlatform) system;
   inherit (pkgs.lib) getExe;
 
   mkKexec = crossSystem:

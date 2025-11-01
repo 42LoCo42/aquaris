@@ -122,7 +122,7 @@ in
           text = ''
             shift # get rid of "install" positional argument
             ${cfg.preCommands}
-            ${getExe self.inputs.obscura.packages.${pkgs.system}.lanzaboote} \
+            ${getExe self.inputs.obscura.packages.${pkgs.stdenv.hostPlatform.system}.lanzaboote} \
               install ${toString cfg.extraArgs} "$@"
             ${cfg.postCommands}
           '';
