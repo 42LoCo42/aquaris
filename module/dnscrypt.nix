@@ -113,6 +113,7 @@ in
             cloaking = {
               # custom localhost domains
               "local.host" = "127.0.0.1";
+              "localhost" = "127.0.0.1";
             };
 
             forwarding = {
