@@ -271,23 +271,6 @@ in
             packageRequires = packages;
           })
         ];
-
-      overrides = _: prev: {
-        straight = prev.trivialBuild rec {
-          pname = "straight";
-          version = "b3760f5";
-
-          src = lib.sourceByRegex
-            (pkgs.fetchFromGitHub {
-              owner = "radian-software";
-              repo = "straight.el";
-              rev = version;
-              hash = "sha256-KZUNGvR+UNx1ZpmkEVseSFFRTWUH5+smF84f+5+oe4I=";
-            }) [ "straight.el" ];
-
-          patches = [ ./straight.patch ];
-        };
-      };
     };
 
     home.packages = pipe cfg.config [
