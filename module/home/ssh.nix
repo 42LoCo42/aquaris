@@ -53,9 +53,14 @@ in
 
     services.ssh-agent.enable = true;
 
-    systemd.user.tmpfiles.settings."aquaris-ssh".rules = {
-      "%h/.ssh/id_main"."L+".argument = osConfig.aquaris.secret' "user/${user}/ssh/main";
-      "%h/.ssh/known_hosts"."L+".argument = knownHosts;
-    };
+    # systemd.user.tmpfiles.settings."aquaris-ssh".rules = {
+    #   "%h/.ssh/id_main"."L+".argument = osConfig.aquaris.secret' "user/${user}/ssh/main";
+    #   "%h/.ssh/known_hosts"."L+".argument = knownHosts;
+    # };
+
+    systemd.user.tmpfiles.rules = [
+      "L+ '%h/.ssh/id_main'     - - - - ${osConfig.aquaris.secret' "user/${user}/ssh/main"}"
+      "L+ '%h/.ssh/known_hosts' - - - - ${knownHosts}"
+    ];
   };
 }
