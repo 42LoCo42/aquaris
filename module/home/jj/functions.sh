@@ -78,9 +78,13 @@ jcr() {
 
 # status-then-log
 jsl() {
-	jj status --no-pager
+	args=("--no-pager")
+	if jj config get aquaris.status-ignore-working-copy >/dev/null 2>&1; then
+		args+=("--ignore-working-copy")
+	fi
+	jj status "${args[@]}"
 	echo
-	jj log --no-pager
+	jj log  "${args[@]}"
 }
 
 MAGIC_ENTER_JJ_COMMAND=' jsl'
