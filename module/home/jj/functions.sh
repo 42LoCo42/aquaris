@@ -53,7 +53,7 @@ jps() {
 	rev="$(jfc)" || return 1
 
 	jj bookmark set "$bmk" -r "$rev"
-	jj git push --all
+	jj git push --all --deleted
 }
 
 # clone from github

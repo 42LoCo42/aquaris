@@ -69,6 +69,7 @@ in
         jde = "jj describe --edit";
         jdg = "jj diff --git";
         jdi = "jj diff";
+        jdu = "jj duplicate";
         je = "jj edit";
         jfa = "jj file annotate";
         jfl = "jj file list";
@@ -81,8 +82,9 @@ in
         jor = "jj op restore";
         jos = "jj op show";
         jou = "jj op undo";
-        jpl = "jj git fetch"; # "pull"
-        jpu = "jj git push --all"; # jps is intelligent push
+        jpa = "jj parallelize";
+        jpl = "jj git fetch --all-remotes"; # "pull"
+        jpu = "jj git push --all --deleted"; # jps is intelligent push
         jr = "jj rebase";
         jra = "jj git remote add";
         jrd = "jj git remote remove"; # "delete"
@@ -91,10 +93,12 @@ in
         jrr = "jj git remote rename";
         jrs = "jj git remote set-url";
         js = "jj show";
-        jsc = "js $(jfc)";
+        jsc = "jj show $(jfc)";
+        jsg = "jj show --git";
         jsp = "jj split";
         jsq = "jj squash";
         jsqi = "jj squash -i";
+        jss = "jj show --stat";
         ju = "jj undo";
       };
     };
