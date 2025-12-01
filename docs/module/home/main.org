@@ -77,9 +77,50 @@ Declarative configuration of Java user preference files.
 These use a weird filename encoding mechanism partially described in
 https://victor.kropp.name/blog/java-preferences-api.
 
-Set of strings, where every entry name is a (potentially nested) directory
-beneath =~/.java/.userPrefs/=, in which a =prefs.xml=
-containing the entry value is created.
+Set of either XML values or functions returning strings,
+where every entry name is a (potentially nested) directory
+beneath =~/.java/.userPrefs/=, in which a =prefs.xml= file is created.
+Its content depends on whether an XML value or a function was passed.
+
+XML values are created in the format that [[https://github.com/kislyuk/yq#xml-support][xq]] expects,
+i.e. entity attributes are prefixed with =@=, other items are child entities.
+Example: the following Nix code:
+#+begin_src nix
+  {
+    programs.java.userPrefs = {
+      "my/xmlPref" = {
+        foo = {
+          "@attr" = 1337;
+          val = 42;
+        };
+      };
+    };
+  }
+#+end_src
+will create the file =~/.java/.userPrefs/my/xmlPref/prefs.xml= containing:
+#+begin_src xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <foo attr="1337">
+    <val>42</val>
+  </foo>
+#+end_src
+
+Functions should take & ignore a single argument and return a string,
+which will be used as the raw content of the resulting =prefs.xml= file.
+Example: the following Nix code:
+#+begin_src nix
+  {
+    programs.java.userPrefs = {
+      "my/rawPref" = _: ''
+        This is raw content!
+      '';
+    };
+  }
+#+end_src
+will create the file =~/.java/.userPrefs/my/rawPref/prefs.xml= containing:
+#+begin_src text
+  This is raw content!
+#+end_src
 
 ** [[file:../../../module/home/jj/default.nix][jj]]
 Enable [[https://github.com/martinvonz/jj][jujutsu]], a simple Git-compatible VCS

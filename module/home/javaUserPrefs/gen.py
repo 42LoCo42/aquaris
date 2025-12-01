@@ -4,6 +4,9 @@ import json
 import os
 import pathlib
 import sys
+from io import StringIO
+
+from yq import yq
 
 # https://hg.openjdk.org/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/prefs/Base64.java#l100
 # https://hg.openjdk.org/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/prefs/Base64.java#l115
@@ -45,7 +48,7 @@ def escape(s: str) -> str:
 out = str(os.getenv("out"))
 with open("conf", "w") as conf:
     files = json.load(sys.stdin)
-    for rawPath, text in files.items():
+    for rawPath, entry in files.items():
         oldPath = pathlib.Path(rawPath)
         newPath = pathlib.Path()
 
@@ -56,7 +59,17 @@ with open("conf", "w") as conf:
         outPath.mkdir(parents=True, exist_ok=True)
 
         with open(outPath / "prefs.xml", "w") as f:
-            f.write(text)
+            if entry["raw"]:
+                f.write(entry["val"])
+            else:
+                yq(
+                    input_streams=[StringIO(entry["val"])],
+                    input_format="yaml",
+                    output_stream=f,
+                    output_format="xml",
+                    xml_dtd=True,
+                    exit_func=lambda _: None,
+                )
 
         print(
             "L+ %h/.java/.userPrefs/",
