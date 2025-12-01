@@ -72,6 +72,15 @@ Extra packages: [[https://github.com/AGWA/git-crypt][git-crypt]], [[https://git-
 ** [[file:../../../module/home/htop.nix][htop]]
 Enable [[https://github.com/htop-dev/htop][htop]] with a nice default configuration
 
+** [[file:../../../module/home/javaUserPrefs/default.nix][programs.java.userPrefs]]
+Declarative configuration of Java user preference files.
+These use a weird filename encoding mechanism partially described in
+https://victor.kropp.name/blog/java-preferences-api.
+
+Set of strings, where every entry name is a (potentially nested) directory
+beneath =~/.java/.userPrefs/=, in which a =prefs.xml=
+containing the entry value is created.
+
 ** [[file:../../../module/home/jj/default.nix][jj]]
 Enable [[https://github.com/martinvonz/jj][jujutsu]], a simple Git-compatible VCS
 
