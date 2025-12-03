@@ -1,6 +1,6 @@
 { pkgs, config, lib, ... }:
 let
-  inherit (lib) getExe isFunction mapAttrs mkOption pipe;
+  inherit (lib) getExe isFunction mapAttrs mkIf mkOption pipe;
   inherit (lib.strings) toJSON;
   inherit (lib.types) attrsOf either functionTo lines;
   inherit (pkgs.formats) xml;
@@ -19,7 +19,7 @@ in
     };
   };
 
-  config = {
+  config = mkIf (cfg != { }) {
     assertions = [
       (lib.hm.assertions.assertPlatform "systemd.user.tmpfiles" pkgs lib.platforms.linux)
     ];
