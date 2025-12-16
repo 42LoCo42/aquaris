@@ -89,6 +89,7 @@ in
         jra = "jj git remote add";
         jrd = "jj git remote remove"; # "delete"
         jre = "jj restore";
+        jrei = "jj restore -i";
         jrl = "jj git remote list --no-pager";
         jrr = "jj git remote rename";
         jrs = "jj git remote set-url";
@@ -99,6 +100,9 @@ in
         jsq = "jj squash";
         jsqi = "jj squash -i";
         jss = "jj show --stat";
+        jtd = "jj tag delete";
+        jtl = "jj tag list --no-pager";
+        jts = "jj tag set --allow-move";
         ju = "jj undo";
       };
     };
