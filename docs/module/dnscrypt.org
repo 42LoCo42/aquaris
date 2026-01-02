@@ -4,6 +4,11 @@ Configure a local instance of dnscrypt-proxy for secure DNS resolution.
 ** Options
 - =enable= (bool): Enable the module. Default: false
 
+- =protos=: DNS protocol selection
+  - =dnscrypt= (bool): Enable the usage of dnscrypt servers. Default: true
+  - =doh= (bool): Enable the usage of DoH servers. Default: true
+  - =odoh= (bool): Enable the usage of ODoH servers. Default: false
+
 - =anonDNS=:
   - =enable= (bool): Enable anonymized DNS. Default: false.
     To effectively use this, you *must* configure both of the following options!
@@ -26,3 +31,20 @@ Configure a local instance of dnscrypt-proxy for secure DNS resolution.
 
   - =forwarding= (attrs of string): Set of forwarding rules (domain → IP). Default:
     - ~fritz.box~ = ~192.168.178.1~
+
+- =ui=: Configure the monitoring UI
+  - =enable= (bool): Enable the monitoring UI. Default: true
+
+  - =listenAddress= (str): What address should the monitoring UI listen on?
+    Default: =127.0.0.1:53080=
+
+  - =username= (str): Username for logging into the monitoring UI.
+    Empty for no authentication
+
+  - =password= (str): Password for logging into the monitoring UI.
+    Empty for no authentication
+
+  - =privacyLevel= (either 0, 1 or 2): Privacy level of the monitoring UI.
+    - 0: show all details including client IPs
+    - 1: anonymize client IPs (default)
+    - 2: aggregate data only (no individual queries or domains shown)

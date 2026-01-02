@@ -1,7 +1,8 @@
-{ pkgs, config, lib, ... }:
+{ aquaris, pkgs, config, lib, ... }:
 let
   inherit (lib)
     concatLines
+    ifEnable
     mapAttrsToList
     mkIf
     mkMerge
@@ -11,6 +12,7 @@ let
   inherit (lib.types)
     attrsOf
     bool
+    enum
     listOf
     str
     ;
@@ -30,6 +32,26 @@ in
       type = bool;
       description = "Enable dnscrypt-proxy";
       default = false;
+    };
+
+    protos = {
+      dnscrypt = mkOption {
+        type = bool;
+        description = "Enable the usage of dnscrypt servers";
+        default = true;
+      };
+
+      doh = mkOption {
+        type = bool;
+        description = "Enable the usage of DoH servers";
+        default = true;
+      };
+
+      odoh = mkOption {
+        type = bool;
+        description = "Enable the usage of ODoH servers";
+        default = false;
+      };
     };
 
     anonDNS = {
@@ -73,6 +95,43 @@ in
         type = attrsOf str;
         description = "Set of forwarding rules (domain -> IP)";
         default = { };
+      };
+    };
+
+    ui = {
+      enable = mkOption {
+        type = bool;
+        description = "Enable the monitoring UI";
+        default = true;
+      };
+
+      listenAddress = mkOption {
+        type = str;
+        description = "What address should the monitoring UI listen on?";
+        default = "127.0.0.1:53080";
+      };
+
+      username = mkOption {
+        type = str;
+        description = "Username for logging into the monitoring UI";
+        default = "";
+      };
+
+      password = mkOption {
+        type = str;
+        description = "Password for logging into the monitoring UI";
+        default = "";
+      };
+
+      privacyLevel = mkOption {
+        type = enum [ 0 1 2 ];
+        description = ''
+          Privacy level of the monitoring UI
+          - 0: show all details including client IPs
+          - 1: anonymize client IPs (default)
+          - 2: aggregate data only (no individual queries or domains shown)
+        '';
+        default = 0;
       };
     };
   };
@@ -136,6 +195,7 @@ in
         dnscrypt-proxy = {
           enable = true;
           upstreamDefaults = true;
+
           settings = {
             listen_addresses = [ "127.0.0.1:53" "[::1]:53" ];
 
@@ -146,9 +206,9 @@ in
 
             http3 = true;
 
-            dnscrypt_servers = true;
-            doh_servers = false;
-            odoh_servers = false;
+            dnscrypt_servers = cfg.protos.dnscrypt;
+            doh_servers = cfg.protos.doh;
+            odoh_servers = cfg.protos.odoh;
 
             require_dnssec = true;
             require_nolog = true;
@@ -163,47 +223,73 @@ in
               "1.1.1.1:53"
             ];
 
-            sources = {
-              public-resolvers = {
-                cache_file = "/var/cache/dnscrypt-proxy/public-resolvers.md";
-                minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
-                refresh_delay = 73;
-                urls = [
-                  "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md"
-                  "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md"
-                ];
-              };
+            sources = aquaris.lib.merge [
+              (ifEnable (cfg.protos.dnscrypt) {
+                dnscry-pt-resolvers = {
+                  cache_file = "/var/cache/dnscrypt-proxy/dnscry.pt-resolvers.md";
+                  minisign_key = "RWQM31Nwkqh01x88SvrBL8djp1NH56Rb4mKLHz16K7qsXgEomnDv6ziQ";
+                  prefix = "dnscry.pt-";
+                  refresh_delay = 73;
+                  urls = [ "https://www.dnscry.pt/resolvers.md" ];
+                };
+              })
 
-              quad9-resolvers = {
-                cache_file = "/var/cache/dnscrypt-proxy/quad9-resolvers.md";
-                minisign_key = "RWTp2E4t64BrL651lEiDLNon+DqzPG4jhZ97pfdNkcq1VDdocLKvl5FW";
-                prefix = "quad9-";
-                urls = [
-                  "https://raw.githubusercontent.com/Quad9DNS/dnscrypt-settings/main/dnscrypt/quad9-resolvers.md"
-                  "https://quad9.net/dnscrypt/quad9-resolvers.md"
-                ];
-              };
+              (ifEnable (cfg.protos.dnscrypt || cfg.protos.doh) {
+                public-resolvers = {
+                  cache_file = "/var/cache/dnscrypt-proxy/public-resolvers.md";
+                  minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+                  refresh_delay = 73;
+                  urls = [
+                    "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md"
+                    "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md"
+                  ];
+                };
 
-              dnscry-pt-resolvers = {
-                cache_file = "/var/cache/dnscrypt-proxy/dnscry.pt-resolvers.md";
-                minisign_key = "RWQM31Nwkqh01x88SvrBL8djp1NH56Rb4mKLHz16K7qsXgEomnDv6ziQ";
-                prefix = "dnscry.pt-";
-                refresh_delay = 73;
-                urls = [ "https://www.dnscry.pt/resolvers.md" ];
-              };
+                quad9-resolvers = {
+                  cache_file = "/var/cache/dnscrypt-proxy/quad9-resolvers.md";
+                  minisign_key = "RWTp2E4t64BrL651lEiDLNon+DqzPG4jhZ97pfdNkcq1VDdocLKvl5FW";
+                  prefix = "quad9-";
+                  urls = [
+                    "https://raw.githubusercontent.com/Quad9DNS/dnscrypt-settings/main/dnscrypt/quad9-resolvers.md"
+                    "https://quad9.net/dnscrypt/quad9-resolvers.md"
+                  ];
+                };
+              })
 
-              ####################
+              (ifEnable (cfg.protos.dnscrypt && cfg.anonDNS.enable) {
+                relays = {
+                  cache_file = "/var/cache/dnscrypt-proxy/relays.md";
+                  minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+                  refresh_delay = 73;
+                  urls = [
+                    "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/relays.md"
+                    "https://download.dnscrypt.info/resolvers-list/v3/relays.md"
+                  ];
+                };
+              })
 
-              relays = {
-                cache_file = "/var/cache/dnscrypt-proxy/relays.md";
-                minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
-                refresh_delay = 73;
-                urls = [
-                  "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/relays.md"
-                  "https://download.dnscrypt.info/resolvers-list/v3/relays.md"
-                ];
-              };
-            };
+              (ifEnable (cfg.protos.odoh && cfg.anonDNS.enable) {
+                odoh-servers = {
+                  cache_file = "/var/cache/dnscrypt-proxy/odoh-servers.md";
+                  minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+                  refresh_delay = 73;
+                  urls = [
+                    "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/odoh-servers.md"
+                    "https://download.dnscrypt.info/resolvers-list/v3/odoh-servers.md"
+                  ];
+                };
+
+                odoh-relays = {
+                  cache_file = "/var/cache/dnscrypt-proxy/odoh-relays.md";
+                  minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+                  refresh_delay = 73;
+                  urls = [
+                    "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/odoh-relays.md"
+                    "https://download.dnscrypt.info/resolvers-list/v3/odoh-relays.md"
+                  ];
+                };
+              })
+            ];
 
             blocked_ips.blocked_ips_file = pipe cfg.rules.blocking [
               concatLines
@@ -279,6 +365,17 @@ in
               -addext 'extendedKeyUsage = serverAuth'  \
               -out ${doh.crt}
           '';
+        };
+      };
+    })
+
+    (mkIf cfg.ui.enable {
+      services.dnscrypt-proxy.settings = {
+        monitoring_ui = {
+          enabled = true;
+          listen_address = cfg.ui.listenAddress;
+          inherit (cfg.ui) username password;
+          privacy_level = cfg.ui.privacyLevel;
         };
       };
     })
