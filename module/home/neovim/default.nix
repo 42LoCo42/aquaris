@@ -15,7 +15,8 @@ in
       vimdiffAlias = true;
 
       extraConfig = builtins.readFile ./init.vim;
-      extraLuaConfig = builtins.readFile ./nvim.lua;
+      ${if builtins.hasAttr "initLua" config.programs.neovim
+      then "initLua" else "extraLuaConfig"} = builtins.readFile ./nvim.lua;
 
       plugins = with pkgs.vimPlugins; [
         airline
