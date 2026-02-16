@@ -59,6 +59,8 @@ in
           'm:{a-z\-}={A-Z\_}' \
           'r:[^[:alpha:]]||[[:alpha:]]=** r:|=* m:{a-z\-}={A-Z\_}' \
           'r:|?=** m:{a-z\-}={A-Z\_}'
+
+        ZSH_FZF_HISTORY_SEARCH_END_OF_LINE=true
       '';
 
       plugins = with pkgs; [
