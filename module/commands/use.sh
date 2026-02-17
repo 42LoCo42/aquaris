@@ -3,11 +3,13 @@ set -eEuo pipefail
 
 # prepend nixpkgs to arguments that are only package names
 nixpkgs="$(realpath "/etc/nix/channel")"
+options=(-L)
 packages=()
 run=nix
 for i in "$@"; do
 	if grep -q '^-' <<<"$i"; then
-		: # do nothing on options
+		options+=("$i")
+		continue
 	elif grep -q '[:#]' <<<"$i"; then
 		# flake type (:) and/or fragment (#) was specified!
 		# this might be a thirdparty (non-nixpkgs) package
@@ -28,4 +30,4 @@ if [ -z "${AQUARIS_USE+x}" ]; then
 	export AQUARIS_USE=1
 	export PATH="/AQUARIS_USE:$PATH"
 fi
-exec "$run" shell -L "${packages[@]}"
+exec "$run" shell "${options[@]}" "${packages[@]}"
