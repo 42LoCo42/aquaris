@@ -139,6 +139,7 @@ in
 
         systemd = {
           extraBin = {
+            iconv = "${pkgs.musl.bin}/bin/iconv";
             objcopy = "${pkgs.binutils}/bin/objcopy";
             systemd-pcrextend = "${pkgs.systemd}/lib/systemd/systemd-pcrextend";
           };
@@ -157,9 +158,8 @@ in
           services = {
             extract-pcr-sections = {
               script = ''
-                entry="/boot/EFI/Linux/$(
-                  cat /sys/firmware/efi/efivars/LoaderEntrySelected-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f \
-                  | tail -c+5 | tr -d '\0')"
+                var="/sys/firmware/efi/efivars/LoaderEntrySelected-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f"
+                entry="/boot/EFI/Linux/$(tail -c+5 "$var" | iconv -f utf16le)"
 
                 objcopy -O binary -j .pcrpkey "$entry" "/run/systemd/tpm2-pcr-public-key.pem"
                 objcopy -O binary -j .pcrsig  "$entry" "/run/systemd/tpm2-pcr-signature.json"
