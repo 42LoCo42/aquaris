@@ -15,13 +15,15 @@ in
   options.aquaris.jj = mkEnableOption "jujutsu, a simple git-compatible VCS";
 
   config = mkIf cfg {
+    aquaris.persist = {
+      ".config/jj/repos" = { };
+    };
+
     programs.jujutsu = {
       enable = true;
       settings = mkMerge [
         {
           ui = {
-            always-allow-large-revsets = true;
-
             diff-formatter = [
               (getExe pkgs.difftastic)
               "--color=always"

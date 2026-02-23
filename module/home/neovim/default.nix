@@ -19,12 +19,12 @@ in
       then "initLua" else "extraLuaConfig"} = builtins.readFile ./nvim.lua;
 
       plugins = with pkgs.vimPlugins; [
-        airline
         ale
         autoclose-nvim
         deoplete-nvim
-        gitgutter
         gruvbox-nvim
+        vim-airline
+        vim-gitgutter
         vim-nix
         vim-suda
       ];
