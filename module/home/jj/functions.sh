@@ -35,12 +35,17 @@ jfb() {
 # find (valid) commit: has content & description
 jfc() {
 	jst '..@' '
-		self.change_id() ++ " " ++
-		self.empty() || self.description().trim().len() <= 0 ++ "\n"' \
-	| while read -r rev skip; do
-		"$skip" && continue
-		echo "$rev"
-		return 0
+		join(" ",
+			self.change_id(),
+			self.parents().len() > 1,
+			!self.empty(),
+			self.description().trim().len() > 0,
+		) ++ "\n"' \
+	| while read -r rev merge data desc; do
+		if $merge || ($data && $desc); then
+			echo "$rev $merge $desc"
+			return 0
+		fi
 	done
 
 	echo "[1;31mReached root commit without finding a valid commit[m" >&2
@@ -50,7 +55,11 @@ jfc() {
 # "intelligent" push - finds a bookmark and moves it to the first non-empty commit
 jps() {
 	if [ -n "$1" ]; then bmk="$1"; else bmk="$(jfb)" || return 1; fi
-	rev="$(jfc)" || return 1
+	read -r rev merge desc < <(jfc) || return 1
+
+	if $merge && ! $desc; then
+		jj describe "$rev" -m "merge"
+	fi
 
 	jj bookmark set "$bmk" -r "$rev"
 	jj git push --all --deleted
