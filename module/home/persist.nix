@@ -45,6 +45,10 @@ in
         ".local/share/direnv" = { };
       })
 
+      (mkIf config.programs.direnv-instant.enable {
+        ".cache/direnv-instant" = { };
+      })
+
       (mkIf config.programs.gpg.enable {
         ".gnupg" = { m = "0700"; };
       })
