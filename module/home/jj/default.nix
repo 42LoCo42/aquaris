@@ -62,13 +62,13 @@ in
         j = "jj";
         ja = "jj abandon";
         jbd = "jj bookmark delete";
-        jbl = "jj bookmark list --no-pager";
-        jbla = "jj bookmark list --all --no-pager";
+        jbl = "jj bookmark list";
+        jbla = "jj bookmark list --all";
         jbs = "jj bookmark set";
         jbt = "jj bookmark track";
         jc = "jj git clone --colocate";
         jd = "jj describe -m";
-        jde = "jj describe --edit";
+        jde = "jj describe --editor";
         jdg = "jj diff --git";
         jdi = "jj diff";
         jdu = "jj duplicate";
@@ -92,7 +92,7 @@ in
         jrd = "jj git remote remove"; # "delete"
         jre = "jj restore";
         jrei = "jj restore -i";
-        jrl = "jj git remote list --no-pager";
+        jrl = "jj git remote list";
         jrr = "jj git remote rename";
         jrs = "jj git remote set-url";
         js = "jj show";
@@ -103,7 +103,7 @@ in
         jsqi = "jj squash -i";
         jss = "jj show --stat";
         jtd = "jj tag delete";
-        jtl = "jj tag list --no-pager";
+        jtl = "jj tag list";
         jts = "jj tag set --allow-move";
         ju = "jj undo";
       };
