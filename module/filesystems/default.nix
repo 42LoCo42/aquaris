@@ -181,6 +181,11 @@ in
             name = "zfsnaps";
             text = builtins.readFile ./zfsnaps.sh;
           })
+
+          (pkgs.writeShellApplication {
+            name = "zfclean";
+            text = builtins.readFile ./zfclean.sh;
+          })
         ];
       })
     ];
