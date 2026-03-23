@@ -30,4 +30,11 @@ if [ -z "${AQUARIS_USE+x}" ]; then
 	export AQUARIS_USE=1
 	export PATH="/AQUARIS_USE:$PATH"
 fi
-exec "$run" shell "${options[@]}" "${packages[@]}"
+
+export \
+	NIXPKGS_ALLOW_BROKEN=1 \
+	NIXPKGS_ALLOW_UNFREE=1 \
+	NIXPKGS_ALLOW_INSECURE=1 \
+	NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1
+
+exec "$run" shell --impure "${options[@]}" "${packages[@]}"
