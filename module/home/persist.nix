@@ -42,11 +42,8 @@ in
       }
 
       (mkIf config.programs.direnv.enable {
-        ".local/share/direnv" = { };
-      })
-
-      (mkIf config.programs.direnv-instant.enable {
         ".cache/direnv-instant" = { };
+        ".local/share/direnv" = { };
       })
 
       (mkIf config.programs.gpg.enable {

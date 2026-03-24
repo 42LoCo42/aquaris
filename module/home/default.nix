@@ -23,9 +23,7 @@ in
         };
       };
 
-      sharedModules = (aquaris.lib.importDir ./.) ++ [
-        aquaris.inputs.obscura.packages.${pkgs.stdenv.system}.direnv-instant.module
-      ];
+      sharedModules = aquaris.lib.importDir ./.;
     };
 
     ##### load HM vars globally #####
