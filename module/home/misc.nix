@@ -35,6 +35,7 @@ in
     };
 
     programs = {
+      fd.enable = true;
       ripgrep.enable = true;
       zoxide.enable = true;
     };
