@@ -71,6 +71,7 @@ in
 
       settings = {
         auto-optimise-store = true;
+        deprecated-features = [ "or-as-identifier" ]; # would hit false positives in nixpkgs
         experimental-features = [ "nix-command" "flakes" ];
         keep-going = true;
         use-xdg-base-directories = true;
