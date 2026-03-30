@@ -16,8 +16,10 @@ let
     pipe
     ;
   inherit (lib.types)
+    anything
     attrsOf
     bool
+    coercedTo
     either
     functionTo
     int
@@ -43,6 +45,13 @@ let
     default = "";
   };
 
+  pcode = mkOption {
+    type = (coercedTo str (x: {
+      __toString = _: if x == "" then "" else "(${x})";
+    })) (attrsOf anything);
+    default = "";
+  };
+
   toString' = x: if builtins.isBool x && x then "t" else toString x;
   ifEnable' = cond: text: if cond then text else "";
 
@@ -61,10 +70,10 @@ let
       autoload = code;
       hook = code;
 
-      bind = code;
-      bind' = code;
-      bind-keymap = code;
-      bind-keymap' = code;
+      bind = pcode;
+      bind' = pcode;
+      bind-keymap = pcode;
+      bind-keymap' = pcode;
 
       defer = mkOption { type = either bool int; default = false; };
       demand = mkOption { type = bool; default = false; };
@@ -111,7 +120,8 @@ let
               "package"
             ])
             (filterAttrs (_: flip pipe [
-              (flip builtins.elem [ false "" ])
+              toString'
+              (flip builtins.elem [ "false" "" ])
               (x: !x)
             ]))
             (mapAttrsToList (k: v: ''
