@@ -63,6 +63,7 @@ jps() {
 
 	jj bookmark set "$bmk" -r "$rev"
 	jj git push --all --deleted
+	git push --tags --force
 }
 
 # clone from github
