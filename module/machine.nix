@@ -1,6 +1,6 @@
 { self, aquaris, lib, config, pkgs, ... }:
 let
-  inherit (lib) mkDefault mkMerge mkOption;
+  inherit (lib) mkDefault mkIf mkMerge mkOption versionAtLeast;
   inherit (lib.types) bool int nullOr str;
 
   inherit (aquaris.inputs) nixpkgs;
@@ -39,17 +39,6 @@ in
         "vt.default_blu=0x28,0x1d,0x1a,0x21,0x88,0x86,0x6a,0x84,0x74,0x34,0x26,0x2f,0x98,0x9b,0x7c,0xb2"
       ];
 
-      loader = {
-        efi.canTouchEfiVariables = mkDefault true;
-        timeout = mkDefault 0;
-
-        systemd-boot = {
-          enable = mkDefault (! cfg.secureboot);
-          configurationLimit = cfg.keepGenerations;
-          editor = mkDefault false;
-        };
-      };
-
       tmp.useTmpfs = mkDefault true;
     };
 
@@ -67,15 +56,21 @@ in
     };
 
     nix = {
-      package = mkDefault pkgs.lix;
+      package = mkDefault pkgs.lixPackageSets.latest.lix;
 
-      settings = {
-        auto-optimise-store = true;
-        deprecated-features = [ "or-as-identifier" ]; # would hit false positives in nixpkgs
-        experimental-features = [ "nix-command" "flakes" ];
-        keep-going = true;
-        use-xdg-base-directories = true;
-      };
+      settings = mkMerge [
+        {
+          auto-optimise-store = true;
+
+          experimental-features = [ "nix-command" "flakes" ];
+          keep-going = true;
+          use-xdg-base-directories = true;
+        }
+
+        (mkIf (versionAtLeast config.nix.package.version "2.95") {
+          deprecated-features = [ "or-as-identifier" ]; # would hit false positives in nixpkgs
+        })
+      ];
 
       nixPath = [ "nixpkgs=/etc/nix/channel" ];
 
