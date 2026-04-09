@@ -38,7 +38,12 @@ doInstall() {
 	nix copy "@self@" --to "$mnt"
 
 	log "Building system configuration"
-	sys="$(nom build \
+	sys="$(systemd-run \
+		--wait --pipe --quiet \
+		--setenv PATH="$PATH" \
+		--property Delegate=yes \
+		--property DelegateSubgroup=supervisor \
+		nom build \
 		--extra-experimental-features "nix-command flakes" \
 		--extra-substituters "@subs@" \
 		--extra-trusted-public-keys "@keys@" \
