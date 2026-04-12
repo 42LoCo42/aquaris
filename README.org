@@ -44,7 +44,6 @@ if secrets should be provided as files in a container.
   - [[file:docs/module/dnscrypt.org][Local dnscrypt proxy]]
   - [[file:docs/module/filesystems.org][Filesystems]]
   - [[file:docs/module/home/main.org][home-manager settings]]
-  - [[file:docs/module/lanzaboote.org][Secure Boot using Lanzaboote]]
   - [[file:docs/module/machine.org][General machine settings]]
   - [[file:docs/module/persist.org][root-on-tmpfs and persistency]]
   - [[file:docs/module/pnoc.org][Container management]]

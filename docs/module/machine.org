@@ -9,4 +9,6 @@ General machine settings
   (null to disable autocleanup). Default: 5
 
 - =secureboot= (boolean): Whether to enable Secure Boot support using [[file:lanzaboote.org][lanzaboote]].
+  Keys will be automatically generated & enrolled (incl. Microsoft keys by default).
+  Measured Boot is enabled over PCRs 0, 1, 2, 3, 4 and 7.
   Default: true
