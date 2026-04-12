@@ -46,6 +46,19 @@ with the =fs= object serving as a holder for partition content types and default
   - =name= (string): Name of the zpool.
     Default: zpool entry name
 
+  - =datasets=: Dataset configuration
+    - =name= (string): Name of the dataset.
+      Default: pool name/entry name
+
+    - =mountpoint= (null or path): Mount point of the dataset.
+      Default: name without first component (e.g. =nixos/nix= would be mounted at =/nix=)
+
+    - =options=: (set of strings): Options of the dataset.
+      Default: empty set
+
+    - =mountOpts= (list of strins): Mount options of the dataset.
+      Default: =[ "defaults" "nosuid" ]=
+
   - =poolOpts= (set of strings): Options set on pool creation (see =man zpoolprops=).
     Default:
     #+begin_src nix

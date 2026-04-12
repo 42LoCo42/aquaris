@@ -44,10 +44,12 @@ in
     _mounts = mkOption {
       type = anything;
       readOnly = true;
-      default.fileSystems.${config.mountpoint} = {
-        device = config.name;
-        fsType = "zfs";
-        options = config.mountOpts ++ [ "zfsutil" ];
+      default = if config.mountpoint == null then { } else {
+        fileSystems.${config.mountpoint} = {
+          device = config.name;
+          fsType = "zfs";
+          options = config.mountOpts ++ [ "zfsutil" ];
+        };
       };
     };
   };
