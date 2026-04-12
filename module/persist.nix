@@ -105,6 +105,7 @@ in
       (filterAttrs (_: x: x.e))
       (mapAttrs (d: x: {
         device = "${cfg.root}/${d}";
+        fsType = "bind"; # doesn't matter
         options = [
           "bind"
           "x-aquaris.persist=${x.m}"
