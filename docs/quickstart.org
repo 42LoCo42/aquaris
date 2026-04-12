@@ -19,8 +19,8 @@ adapt it from [[file:../example/machines/example/default.nix][the example]].
 
 Generate the required ID and key:
 #+begin_src shell
-  dbus-uuidgen # machine ID -> put in your machine file
-  sesi keygen "keys/<machineName>.key" # prints public key -> copy for later
+  dbus-uuidgen # machine ID -> aquaris.machine.id
+  sesi keygen "keys/<machineName>.key" # prints public key -> aquaris.secrets.pub
 #+end_src
 
 Adapt the filesystem configuration and other stuff to your requirements.

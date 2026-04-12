@@ -1,6 +1,6 @@
-{ aquaris, ... }: {
+{ aquaris, lib, ... }: {
   aquaris = {
-    users = aquaris.lib.merge [
+    users = lib.mkMerge [
       { inherit (aquaris.cfg.users) alice; }
       { alice.admin = true; }
     ];
@@ -8,7 +8,16 @@
     # generate via dbus-uuidgen
     machine.id = "98754c9fa9a46bdbc5b69bdd67503d1f";
 
-    persist.enable = true;
+    # generate via sesi keygen keys/<machineName>.key
+    secrets.pub = "nvebU7_nZJL-LZsV_rzNwPNpsoIKdJv_RzhZCuWtn14";
+
+    persist = {
+      enable = true;
+
+      dirs = {
+        "/var/lib/example" = { };
+      };
+    };
 
     filesystems = { fs, ... }: {
       zpools.rpool = fs.defaultPool;
@@ -27,16 +36,6 @@
     };
 
     dnscrypt.enable = true;
-
-    secrets.rules = {
-      "@machine/something" = {
-        user = "alice";
-        group = "wheel";
-        mode = "0444";
-      };
-    };
-
-    persist.dirs."/abc def/ghi jkl" = { };
   };
 
   home-manager.sharedModules = [{
