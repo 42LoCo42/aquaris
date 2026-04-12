@@ -145,9 +145,14 @@ with their respective arguments, except for =swap=.
 This is not a function. Just use =content = fs.swap;=
 
 *** =luks=: A partition encrypted with LUKS2
-- =keyFile= (null or path): Path to a key file used for encryption.
-  If null, a password is used instead.
-  Default: null
+- =tpmDecrypt= (bool): Should this device be decrypted using the TPM?
+  If set, automatically enrolls an empty TPM2 decryption policy.
+  Default: false
+
+- =tpmMeasure= (bool): Should the LUKS identity be measured into PCR 15?
+  This should be set for the root partition to lock the decryption key
+  after it has been retrieved from the TPM.
+  Default: false
 
 - =formatOpts= (list of strings): Options for =cryptsetup luksFormat=
   Default: empty list

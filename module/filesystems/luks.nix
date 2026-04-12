@@ -1,31 +1,46 @@
 util: { lib, config, ... }:
 let
-  inherit (lib) mkOption;
-  inherit (lib.types) anything coercedTo functionTo listOf nullOr package path str;
+  inherit (lib)
+    flatten
+    ifEnable
+    join
+    mkOption
+    ;
+
+  inherit (lib.types)
+    anything
+    bool
+    functionTo
+    listOf
+    str
+    ;
 
   mapper = device: "/dev/mapper/${baseNameOf device}";
-
-  opts =
-    if config.keyFile == null
-    then [ "--key-file" ''"$key"'' ]
-    else [ "--key-file" config.keyFile ];
 in
 {
   options = {
-    keyFile = mkOption {
-      description = "Path to the key file";
-      type = nullOr (coercedTo package (x: x.outPath) path);
-      default = null;
+    tpmDecrypt = mkOption {
+      description = "Should this device be decrypted using the TPM?";
+      type = bool;
+      default = false;
+    };
+
+    tpmMeasure = mkOption {
+      description = "Should the LUKS identity be measured into PCR 15?";
+      type = bool;
+      default = false;
     };
 
     formatOpts = mkOption {
       description = "Options for cryptsetup luksFormat";
       type = listOf str;
+      default = [ ];
     };
 
     openOpts = mkOption {
       description = "Options for cryptsetup open";
       type = listOf str;
+      default = [ ];
     };
 
     content = mkOption {
@@ -36,44 +51,52 @@ in
     _create = mkOption {
       type = functionTo str;
       readOnly = true;
-      default = device:
-        let
-          ask = ''
-            key="$(mktemp)"
-            while true; do
-              p1="$(systemd-ask-password "Password for ${device}:")"
-              p2="$(systemd-ask-password "Verify password:")"
+      default = device: ''
+        key="$(mktemp)"
 
-              if [ "$p1" == "$p2" ]; then
-                echo -n "$p1" > "$key"
-                break
-              else
-                echo "[1;31mError:[m Passwords don't match!" >&2
-              fi
-            done
-          '';
+        cryptsetup luksFormat            \
+          --batch-mode                   \
+          --key-file "$key"              \
+          ${join " " config.formatOpts}  \
+          ${device}
 
-          join = builtins.concatStringsSep " ";
-        in
-        (if config.keyFile == null then ask else "") + ''
-          cryptsetup luksFormat --batch-mode ${join config.formatOpts} ${device}
-          cryptsetup open ${join config.openOpts} ${device} ${baseNameOf device}
-          ${config.content._create (mapper device)}
-        '';
+        ${if !config.tpmDecrypt then "" else ''
+          systemd-cryptenroll        \
+            --tpm2-device auto       \
+            --unlock-key-file "$key" \
+            ${device}
+        ''}
+
+        cryptsetup open                \
+          --batch-mode                 \
+          --key-file "$key"            \
+          ${join " " config.openOpts}  \
+          ${device} ${baseNameOf device}
+
+        ${config.content._create (mapper device)}
+      '';
     };
 
     _mounts = mkOption {
       type = functionTo anything;
       readOnly = true;
       default = device: util.merge [
-        { luks.${baseNameOf device} = { inherit device; }; }
+        {
+          luks.${baseNameOf device} = {
+            inherit device;
+
+            allowDiscards = true;
+            bypassWorkqueues = true;
+
+            crypttabExtraOpts = flatten [
+              "try-empty-password=yes"
+              (ifEnable config.tpmDecrypt [ "tpm2-device=auto" ])
+              (ifEnable config.tpmMeasure [ "tpm2-measure-pcr=yes" ])
+            ];
+          };
+        }
         (config.content._mounts (mapper device))
       ];
     };
-  };
-
-  config = {
-    formatOpts = opts;
-    openOpts = opts;
   };
 }

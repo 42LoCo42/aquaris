@@ -1,4 +1,4 @@
-{ aquaris, lib, ... }: {
+{ aquaris, ... }: {
   aquaris = {
     users = aquaris.lib.merge [
       { inherit (aquaris.cfg.users) alice; }
@@ -15,7 +15,14 @@
 
       disks."/dev/disk/by-id/virtio-root".partitions = [
         fs.defaultBoot
-        { content = fs.luks { content = fs.zpool (p: p.rpool); }; }
+        {
+          content = fs.luks {
+            content = fs.zpool (p: p.rpool);
+
+            tpmDecrypt = true;
+            tpmMeasure = true;
+          };
+        }
       ];
     };
 
@@ -30,18 +37,6 @@
     };
 
     persist.dirs."/abc def/ghi jkl" = { };
-  };
-
-  boot = {
-    kernelParams = [ "foo=bar" ];
-
-    initrd.luks.devices."virtio-root-part2" = {
-      allowDiscards = true;
-      crypttabExtraOpts = [
-        "tpm2-device=auto"
-        "tpm2-measure-pcr=yes"
-      ];
-    };
   };
 
   home-manager.sharedModules = [{
