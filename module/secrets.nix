@@ -1,17 +1,29 @@
 { aquaris, self, pkgs, lib, config, ... }:
 let
   inherit (lib)
+    attrNames
     concatLines
+    elem
+    elemAt
+    filter
     filterAttrs
+    flip
+    fromJSON
     getExe
+    hasAttr
     hasPrefix
+    hashString
     mapAttrs
     mapAttrsToList
     mkIf
     mkOption
     pipe
+    readFile
     removePrefix
+    splitString
+    versionAtLeast
     ;
+
   inherit (lib.types)
     attrsOf
     bool
@@ -22,24 +34,31 @@ let
     submodule
     ;
 
-  inherit (aquaris.inputs.obscura.packages.${pkgs.stdenv.hostPlatform.system}) sillysecrets;
+  inherit (self.inputs.obscura.packages.${pkgs.stdenv.system}) sillysecrets;
 
   cfg = config.aquaris.secrets;
 
-  storageFile = builtins.path { path = "${self.cfgDir}/sesi.json"; };
-  structureFile = builtins.path { path = "${self.cfgDir}/sesi.yaml"; };
+  secretsFile = builtins.path { path = "${self.cfgDir}/sillysecrets.yaml"; };
 
-  structure = pipe structureFile [
-    (x: (pkgs.runCommand "structure" {
+  structure = pipe secretsFile [
+    (x: (pkgs.runCommandLocal "structure" {
       nativeBuildInputs = with pkgs; [ yq ];
-    }) "yq < ${x} > $out")
-    builtins.readFile
-    builtins.fromJSON
+    }) "yq -s '.[0]' < ${x} > $out")
+    readFile
+    fromJSON
   ];
+
+  storageRaw = pipe secretsFile [
+    readFile
+    (splitString "\n\n--- # Don't touch!\n\n")
+    (flip elemAt 1)
+  ];
+
+  storage = fromJSON storageRaw;
 
   decryptDirTop = cfg.directory;
   decryptDirMnt = "${dirOf decryptDirTop}/.${baseNameOf decryptDirTop}.d";
-  decryptDirOut = "${decryptDirMnt}/${builtins.hashFile "sha256" storageFile}";
+  decryptDirOut = "${decryptDirMnt}/${hashString "sha256" storageRaw}";
 
   machineDst = "machine/${aquaris.name}";
   machineLnk = "@machine";
@@ -49,7 +68,7 @@ let
     readOnly = true;
     default = if !cfg.enable then _: "/dev/null" else
     name:
-    if checked && !(builtins.elem name cfg.all)
+    if checked && !(elem name cfg.all)
     then abort "`${name}` is not a defined secret!"
     else "${decryptDirTop}/${name}";
   };
@@ -132,13 +151,11 @@ in
         type = listOf str;
         readOnly = true;
         default = if !cfg.enable then [ ] else
-        pipe storageFile [
-          builtins.readFile
-          builtins.fromJSON
-          (filterAttrs (_: x: builtins.hasAttr cfg.pub x.rcp))
-          builtins.attrNames
+        pipe storage [
+          (filterAttrs (_: x: hasAttr cfg.pub x.rcp))
+          attrNames
           (x: pipe x [
-            (builtins.filter (hasPrefix "${machineDst}/"))
+            (filter (hasPrefix "${machineDst}/"))
             (map (y: "${machineLnk}${removePrefix machineDst y}"))
             (y: x ++ y)
           ])
@@ -150,6 +167,11 @@ in
   config = mkIf cfg.enable {
 
     ##### management #####
+
+    assertions = [{
+      assertion = versionAtLeast sillysecrets.version "2.2.0";
+      message = "sillysecrets version needs to be >= 2.2.0 for combined secrets file support!";
+    }];
 
     environment.systemPackages = [ sillysecrets ];
 
@@ -200,8 +222,10 @@ in
 
                 rm -rvf "${decryptDirOut}"
 
-                sesi --debug -k "${cfg.key}" \
-                  -j "${storageFile}" -y "${structureFile}" \
+                sesi                      \
+                  --debug                 \
+                  --key  "${cfg.key}"     \
+                  --file "${secretsFile}" \
                   dump "${decryptDirOut}"
 
                 # create the machine alias
