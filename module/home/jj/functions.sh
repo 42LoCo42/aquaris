@@ -1,74 +1,62 @@
-# show template
-jst() {
-	r="$1"; t="$2"; shift 2
+#!/usr/bin/env bash
 
+# find commit all
+jfca() {
 	jj log \
-		--no-pager \
 		--no-graph \
+		--no-pager \
 		--ignore-working-copy \
-		-r "$r" -T "$t" "$@"
+		--template 'stringify(self.change_id()) ++ "\n"' \
+		--color always \
+		--revision "$1"
 }
 
-# find bookmark
-jfb() {
-	jst '..@' 'if(
-		self.local_bookmarks().len() > 0,
-			self.change_id() ++ " " ++
-			self.local_bookmarks().map(|x| x.name()) ++ "\n",
-		"")' \
-	| while read -r rev name rest; do
-		if [ -z "$rest" ]; then
-			echo "$name"
-			return 0
-		fi
-
-		echo -n "[1;31mMore than one bookmark at [m$(
-			jst "$rev" 'self.change_id().shortest(8)' --color always) :: " >&2
-		jst "$rev" 'self.local_bookmarks() ++ "\n"' >&2
-		return 1
-	done
-
-	echo "[1;31mReached root commit without finding a bookmark[m" >&2
-	return 1
+# find commit one
+jfco() {
+	jj show \
+		--no-patch \
+		--no-pager \
+		--ignore-working-copy \
+		--template 'stringify(self.change_id()) ++ "\n"' \
+		--color always \
+		"$1"
 }
 
-# find (valid) commit: has content & description
-jfc() {
-	jst '..@' '
-		join(" ",
-			self.change_id(),
-			self.parents().len() > 1,
-			!self.empty(),
-			self.description().trim().len() > 0,
-		) ++ "\n"' \
-	| while read -r rev merge data desc; do
-		if $merge || ($data && $desc); then
-			echo "$rev $merge $desc"
-			return 0
-		fi
-	done
-
-	echo "[1;31mReached root commit without finding a valid commit[m" >&2
-	return 1
-}
-
-# "intelligent" push - finds a bookmark and moves it to the first non-empty commit
+# "intelligent" push
 jps() {
-	if [ -n "$1" ]; then bmk="$1"; else bmk="$(jfb)" || return 1; fi
-	read -r rev merge desc < <(jfc) || return 1
+	# give merge commits a default description
+	jfca '..@ & merges() & mutable() & description(exact:"")' |
+		while read -r rev; do
+			jj describe --message "merge" "$rev"
+		done
 
-	if $merge && ! $desc; then
-		jj describe "$rev" -m "merge"
+	# find next pushable commit
+	to="$(jfco 'closest_pushable()')" || return 1
+
+	if [ -z "$to" ]; then
+		echo "Nothing to push!" >&2
+		return
 	fi
 
-	jj bookmark set "$bmk" -r "$rev"
+	if (($#)); then
+		# if we have explicit bookmarks, set those
+		jj bookmark set --revision "$to" "$@"
+	elif [ -z "$(jfca 'closest_bookmark()')" ]; then
+		# if there are no bookmarks, create main
+		jj bookmark set --revision "$to" "main"
+	else
+		# move bookmarks from nearest commit
+		from="$(jfco 'closest_bookmark()')" || return 1
+		jj bookmark move --from "$from" --to "$to"
+	fi
+
 	jj git push --all --deleted
 	git push --tags --force
 }
 
 # clone from github
 jcg() {
-	repo="$(sed -E 's|^https://github.com/([^/]+/[^/]+).*|git@github.com:\1.git|' <<< "$1")"
+	repo="$(sed -E 's|^https://github.com/([^/]+/[^/]+).*|git@github.com:\1.git|' <<<"$1")"
 	shift
 	jj git clone --colocate "$repo" "$@"
 }
@@ -77,6 +65,12 @@ jcg() {
 jdn() {
 	jj describe -m "$@"
 	jj new
+}
+
+# show content
+jsc() {
+	rev="$(jfco 'closest_pushable()')" || return 1
+	jj show "$rev"
 }
 
 ##### functions for magic enter #####
@@ -94,7 +88,7 @@ jsl() {
 	fi
 	jj status "${args[@]}"
 	echo
-	jj log  "${args[@]}"
+	jj log "${args[@]}"
 }
 
 MAGIC_ENTER_JJ_COMMAND=' jsl'

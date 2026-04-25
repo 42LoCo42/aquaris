@@ -31,6 +31,20 @@ in
               "$right"
             ];
           };
+
+          revset-aliases = {
+            "closest_bookmark()" = ''
+              heads(..@ & bookmarks())
+            '';
+
+            "closest_pushable()" = ''
+              heads(
+                ..@ & mutable()
+                & ~description(exact:"")
+                & (~empty() | merges())
+              )
+            '';
+          };
         }
 
         (mkIf (builtins.hasAttr "name" git.settings.user) { user.name = git.settings.user.name; })
@@ -97,7 +111,6 @@ in
         jrs = "jj git remote set-url";
         jrv = "jj revert";
         js = "jj show";
-        jsc = "jj show $(jfc | cut -d ' ' -f 1)";
         jsg = "jj show --git";
         jsp = "jj split";
         jsq = "jj squash";
