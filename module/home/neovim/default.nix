@@ -10,9 +10,14 @@ in
     programs.neovim = {
       enable = true;
       defaultEditor = true;
+
       viAlias = true;
       vimAlias = true;
       vimdiffAlias = true;
+
+      # to silence HM
+      withPython3 = true;
+      withRuby = true;
 
       extraConfig = builtins.readFile ./init.vim;
       ${if builtins.hasAttr "initLua" config.programs.neovim
