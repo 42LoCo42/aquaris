@@ -7,9 +7,9 @@ let
 
     runtimeInputs = with pkgs; [
       diffutils
+      dix
       jq
       nix-output-monitor
-      nvd
     ];
 
     text = aquaris.lib.subsT ./sys.sh {

@@ -50,7 +50,7 @@ build() {
 	new="$($sudo nom build --no-link --print-out-paths "${args[@]}" \
 		"$cfg#nixosConfigurations.@name@.config.system.build.toplevel")"
 
-	nvd diff /run/current-system "$new"
+	dix /run/current-system "$new"
 }
 
 update() {
