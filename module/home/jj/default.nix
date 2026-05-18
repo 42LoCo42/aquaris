@@ -38,9 +38,9 @@ in
             '';
 
             "closest_pushable()" = ''
-              heads(
-                ..@ & mutable()
+              heads(..@
                 & ~description(exact:"")
+                & (mutable() | (bookmarks() ~ remote_bookmarks()))
                 & (~empty() | merges())
               )
             '';
