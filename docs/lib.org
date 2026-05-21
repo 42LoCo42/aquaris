@@ -30,6 +30,15 @@ Functions:
 - =importDir=: Identical to =importDir' {}= aka.: takes a directory,
   imports all files (except =default.nix=) and subdirectories.
 
+- =importTree=: A function to recursively import *all* Nix files in a directory.
+  Takes two parameters:
+  - a directory path
+  - an exclusion filter, which can be:
+    - a predicate returning true if a path should be excluded
+    - a list of excluded paths
+    - or anything else (e.g. ~null~) to disable this function
+    Paths are given relative to the imported directory with a leading slash.
+
 - =adt=: Converts NixOS submodules into Algebraic Data Types ([[https://en.wikipedia.org/wiki/Algebraic_data_type][Wikipedia]]).
   Takes a set of submodules, functions to submodules
   or files containing the previous items.

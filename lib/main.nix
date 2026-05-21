@@ -11,9 +11,7 @@ let
       mkConfig = name: dir: nixosSystem {
         # system is set by the hardware config
 
-        modules = lib.importDir'
-          { default = true; dirs = false; }
-          dir ++ [ ../module ];
+        modules = (lib.importTree dir null) ++ [ ../module ];
 
         specialArgs = {
           aquaris = {
@@ -24,6 +22,7 @@ let
           self = src;
         };
       };
+
       dir = "${src.cfgDir}/machines";
     in
     # mkConfig every directory in src/machines/

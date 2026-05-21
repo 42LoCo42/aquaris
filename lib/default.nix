@@ -2,19 +2,35 @@
 let
   inherit (nixpkgs.lib)
     all
+    attrNames
+    elem
     fileContents
+    filter
     filterAttrs
+    flatten
     foldl'
     head
+    id
     ifEnable
+    isAttrs
+    isFunction
+    isList
+    isPath
     mapAttrsToList
+    match
     mergeOneOption
     mkOption
+    pathExists
     pipe
+    readDir
+    readFile
     recursiveUpdate
+    replaceStrings
     splitString
     tail
+    typeOf
     ;
+
   inherit (nixpkgs.lib.types)
     str
     submodule
@@ -26,17 +42,17 @@ let
       srcs = map (i: "@${i.k}@") pairs;
       dsts = map (i: toString i.v) pairs;
     in
-    builtins.replaceStrings srcs dsts text;
+    replaceStrings srcs dsts text;
 in
 rec {
   inherit (flake-utils.lib) eachDefaultSystem;
 
-  merge = builtins.foldl' recursiveUpdate { };
+  merge = foldl' recursiveUpdate { };
 
   subs = subsFunc;
 
   subsF = { file, func, subs ? { } }: pipe file [
-    builtins.readFile
+    readFile
     (text: subsFunc { inherit text subs; })
     (func (baseNameOf file))
   ];
@@ -52,15 +68,38 @@ rec {
   ];
 
   importDir' = { default ? false, dirs ? true }: dir: pipe dir [
-    builtins.readDir
+    readDir
     (filterAttrs (name: type:
-      (type == "regular" && builtins.match ".*[.]nix" name != null && (default || name != "default.nix")) ||
-      (type == "directory" && dirs && builtins.pathExists "${dir}/${name}/default.nix")))
-    builtins.attrNames
+      (type == "regular" && match ".*[.]nix" name != null && (default || name != "default.nix")) ||
+      (type == "directory" && dirs && pathExists "${dir}/${name}/default.nix")))
+    attrNames
     (map (x: "${dir}/${x}"))
   ];
 
   importDir = importDir' { };
+
+  importTree = root: skip:
+    let
+      go = dir: pipe (readDir (root + dir)) [
+        (mapAttrsToList (name: type:
+          let path = dir + "/" + name; in
+          if type == "directory" then go path
+          else if all id [
+            (type == "regular")
+            (match ".*[.]nix" name != null)
+          ] then path
+          else [ ]))
+        flatten
+      ];
+    in
+    pipe "" [
+      go
+      (paths:
+        if isFunction skip then filter (x: !(skip x)) paths
+        else if isList skip then filter (x: !(elem x skip)) paths
+        else paths)
+      (map (x: root + x))
+    ];
 
   ##### Simple ADT library #####
 
@@ -93,13 +132,13 @@ rec {
       mkModule =
         let
           gen = val:
-            if builtins.isAttrs val
+            if isAttrs val
             then addTag val
-            else if builtins.isFunction val
+            else if isFunction val
             then args: gen (val args)
-            else if builtins.isPath val
+            else if isPath val
             then gen (import val)
-            else abort "unsupported ADT entry type ${builtins.typeOf val}";
+            else abort "unsupported ADT entry type ${typeOf val}";
         in
         val: submodule (gen val);
 
@@ -117,7 +156,7 @@ rec {
           mk.${name} = v: recursiveUpdate v { _tag = name; };
           type = mkType choices;
         }))
-        (builtins.foldl' recursiveUpdate { })
+        (foldl' recursiveUpdate { })
       ];
     in
     adt;
