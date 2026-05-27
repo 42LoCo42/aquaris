@@ -25,24 +25,22 @@ in
     programs.ssh = mkMerge [
       {
         enable = true;
-        matchBlocks = {
+        settings = {
           "*" = {
-            forwardAgent = true;
+            AddKeysToAgent = "yes";
+            ForwardAgent = true;
 
-            identityFile = pipe osConfig.aquaris.secrets.all [
+            IdentityFile = pipe osConfig.aquaris.secrets.all [
               (filter (hasPrefix "user/${user}/ssh/"))
               (map osConfig.aquaris.secret)
             ];
 
-            extraOptions = {
-              AddKeysToAgent = "yes";
-              UserKnownHostsFile = knownHosts;
-            };
+            UserKnownHostsFile = knownHosts;
           };
 
           github = {
-            hostname = "github.com";
-            user = "git";
+            HostName = "github.com";
+            User = "git";
           };
         };
       }

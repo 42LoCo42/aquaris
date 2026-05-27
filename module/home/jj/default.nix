@@ -85,6 +85,7 @@ in
         jde = "jj describe --editor";
         jdg = "jj diff --git";
         jdi = "jj diff";
+        jdig = "jj diff --git";
         jdu = "jj duplicate";
         je = "jj edit";
         jfa = "jj file annotate";
