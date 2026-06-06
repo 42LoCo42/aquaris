@@ -58,6 +58,7 @@ doInstall() {
 	nixos-enter --root "$mnt" -c "$(
 		cat <<-EOF
 			mount -m -t tmpfs tmpfs /tmp
+			export NIXOS_INSTALL_BOOTLOADER=1
 			@installBootLoader@ "$sys"
 		EOF
 	)"
