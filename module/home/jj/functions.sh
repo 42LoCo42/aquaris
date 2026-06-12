@@ -67,12 +67,6 @@ jdn() {
 	jj new
 }
 
-# show content
-jsc() {
-	rev="$(jfco 'closest_pushable()')" || return 1
-	jj show "$rev"
-}
-
 ##### functions for magic enter #####
 
 # check root

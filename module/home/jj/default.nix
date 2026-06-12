@@ -37,6 +37,12 @@ in
               heads(..@ & bookmarks())
             '';
 
+            "closest_content()" = ''
+              heads(..@
+                & (~empty() | merges())
+              )
+            '';
+
             "closest_pushable()" = ''
               heads(..@
                 & ~description(exact:"")
@@ -112,6 +118,7 @@ in
         jrs = "jj git remote set-url";
         jrv = "jj revert";
         js = "jj show";
+        jsc = "jj show 'closest_content()'";
         jsg = "jj show --git";
         jsp = "jj split";
         jsq = "jj squash";
