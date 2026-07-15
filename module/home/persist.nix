@@ -58,7 +58,5 @@ in
         ".cache/zsh" = { };
       })
     ];
-
-    home.shellAliases.eph = "sudo find / -xdev -type f | sort | less";
   };
 }

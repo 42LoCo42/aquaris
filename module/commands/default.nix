@@ -1,5 +1,6 @@
-{ pkgs, config, aquaris, ... }:
+{ pkgs, lib, config, aquaris, ... }:
 let
+  inherit (lib) mkIf mkMerge;
   inherit (config.aquaris.machine) keepGenerations;
 
   sys = pkgs.writeShellApplication {
@@ -32,5 +33,19 @@ let
       parallel
     ];
   };
+
+  eph = pkgs.writers.writePython3Bin "_eph" { doCheck = false; } ./eph.py;
 in
-{ environment.systemPackages = [ sys use ]; }
+mkMerge [
+  { environment.systemPackages = [ sys use ]; }
+
+  (mkIf config.aquaris.persist.enable {
+    environment = {
+      systemPackages = [ eph ];
+
+      shellAliases = {
+        "eph" = "sudo _eph | less";
+      };
+    };
+  })
+]
