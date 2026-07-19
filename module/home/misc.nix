@@ -1,4 +1,4 @@
-{ pkgs, lib, mkEnableOption, config, ... }:
+{ config, lib, mkEnableOption, pkgs, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.misc;

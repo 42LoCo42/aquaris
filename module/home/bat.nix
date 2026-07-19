@@ -1,4 +1,4 @@
-{ pkgs, lib, config, mkEnableOption, ... }:
+{ config, lib, mkEnableOption, pkgs, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.bat;

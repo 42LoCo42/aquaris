@@ -1,4 +1,4 @@
-util: { lib, name, config, ... }:
+util: { config, lib, name, ... }:
 let
   inherit (lib) mapAttrsToList mkOption pipe;
   inherit (lib.types) anything attrsOf str submodule;

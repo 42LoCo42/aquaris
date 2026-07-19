@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib.types) anything functionTo str;

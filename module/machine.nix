@@ -1,4 +1,4 @@
-{ self, aquaris, lib, config, pkgs, ... }:
+{ aquaris, config, lib, pkgs, self, ... }:
 let
   inherit (lib) mkDefault mkIf mkMerge mkOption versionAtLeast;
   inherit (lib.types) bool int nullOr str;

@@ -1,4 +1,4 @@
-{ aquaris, pkgs, config, lib, ... }:
+{ aquaris, config, lib, pkgs, ... }:
 let
   inherit (lib)
     concatLines
@@ -374,7 +374,7 @@ in
         monitoring_ui = {
           enabled = true;
           listen_address = cfg.ui.listenAddress;
-          inherit (cfg.ui) username password;
+          inherit (cfg.ui) password username;
           privacy_level = cfg.ui.privacyLevel;
         };
       };

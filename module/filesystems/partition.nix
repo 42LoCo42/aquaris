@@ -1,4 +1,4 @@
-fs: disk: { lib, name, config, ... }:
+fs: disk: { config, lib, name, ... }:
 let
   inherit (lib) elemAt mkOption toInt;
   inherit (lib.types) anything nullOr path str;

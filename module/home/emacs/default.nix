@@ -1,7 +1,7 @@
 # inspired by https://gitlab.com/rycee/nur-expressions/-/blob/master/hm-modules/emacs-init.nix
 # https://gitlab.com/rycee/nur-expressions/-/blob/master/LICENSE
 
-{ pkgs, config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib)
     filterAttrs
@@ -55,7 +55,7 @@ let
   toString' = x: if builtins.isBool x && x then "t" else toString x;
   ifEnable' = cond: text: if cond then text else "";
 
-  usePackage = submodule ({ name, config, ... }: {
+  usePackage = submodule ({ config, name, ... }: {
     options = {
       init = code;
       config = code;

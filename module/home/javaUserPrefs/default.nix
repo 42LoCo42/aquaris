@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib) getExe isFunction mapAttrs mkIf mkOption pipe;
   inherit (lib.strings) toJSON;

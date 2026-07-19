@@ -1,13 +1,13 @@
-{ pkgs, config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
-  inherit (lib) ifEnable flip mkDefault mkOption;
+  inherit (lib) flip ifEnable mkDefault mkOption;
   inherit (lib.types) attrsOf bool listOf nullOr path str submodule;
   cfg = config.aquaris.users;
 in
 {
   options.aquaris.users = mkOption {
     description = "User accounts of this configuration";
-    type = attrsOf (submodule ({ name, config, ... }: {
+    type = attrsOf (submodule ({ config, name, ... }: {
       options = {
         description = mkOption {
           description = "A longer description of the username, e.g. the full name";

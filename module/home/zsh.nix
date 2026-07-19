@@ -1,4 +1,4 @@
-{ pkgs, config, lib, mkEnableOption, ... }:
+{ config, lib, mkEnableOption, pkgs, ... }:
 let
   inherit (lib) mkAfter mkIf mkMerge versionAtLeast;
   cfg = config.aquaris.zsh;

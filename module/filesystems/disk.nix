@@ -1,4 +1,4 @@
-util: { lib, name, config, ... }:
+util: { config, lib, name, ... }:
 let
   inherit (lib) mkOption pipe;
   inherit (lib.types) anything listOf path str submodule;

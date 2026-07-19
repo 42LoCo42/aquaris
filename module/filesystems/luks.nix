@@ -1,4 +1,4 @@
-util: { lib, config, ... }:
+util: { config, lib, ... }:
 let
   inherit (lib)
     flatten

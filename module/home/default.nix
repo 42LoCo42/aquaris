@@ -1,4 +1,4 @@
-{ pkgs, lib, config, specialArgs, aquaris, ... }:
+{ aquaris, config, lib, pkgs, specialArgs, ... }:
 let
   inherit (lib) ifEnable mkOption;
   inherit (lib.types) bool;

@@ -10,13 +10,13 @@
     obscura.url = "github:42loco42/obscura";
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs = { nixpkgs, self, ... }@inputs:
     let
       lib = import ./lib inputs;
 
       out = {
         inherit lib;
-        __functor = _: import ./lib/main.nix { inherit self lib nixpkgs; };
+        __functor = _: import ./lib/main.nix { inherit lib nixpkgs self; };
 
         templates.default = {
           description = "Aquaris example config template";

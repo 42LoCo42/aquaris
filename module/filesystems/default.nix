@@ -1,4 +1,4 @@
-{ pkgs, config, lib, aquaris, ... }:
+{ aquaris, config, lib, pkgs, ... }:
 let
   inherit (lib) getExe ifEnable mapAttrs' mkDefault mkIf mkMerge mkOption pipe;
   inherit (lib.strings) normalizePath;

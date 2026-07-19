@@ -1,4 +1,4 @@
-util: { lib, name, config, ... }:
+util: { config, lib, name, ... }:
 let
   inherit (lib)
     filterAttrs
@@ -31,7 +31,7 @@ in
 
     volumes = mkOption {
       description = "Set of Logical Volumes";
-      type = attrsOf (submodule ({ name, config, ... }: {
+      type = attrsOf (submodule ({ config, name, ... }: {
         options = {
           name = mkOption {
             description = "Name of the Logical Volume";

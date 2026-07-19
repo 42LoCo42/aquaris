@@ -1,4 +1,4 @@
-pkgs: { lib, config, ... }:
+pkgs: { config, lib, ... }:
 let
   inherit (lib) concatLines getExe ifEnable mapAttrs' mapAttrsToList mkOption pipe unique;
   inherit (lib.types) anything attrsOf functionTo listOf nullOr path str submodule;

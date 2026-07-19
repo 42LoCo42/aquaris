@@ -1,4 +1,4 @@
-joinOpts: pool: { lib, name, config, ... }:
+joinOpts: pool: { config, lib, name, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib.types) anything attrsOf listOf nullOr path str;

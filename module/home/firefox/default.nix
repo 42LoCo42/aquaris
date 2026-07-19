@@ -1,4 +1,4 @@
-{ pkgs, lib, config, osConfig, aquaris, ... }:
+{ aquaris, config, lib, osConfig, pkgs, ... }:
 let
   inherit (lib)
     concatMapAttrsStringSep

@@ -1,4 +1,4 @@
-{ aquaris, self, pkgs, lib, config, ... }:
+{ aquaris, config, lib, pkgs, self, ... }:
 let
   inherit (lib)
     attrNames

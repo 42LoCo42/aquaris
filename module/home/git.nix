@@ -1,4 +1,4 @@
-{ pkgs, lib, config, osConfig, mkEnableOption, ... }:
+{ config, lib, mkEnableOption, osConfig, pkgs, ... }:
 let
   inherit (lib)
     findFirst

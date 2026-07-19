@@ -1,4 +1,4 @@
-{ pkgs, lib, config, aquaris, ... }@top:
+{ aquaris, config, lib, pkgs, ... }@top:
 let
   inherit (lib)
     flip
@@ -37,7 +37,7 @@ let
     tag = "latest";
   };
 
-  container = { name, config, ... }: {
+  container = { config, name, ... }: {
     options = {
       ##### entrypoint #####
 

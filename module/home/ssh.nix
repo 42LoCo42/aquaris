@@ -1,4 +1,4 @@
-{ lib, config, osConfig, mkEnableOption, ... }:
+{ config, lib, mkEnableOption, osConfig, ... }:
 let
   inherit (lib)
     concatStringsSep

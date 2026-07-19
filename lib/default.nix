@@ -36,7 +36,7 @@ let
     submodule
     ;
 
-  subsFunc = { text, subs ? { } }:
+  subsFunc = { subs ? { }, text }:
     let
       pairs = mapAttrsToList (k: v: { inherit k v; }) subs;
       srcs = map (i: "@${i.k}@") pairs;
@@ -53,7 +53,7 @@ rec {
 
   subsF = { file, func, subs ? { } }: pipe file [
     readFile
-    (text: subsFunc { inherit text subs; })
+    (text: subsFunc { inherit subs text; })
     (func (baseNameOf file))
   ];
 

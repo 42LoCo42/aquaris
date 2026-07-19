@@ -1,4 +1,4 @@
-{ lib, config, mkEnableOption, ... }:
+{ config, lib, mkEnableOption, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.eza;

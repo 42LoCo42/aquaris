@@ -1,4 +1,4 @@
-{ config, lib, aquaris, mkEnableOption, ... }:
+{ aquaris, config, lib, mkEnableOption, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.tmux;

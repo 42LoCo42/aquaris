@@ -1,4 +1,4 @@
-{ self, aquaris, pkgs, config, lib, ... }:
+{ aquaris, config, lib, pkgs, self, ... }:
 let
   inherit (lib) getExe mkOption;
   inherit (lib.types) package;

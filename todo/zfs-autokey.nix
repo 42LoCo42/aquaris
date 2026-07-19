@@ -1,4 +1,4 @@
-({ pkgs, lib, ... }:
+({ lib, pkgs, ... }:
 let initial = pkgs.writeText "initial-password" "password"; in {
   # this fixes occasional "failures" of zfs-mount
   systemd.services."zfs-mount".serviceConfig.Restart = "on-failure";

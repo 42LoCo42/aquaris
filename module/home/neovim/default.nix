@@ -1,4 +1,4 @@
-{ pkgs, config, lib, mkEnableOption, ... }:
+{ config, lib, mkEnableOption, pkgs, ... }:
 let
   inherit (lib) mkIf;
   cfg = config.aquaris.neovim;

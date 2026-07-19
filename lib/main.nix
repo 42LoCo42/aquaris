@@ -1,4 +1,4 @@
-{ self, lib, nixpkgs }: src0: cfg:
+{ lib, nixpkgs, self }: src0: cfg:
 let
   inherit (nixpkgs.lib) filterAttrs nixosSystem pipe;
 

@@ -1,4 +1,4 @@
-{ pkgs, lib, config, aquaris, ... }:
+{ aquaris, config, lib, pkgs, ... }:
 let
   inherit (lib) mkIf mkMerge;
   inherit (config.aquaris.machine) keepGenerations;
