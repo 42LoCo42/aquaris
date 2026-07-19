@@ -31,7 +31,7 @@ def handleDir(path: str) -> Result:
     try:
         with os.scandir(path) as scan:
             for item in scan:
-                info = os.stat(item.path)
+                info = os.lstat(item.path)
                 mode = info.st_mode
 
                 if info.st_dev != maindev:
