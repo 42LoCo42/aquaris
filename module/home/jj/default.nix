@@ -8,8 +8,9 @@ let
     pipe
     ;
 
-  cfg = config.aquaris.jj;
   inherit (config.programs) git;
+
+  cfg = config.aquaris.jj;
 in
 {
   options.aquaris.jj = mkEnableOption "jujutsu, a simple git-compatible VCS";
@@ -46,9 +47,10 @@ in
             "closest_pushable()" = ''
               heads(..@
                 & ~description(exact:"")
-                & (mutable() | (bookmarks() ~ remote_bookmarks()))
-                & (~empty() | merges())
-              )
+                & (mutable()
+                   | (bookmarks() ~ remote_bookmarks())
+                   | (tags() ~ remote_tags()))
+                & (~empty() | merges()))
             '';
           };
         }
