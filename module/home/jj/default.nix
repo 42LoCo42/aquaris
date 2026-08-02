@@ -108,8 +108,6 @@ in
         jos = "jj op show";
         jou = "jj op undo";
         jpa = "jj parallelize";
-        jpl = "jj git fetch --all-remotes"; # "pull"
-        jpu = "jj git push --all --deleted"; # jps is intelligent push
         jr = "jj rebase";
         jra = "jj git remote add";
         jrd = "jj git remote remove"; # "delete"
@@ -128,7 +126,7 @@ in
         jss = "jj show --stat";
         jtd = "jj tag delete";
         jtl = "jj tag list";
-        jts = "jj tag set --allow-move";
+        jtla = "jj tag list --all";
         ju = "jj undo";
       };
     };

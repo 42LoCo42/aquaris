@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# find commit all
+# "find commit all"
 jfca() {
 	jj log \
 		--no-graph \
@@ -11,7 +11,7 @@ jfca() {
 		--revision "$1"
 }
 
-# find commit one
+# "find commit one"
 jfco() {
 	jj show \
 		--no-patch \
@@ -22,7 +22,24 @@ jfco() {
 		"$1"
 }
 
-# "intelligent" push
+_jpl() {
+	jj git fetch --all-remotes
+}
+
+# "pull"
+jpl() {
+	_jpl && _jpl --tag '*'
+}
+
+# "push"
+jpu() {
+	jj git push --all --deleted
+	if [ -n "$(jj tag list)" ]; then
+		jj git push --tag '*'
+	fi
+}
+
+# "push smart" - automatically creates & moves bookmarks
 jps() {
 	# give merge commits a default description
 	jfca '..@ & merges() & mutable() & description(exact:"")' |
@@ -50,31 +67,47 @@ jps() {
 		jj bookmark move --from "$from" --to "$to"
 	fi
 
-	jj git push --all --deleted
-	git push --tags --force
+	jpu
 }
 
-# clone from github
+# "tag set"
+jts() {
+	args=()
+	rev="@-"
+
+	while (($#)); do
+		case "$1" in
+		-r | --revision)
+			shift
+			rev="$1"
+			;;
+
+		*)
+			args+=("$1")
+			;;
+		esac
+		shift
+	done
+
+	jj tag set --allow-move -r "$rev" "${args[@]}"
+}
+
+# "clone github"
 jcg() {
 	repo="$(sed -E 's|^https://github.com/([^/]+/[^/]+).*|git@github.com:\1.git|' <<<"$1")"
 	shift
 	jj git clone --colocate "$repo" "$@"
 }
 
-# describe-then-new
+# "describe & new"
 jdn() {
 	jj describe -m "$@"
 	jj new
 }
 
-##### functions for magic enter #####
+##### magic enter setup #####
 
-# check root
-jcr() {
-	jj root >/dev/null 2>&1
-}
-
-# status-then-log
+# "status & log"
 jsl() {
 	args=("--no-pager")
 	if jj config get aquaris.status-ignore-working-copy >/dev/null 2>&1; then
@@ -85,6 +118,6 @@ jsl() {
 	jj log "${args[@]}"
 }
 
-MAGIC_ENTER_JJ_COMMAND=' jsl'
-MAGIC_ENTER_GIT_COMMAND=' git status -u'
-MAGIC_ENTER_OTHER_COMMAND=' l'
+export MAGIC_ENTER_JJ_COMMAND=' jsl'
+export MAGIC_ENTER_GIT_COMMAND=' git status -u'
+export MAGIC_ENTER_OTHER_COMMAND=' l'
