@@ -12,6 +12,7 @@ let
     bool
     functionTo
     listOf
+    nullOr
     str
     ;
 
@@ -29,6 +30,12 @@ in
       description = "Should the LUKS identity be measured into PCR 15?";
       type = bool;
       default = false;
+    };
+
+    fixate = mkOption {
+      description = "Expect this volume key hash during decryption";
+      type = nullOr str;
+      default = null;
     };
 
     formatOpts = mkOption {
@@ -92,6 +99,7 @@ in
               "try-empty-password=yes"
               (ifEnable config.tpmDecrypt [ "tpm2-device=auto" ])
               (ifEnable config.tpmMeasure [ "tpm2-measure-pcr=yes" ])
+              (if config.fixate != null then "fixate-volume-key=${config.fixate}" else [ ])
             ];
           };
         }

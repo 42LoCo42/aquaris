@@ -154,6 +154,10 @@ This is not a function. Just use =content = fs.swap;=
   after it has been retrieved from the TPM.
   Default: false
 
+- =fixate= (null or string): Expect this volume key hash during decryption.
+  See =crypttab(5)=, =fixate-volume-key= for more information.
+  Default: null
+
 - =formatOpts= (list of strings): Options for =cryptsetup luksFormat=
   Default: empty list
 
