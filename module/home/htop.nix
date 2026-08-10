@@ -22,8 +22,9 @@ in
         show_merged_command = 1;
         show_program_path = 0;
         show_thread_names = 1;
-        tree_view = 1;
+        sticky_follow = 0;
 
+        tree_view = 1;
         tree_sort_key = config.lib.htop.fields.COMM;
         tree_sort_direction = 1;
 
