@@ -7,6 +7,8 @@ let
   cfg = config.aquaris.machine;
 
   inherit (config.aquaris.persist) root;
+
+  lixPkgs = pkgs.lixPackageSets.latest;
 in
 {
   options.aquaris.machine = {
@@ -56,7 +58,7 @@ in
     };
 
     nix = {
-      package = mkDefault pkgs.lixPackageSets.latest.lix;
+      package = mkDefault lixPkgs.lix;
 
       settings = mkMerge [
         {
@@ -138,5 +140,9 @@ in
         '';
       })
     ];
+
+    home-manager.sharedModules = [{
+      programs.direnv.nix-direnv.package = mkDefault lixPkgs.nix-direnv;
+    }];
   };
 }

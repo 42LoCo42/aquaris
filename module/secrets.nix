@@ -40,13 +40,21 @@ let
 
   secretsFile = builtins.path { path = "${self.cfgDir}/sillysecrets.yaml"; };
 
-  structure = pipe secretsFile [
-    (x: (pkgs.runCommandLocal "structure" {
-      nativeBuildInputs = with pkgs; [ yq ];
-    }) "yq -s '.[0]' < ${x} > $out")
-    readFile
-    fromJSON
-  ];
+  structure =
+    if hasAttr "fromYAML" builtins then
+      pipe secretsFile [
+        readFile
+        builtins.fromYAML
+        (flip elemAt 0)
+      ]
+    else
+      pipe secretsFile [
+        (x: (pkgs.runCommandLocal "structure" {
+          nativeBuildInputs = with pkgs; [ yq ];
+        }) "yq -s '.[0]' < ${x} > $out")
+        readFile
+        fromJSON
+      ];
 
   storageRaw = pipe secretsFile [
     readFile
@@ -96,7 +104,8 @@ in
       pub = mkOption {
         description = ''
           Public key of this machine.
-          If unspecified, will be read using IFD from the structure file.
+          If unspecified, will be read using fromYAML (Lix only)
+          or, as a last resort, via IFD from the structure file.
         '';
         type = str;
         default = if !cfg.enable then "" else structure.machine.${aquaris.name}.":key";
