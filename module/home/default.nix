@@ -1,6 +1,6 @@
 { aquaris, config, lib, pkgs, specialArgs, ... }:
 let
-  inherit (lib) ifEnable mkOption;
+  inherit (lib) any attrValues ifEnable mkOption pipe;
   inherit (lib.types) bool;
 in
 {
@@ -32,6 +32,13 @@ in
       let file = ''"/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"''; in ''
         if [ -f ${file} ]; then source ${file}; fi
       '';
+
+    ##### global settings for hyprland submodule #####
+
+    programs.hyprland.enable = pipe config.home-manager.users [
+      attrValues
+      (any (x: x.aquaris.hyprland.enable))
+    ];
 
     ##### global settings for zsh submodule #####
 
