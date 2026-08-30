@@ -290,10 +290,12 @@ in
 
     xdg.configFile = {
       "emacs/early-init.el".text = ''
+        ;;; -*- lexical-binding: t -*-
         (require 'hm-early-init)
       '';
 
       "emacs/init.el".text = ''
+        ;;; -*- lexical-binding: t -*-
         (require 'hm-init)
       '';
     };
