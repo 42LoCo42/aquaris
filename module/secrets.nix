@@ -104,7 +104,7 @@ in
       pub = mkOption {
         description = ''
           Public key of this machine.
-          If unspecified, will be read using fromYAML (Lix only)
+          If unspecified, will be read using fromYAML
           or, as a last resort, via IFD from the structure file.
         '';
         type = str;

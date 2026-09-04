@@ -3,16 +3,19 @@ let
   inherit (lib.fileset) toSource unions;
 
   plugin = pkgs.stdenv.mkDerivation {
-    pname = "lix-yaml";
-    version = "1.0.0";
+    pname = "nix-yaml";
+    version = "1.1.0";
 
     src = toSource {
       root = ./.;
       fileset = unions [
         ./meson.build
-        ./plugin.cpp
+        ./src
       ];
     };
+
+    __structuredAttrs = true;
+    strictDeps = true;
 
     nativeBuildInputs = with pkgs; [
       meson
@@ -24,6 +27,7 @@ let
       boost
       capnproto
       lix
+      nix
       yaml-cpp
     ];
 
@@ -35,4 +39,4 @@ let
     mesonFlags = [ "--werror" ];
   };
 in
-{ nix.settings.plugin-files = [ "${plugin}/lib/liblix-yaml.so" ]; }
+{ nix.settings.plugin-files = [ "${plugin}/lib/libyaml.so" ]; }

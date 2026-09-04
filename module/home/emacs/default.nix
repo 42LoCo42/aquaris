@@ -251,7 +251,7 @@ in
   config = mkIf cfg.enable {
     programs.emacs = {
       enable = true;
-      package = cfg.package;
+      inherit (cfg) package;
 
       extraPackages = epkgs:
         let

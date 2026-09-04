@@ -224,7 +224,7 @@ in
             ];
 
             sources = aquaris.lib.merge [
-              (ifEnable (cfg.protos.dnscrypt) {
+              (ifEnable cfg.protos.dnscrypt {
                 dnscry-pt-resolvers = {
                   cache_file = "/var/cache/dnscrypt-proxy/dnscry.pt-resolvers.md";
                   minisign_key = "RWQM31Nwkqh01x88SvrBL8djp1NH56Rb4mKLHz16K7qsXgEomnDv6ziQ";
