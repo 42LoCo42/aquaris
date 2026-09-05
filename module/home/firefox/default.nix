@@ -663,6 +663,9 @@ in
           # Use recommended performance settings
           "browser.preferences.defaultPerformanceSettings.enabled" = true;
           "layers.acceleration.disabled" = false;
+
+          # unbind alt shortcuts from menu bar
+          "ui.key.menuAccessKey" = 999;
         };
 
         policies = {
