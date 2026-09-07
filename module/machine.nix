@@ -94,7 +94,7 @@ in
     };
 
     services = {
-      journald.extraConfig = mkDefault "SystemMaxUse=100M";
+      journald.settings.Journal.SystemMaxUse = mkDefault "100M";
 
       openssh = {
         enable = mkDefault true;
@@ -125,21 +125,10 @@ in
     time.timeZone = mkDefault "Europe/Berlin";
     zramSwap.enable = mkDefault true;
 
-    systemd = mkMerge [
-      {
-        network.wait-online.anyInterface = true;
-      }
-      (if builtins.hasAttr "settings" config.systemd
-      then {
-        settings.Manager.DefaultTimeoutStopSec = lib.mkDefault "5s";
-      }
-      else {
-        extraConfig = ''
-          [Manager]
-          DefaultTimeoutStopSec=5s
-        '';
-      })
-    ];
+    systemd = {
+      network.wait-online.anyInterface = true;
+      settings.Manager.DefaultTimeoutStopSec = lib.mkDefault "5s";
+    };
 
     home-manager.sharedModules = [{
       programs.direnv.nix-direnv.package = mkDefault lixPkgs.nix-direnv;
