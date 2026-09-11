@@ -1,6 +1,6 @@
 { aquaris, config, lib, pkgs, specialArgs, ... }:
 let
-  inherit (lib) any attrValues ifEnable mkOption pipe;
+  inherit (lib) any attrValues ifEnable mkDefault mkOption pipe;
   inherit (lib.types) bool;
 in
 {
@@ -38,6 +38,7 @@ in
     programs.hyprland.enable = pipe config.home-manager.users [
       attrValues
       (any (x: x.aquaris.hyprland.enable))
+      mkDefault
     ];
 
     ##### global settings for zsh submodule #####
