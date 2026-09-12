@@ -18,6 +18,7 @@ in
         "--icons"
         "--long"
         "--mounts"
+        "--short-nix"
       ];
 
       theme = {
