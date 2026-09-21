@@ -108,6 +108,7 @@ in
         jos = "jj op show";
         jou = "jj op undo";
         jpa = "jj parallelize";
+        jpi = "jsp && jpa '@|@-'";
         jr = "jj rebase";
         jra = "jj git remote add";
         jrd = "jj git remote remove"; # "delete"
