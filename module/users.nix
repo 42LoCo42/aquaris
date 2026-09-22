@@ -21,6 +21,12 @@ in
           default = false;
         };
 
+        nopass = mkOption {
+          description = "Don't configure a password for this user";
+          type = bool;
+          default = false;
+        };
+
         sshKeys = mkOption {
           description = "SSH public keys that may log in as this user";
           type = listOf str;

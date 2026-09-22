@@ -297,7 +297,7 @@ in
 
     users.users = pipe config.aquaris.users [
       (filterAttrs (n: _: n != "root"))
-      (mapAttrs (n: _: {
+      (mapAttrs (n: x: mkIf (!x.nopass) {
         hashedPasswordFile = config.aquaris.secret "user/${n}/password";
       }))
     ];

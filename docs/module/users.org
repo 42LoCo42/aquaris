@@ -9,6 +9,9 @@ Attribute set of the following options:
 - =admin= (boolean): Grant this user administrative rights (sudo, NetworkManager).
   Default: false
 
+- =nopass= (boolean) Don't configure a password (=hashedPasswordFile=) for this user.
+  Default: false
+
 - =sshKeys= (list of string): SSH public keys that may log in as this user.
   Default: empty
 
