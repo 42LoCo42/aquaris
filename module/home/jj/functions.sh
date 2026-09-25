@@ -105,12 +105,21 @@ jdn() {
 	jj new
 }
 
+# "file untrack auto" (tracked files that are gitignored)
+jfua() {
+	jj file list --template 'path ++ "\0"' |
+		git check-ignore --no-index --stdin -z |
+		xargs -0 -r jj file untrack
+}
+
 ##### magic enter setup #####
 
 # "status & log"
 jsl() {
+	if ! jj config get aquaris.no-auto-untrack >&/dev/null; then jfua; fi
+
 	args=("--no-pager")
-	if jj config get aquaris.status-ignore-working-copy >/dev/null 2>&1; then
+	if jj config get aquaris.status-ignore-working-copy >&/dev/null; then
 		args+=("--ignore-working-copy")
 	fi
 	jj status "${args[@]}"
