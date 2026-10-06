@@ -63,9 +63,9 @@ in
       settings = mkMerge [
         {
           auto-optimise-store = true;
-
           experimental-features = [ "nix-command" "flakes" ];
           keep-going = true;
+          nix-path = [ "nixpkgs=/etc/nix/channel" ];
           use-xdg-base-directories = true;
         }
 
@@ -73,8 +73,6 @@ in
           deprecated-features = [ "or-as-identifier" ]; # would hit false positives in nixpkgs
         })
       ];
-
-      nixPath = [ "nixpkgs=/etc/nix/channel" ];
 
       registry = {
         config.flake = self;

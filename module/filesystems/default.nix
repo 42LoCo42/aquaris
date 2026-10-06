@@ -170,6 +170,8 @@ in
       }
 
       (mkIf config.boot.zfs.enabled {
+        boot.zfs.forceImportRoot = true;
+
         services.zfs = {
           autoScrub.enable = mkDefault true;
           autoSnapshot.enable = mkDefault true;
