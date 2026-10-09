@@ -1,7 +1,6 @@
-{ config, lib, mkEnableOption, pkgs, ... }:
+{ config, lib, mkEnableOption, ... }:
 let
   inherit (lib)
-    getExe
     mkAfter
     mkIf
     mkMerge
@@ -20,62 +19,60 @@ in
       ".config/jj/repos" = { };
     };
 
-    programs.jujutsu = {
-      enable = true;
-      settings = mkMerge [
-        {
-          ui = {
-            diff-formatter = [
-              (getExe pkgs.difftastic)
-              "--color=always"
-              "$left"
-              "$right"
-            ];
-          };
+    programs = {
+      jujutsu = {
+        enable = true;
+        settings = mkMerge [
+          {
+            revset-aliases = {
+              "closest_bookmark()" = ''
+                heads(..@ & bookmarks())
+              '';
 
-          revset-aliases = {
-            "closest_bookmark()" = ''
-              heads(..@ & bookmarks())
-            '';
+              "closest_content()" = ''
+                heads(..@
+                  & (~empty() | merges())
+                )
+              '';
 
-            "closest_content()" = ''
-              heads(..@
-                & (~empty() | merges())
-              )
-            '';
+              "closest_pushable()" = ''
+                heads(..@
+                  & ~description(exact:"")
+                  & (mutable()
+                     | (bookmarks() ~ remote_bookmarks())
+                     | (tags() ~ remote_tags()))
+                  & (~empty() | merges()))
+              '';
+            };
+          }
 
-            "closest_pushable()" = ''
-              heads(..@
-                & ~description(exact:"")
-                & (mutable()
-                   | (bookmarks() ~ remote_bookmarks())
-                   | (tags() ~ remote_tags()))
-                & (~empty() | merges()))
-            '';
-          };
-        }
+          (mkIf (builtins.hasAttr "name" git.settings.user) { user.name = git.settings.user.name; })
+          (mkIf (builtins.hasAttr "email" git.settings.user) { user.email = git.settings.user.email; })
 
-        (mkIf (builtins.hasAttr "name" git.settings.user) { user.name = git.settings.user.name; })
-        (mkIf (builtins.hasAttr "email" git.settings.user) { user.email = git.settings.user.email; })
+          ((mkIf (builtins.all (x: x) [
+            (git.signing != null)
+            (git.signing.key != null)
+            (git.signing.format == "ssh")
+          ])) {
+            signing = {
+              backend = "ssh";
+              behavior = "own";
+              inherit (git.signing) key;
+            };
+          })
+        ];
+      };
 
-        ((mkIf (builtins.all (x: x) [
-          (git.signing != null)
-          (git.signing.key != null)
-          (git.signing.format == "ssh")
-        ])) {
-          signing = {
-            backend = "ssh";
-            behavior = "own";
-            inherit (git.signing) key;
-          };
-        })
+      difftastic = {
+        enable = true;
+        jujutsu.enable = true;
+      };
+
+      zsh.oh-my-zsh.extraConfig = pipe ./functions.sh [
+        builtins.readFile
+        mkAfter
       ];
     };
-
-    programs.zsh.oh-my-zsh.extraConfig = pipe ./functions.sh [
-      builtins.readFile
-      mkAfter
-    ];
 
     home = {
       sessionVariables.LESS = "-i -R";
