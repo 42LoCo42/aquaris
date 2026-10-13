@@ -25,12 +25,25 @@ let
     focus = args: dsp "focus(${toLua args})";
     move = args: dsp "window.move(${toLua args})";
 
-    fullscreen = internal: client: dsp ''
-      window.fullscreen_state({
-        action = "toggle",
-        internal = ${toString internal},
-        client = ${toString client},
-      })
+    fullscreen = { client ? null, internal ? null }: function ''
+      window   = hl.get_active_window()
+      internal = window.fullscreen
+      client   = window.fullscreen_client
+
+      ${if internal == null then "" else ''
+        internal = internal == 0 and ${toString internal} or 0
+      ''}
+
+      ${if client == null then "" else ''
+        client = client == 0 and ${toString client} or 0
+      ''}
+
+      hl.dispatch(hl.dsp.window.fullscreen_state({
+        action   = "set",
+        window   = window,
+        internal = internal,
+        client   = client,
+      }))
     '';
   };
 
