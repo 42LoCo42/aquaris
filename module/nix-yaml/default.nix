@@ -4,7 +4,7 @@ let
 
   plugin = pkgs.stdenv.mkDerivation {
     pname = "nix-yaml";
-    version = "1.1.0";
+    version = "1.2.0";
 
     src = toSource {
       root = ./.;
@@ -26,7 +26,7 @@ let
     buildInputs = with pkgs; [
       boost
       capnproto
-      lix
+      lixPackageSets.lix_2_96.lix
       nix
       yaml-cpp
     ];

@@ -8,7 +8,7 @@ let
 
   inherit (config.aquaris.persist) root;
 
-  lixPkgs = pkgs.lixPackageSets.latest;
+  lixPkgs = pkgs.lixPackageSets.lix_2_96;
 in
 {
   options.aquaris.machine = {

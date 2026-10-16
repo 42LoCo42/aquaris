@@ -46,7 +46,7 @@ static void yaml2nix(EvalState& state, YAML::Node node, Value* v) {
 	switch(node.Type()) {
 	case YAML::NodeType::Undefined:
 	case YAML::NodeType::Null:
-		v->mkNull();
+		*v = Value(NewValueAs::null);
 		break;
 
 	case YAML::NodeType::Scalar: {
@@ -72,9 +72,10 @@ static void yaml2nix(EvalState& state, YAML::Node node, Value* v) {
 		auto attrs = state.ctx.buildBindings(node.size());
 
 		for(const auto& sub : node) {
-			auto  sym = state.ctx.symbols.create(sub.first.Scalar().data());
-			auto& val = attrs.alloc(sym);
+			auto sym = state.ctx.symbols.create(sub.first.Scalar().data());
+			auto val = Value(NewValueAs::null);
 			yaml2nix(state, sub.second, &val);
+			attrs.insert(sym, val);
 		}
 
 		*v = Value(NewValueAs::attrs, attrs);
@@ -82,13 +83,15 @@ static void yaml2nix(EvalState& state, YAML::Node node, Value* v) {
 	}
 }
 
-void fromYAML(EvalState& state, Value** args, Value& v) {
+Value fromYAML(EvalState& state, Value** args) {
 	try {
 		auto yaml = state.forceStringNoCtx(*args[0], noPos, "");
 		auto docs = YAML::LoadAll(std::string(yaml));
 
 		if(docs.size() == 1) {
-			yaml2nix(state, docs[0], &v);
+			auto val = Value(NewValueAs::null);
+			yaml2nix(state, docs[0], &val);
+			return val;
 		} else {
 			auto list = state.ctx.mem.newList(docs.size());
 
@@ -96,7 +99,7 @@ void fromYAML(EvalState& state, Value** args, Value& v) {
 				yaml2nix(state, docs[i], &list->elems[i]);
 			}
 
-			v = Value(NewValueAs::list_t(), list);
+			return Value(NewValueAs::list, list);
 		}
 	} catch(YAML::ParserException& e) {
 		throw Error(e.msg); //
