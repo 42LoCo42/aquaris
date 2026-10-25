@@ -4,10 +4,16 @@
 #include <stdio.h>
 #include <string.h>
 
+#define die(...)                                                               \
+	do {                                                                       \
+		warn(__VA_ARGS__);                                                     \
+		return;                                                                \
+	} while(0)
+
 extern "C" void nix_plugin_entry(void) {
 	Dl_info info;
 	if(!dladdr((void*) nix_plugin_entry, &info))
-		err(1, "failed to find libyaml library directory");
+		die("failed to find libyaml library directory");
 
 	bool isLix = dlsym(RTLD_DEFAULT, "lixdoc_free_string") != NULL;
 
@@ -20,10 +26,10 @@ extern "C" void nix_plugin_entry(void) {
 	);
 
 	void* handle = dlopen(libPath, RTLD_LAZY);
-	if(handle == NULL) err(1, "failed to open libyaml: %s", dlerror());
+	if(handle == NULL) die("failed to open libyaml: %s", dlerror());
 
 	void (*entry)(void) = (void (*)(void)) dlsym(handle, "nix_plugin_entry");
-	if(entry == NULL) err(1, "failed to find entrypoint: %s", dlerror());
+	if(entry == NULL) die("failed to find entrypoint: %s", dlerror());
 
 	entry();
 }

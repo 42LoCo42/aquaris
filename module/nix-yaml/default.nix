@@ -4,7 +4,7 @@ let
 
   plugin = pkgs.stdenv.mkDerivation {
     pname = "nix-yaml";
-    version = "1.2.0";
+    version = "1.2.1";
 
     src = toSource {
       root = ./.;
