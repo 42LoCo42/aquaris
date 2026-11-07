@@ -107,9 +107,10 @@ jdn() {
 
 # "file untrack auto" (tracked files that are gitignored)
 jfua() {
+	root="$(jj root)"
 	jj file list --template 'path ++ "\0"' |
 		git check-ignore --no-index --stdin -z |
-		xargs -0 -r jj file untrack
+		xargs -0 -r env --chdir "$root" jj file untrack
 }
 
 ##### magic enter setup #####
