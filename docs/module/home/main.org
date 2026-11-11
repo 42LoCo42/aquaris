@@ -40,8 +40,9 @@ Declarative [[https://www.gnu.org/software/emacs/][Emacs]] configuration managem
 - =config=: Set of Emacs package configurations.
   Options: every keyword from [[https://github.com/jwiegley/use-package][use-package]]
   (except =disabled= and =pin=; =bind*= is set as =bind'=) and:
-  - =package=: Explicit package name or function taking =epkgs=
-    Default: entry name
+  - =package=: Explicit package name or function taking =epkgs=.
+    Default: entry name.
+    If =null=, the entry name refers to a builtin package (e.g. =org=).
 
   - =extraPackages= (list of package):
     Extra packages required by this Emacs package.

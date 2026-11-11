@@ -15,6 +15,7 @@ let
     mkOptionType
     pipe
     ;
+
   inherit (lib.types)
     anything
     attrsOf
@@ -24,6 +25,7 @@ let
     functionTo
     int
     listOf
+    nullOr
     package
     str
     submodule
@@ -93,7 +95,7 @@ let
 
       package = mkOption {
         description = "Package name or function (taking epkgs)";
-        type = either str packageFunction;
+        type = nullOr (either str packageFunction);
         default = name;
       };
 
@@ -108,9 +110,9 @@ let
         default = epkgs:
           let
             pname =
-              if isFunction config.package
-              then (config.package epkgs).pname
-              else config.package;
+              if isFunction config.package then (config.package epkgs).pname else
+              if isNull config.package then name else
+              config.package;
           in
           pipe config [
             (flip builtins.removeAttrs [
@@ -256,8 +258,9 @@ in
       extraPackages = epkgs:
         let
           getPkg = x:
-            if isFunction x then (x epkgs)
-            else (epkgs.${x} or null);
+            if isFunction x then (x epkgs) else
+            if isNull x then null else
+            (epkgs.${x} or null);
 
           packages = pipe cfg.config [
             builtins.attrValues
