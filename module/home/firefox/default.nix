@@ -666,6 +666,10 @@ in
 
           # unbind alt shortcuts from menu bar
           "ui.key.menuAccessKey" = 999;
+
+          # enable picture-in-picture but without toggle button
+          "media.videocontrols.picture-in-picture.enabled" = true;
+          "media.videocontrols.picture-in-picture.video-toggle.enabled" = false;
         };
 
         policies = {
@@ -682,11 +686,6 @@ in
 
           Homepage = {
             StartPage = "previous-session";
-            Locked = true;
-          };
-
-          PictureInPicture = {
-            Enabled = false;
             Locked = true;
           };
         };
